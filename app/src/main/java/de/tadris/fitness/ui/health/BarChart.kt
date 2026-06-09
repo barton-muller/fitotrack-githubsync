@@ -42,12 +42,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.tadris.fitness.ui.theme.FitoTrackTheme
 
+data class BarChartData(val entries: List<Int>, val labels: List<String>)
+
 @Composable
 fun BarChart(
-    entries: List<Int>, labels: List<String>,
+    data: BarChartData,
     modifier: Modifier = Modifier,
-    animate: Boolean = false
+    animate: Boolean = false,
 ) {
+    val (entries, labels) = data
     val barColor = MaterialTheme.colorScheme.primary
     val labelStyle = MaterialTheme.typography.labelSmall
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -132,8 +135,7 @@ private fun BarChartDayPreview() {
     }
     FitoTrackTheme {
         BarChart(
-            entries = entries,
-            labels = listOf("0", "6", "12", "18"),
+            data = BarChartData(entries, listOf("0", "6", "12", "18")),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),
@@ -153,8 +155,7 @@ private fun BarChartMonthPreview() {
     )
     FitoTrackTheme {
         BarChart(
-            entries = entries,
-            labels = listOf("1", "8", "15", "22", "30"),
+            data = BarChartData(entries, listOf("1", "8", "15", "22", "30")),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),
@@ -162,7 +163,7 @@ private fun BarChartMonthPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Monthly (one bar per day)")
+@Preview(showBackground = true, name = "Weekly")
 @Composable
 private fun BarChartWeekPreview() {
     val entries = listOf(
@@ -170,8 +171,7 @@ private fun BarChartWeekPreview() {
     )
     FitoTrackTheme {
         BarChart(
-            entries = entries,
-            labels = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"),
+            data = BarChartData(entries, listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),

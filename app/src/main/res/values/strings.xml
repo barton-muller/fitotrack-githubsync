@@ -178,6 +178,7 @@
     <string name="stepTrackingStop">Stop</string>
     <string name="stepGoalProgress">/ %d steps</string>
     <string name="todaySteps">Today\'s steps</string>
+    <string name="stepStatistics">Step Statistics</string>
     <string name="permissionRequiredTitle">Permission required</string>
     <string name="stepPermissionExplanation">FitoTrack needs the activity recognition permission to count your steps. Please grant it in the app settings.</string>
 

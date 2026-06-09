@@ -59,6 +59,7 @@ fun HomeScreen(
     onImport: () -> Unit = {},
     onSettings: () -> Unit = {},
     onStatistics: () -> Unit = {},
+    onStepStats: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val workouts by workoutDao.getWorkoutsFlow().collectAsState(initial = emptyList())
@@ -90,6 +91,14 @@ fun HomeScreen(
 
                 else -> TopAppBar(
                     title = { Text(stringResource(R.string.tabSteps)) },
+                    actions = {
+                        IconButton(onClick = onStepStats) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_bar_chart_24),
+                                contentDescription = stringResource(R.string.stepStatistics),
+                            )
+                        }
+                    },
                 )
             }
         },

@@ -37,6 +37,7 @@ import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecordingStateHolder
 import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
+import de.tadris.fitness.ui.health.StepStatsScreen
 import de.tadris.fitness.ui.home.HomeScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
@@ -127,6 +128,9 @@ sealed interface Route {
 
     @Serializable
     data class RecordIndoorWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
+
+    @Serializable
+    data object StepStats : Route
 }
 
 @Composable
@@ -169,7 +173,11 @@ fun AppNavigation(
                 onStatistics = {
                     context.startActivity(Intent(context, StatisticsActivity::class.java))
                 },
+                onStepStats = { navController.navigate(Route.StepStats) },
             )
+        }
+        composable<Route.StepStats> {
+            StepStatsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.ShowWorkoutFullscreenMap> { backStackEntry ->
             ShowWorkoutFullscreenMapScreen(
