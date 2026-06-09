@@ -150,7 +150,7 @@ fun StepsScreen(contentPadding: PaddingValues) {
         ServiceStatusCard(
             running = serviceRunning,
             onStart = { startTracking() },
-            onStop = { context.stopService(Intent(context, StepTrackingService::class.java)) },
+            onStop = { vm.stopTracking() },
         )
 
         StepProgressRing(

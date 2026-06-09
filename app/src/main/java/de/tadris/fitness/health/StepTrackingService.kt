@@ -94,6 +94,7 @@ class StepTrackingService : Service(), SensorEventListener {
             )
         }
 
+        Instance.getInstance(this).userPreferences.stepTrackingEnabled = true
         _isRunning.value = true
         startPersister()
         return START_STICKY

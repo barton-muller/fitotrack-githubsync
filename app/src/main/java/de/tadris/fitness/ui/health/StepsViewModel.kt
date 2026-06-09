@@ -20,6 +20,7 @@
 package de.tadris.fitness.ui.health
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
@@ -35,6 +36,13 @@ class StepsViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = Instance.getInstance(app).db.stepDao()
 
     val serviceRunning: StateFlow<Boolean> = StepTrackingService.isRunning
+
+    fun stopTracking() {
+        Instance.getInstance(getApplication()).userPreferences.stepTrackingEnabled = false
+        getApplication<Application>().stopService(
+            Intent(getApplication(), StepTrackingService::class.java)
+        )
+    }
 
     val todaySteps: StateFlow<Int> = combine(
         dao.getTodayStepCountFlow(todayMidnight(), todayMidnight() + DAY_MS),

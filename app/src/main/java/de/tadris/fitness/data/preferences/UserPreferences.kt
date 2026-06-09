@@ -148,6 +148,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var stepLength by FloatSharedPreference(STEP_LENGTH, 0.79f)
 
+    var stepTrackingEnabled by BooleanSharedPreference("stepTrackingEnabled", false)
+
     val lastVersionCode: Int
         get() = preferences.getInt("lastVersion", BuildConfig.VERSION_CODE)
 
