@@ -84,7 +84,11 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         mutableEntries[nowWindow] =
             mutableEntries[nowWindow] + StepTrackingService.pendingSteps.value
 
-        return BarChartData(mutableEntries, listOf("0", "6", "12", "18"))
+        return BarChartData(
+            mutableEntries,
+            listOf("0", "6", "12", "18"),
+            mutableEntries.maxOrNull()
+        )
     }
 
     private fun buildWeekData(): BarChartData {
@@ -107,7 +111,7 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
             c.add(Calendar.DAY_OF_YEAR, i)
             shortWeekdays[c.get(Calendar.DAY_OF_WEEK)]
         }
-        return BarChartData(entries, labels)
+        return BarChartData(entries, labels, prefs.dailyStepGoal)
     }
 
     private fun buildMonthData(): BarChartData {
@@ -122,7 +126,7 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         }
         val entries = List(daysInMonth) { i -> byDay[i] ?: 0 }
         val labels = (1..daysInMonth step 7).map { it.toString() }
-        return BarChartData(entries, labels)
+        return BarChartData(entries, labels, prefs.dailyStepGoal)
     }
 
     private fun buildYearData(): BarChartData {
@@ -139,7 +143,7 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         val labels = DateFormatSymbols.getInstance(Locale.getDefault()).shortMonths
             .take(12)
             .mapIndexed { i, name -> if (i % 2 == 0) name else "" }
-        return BarChartData(entries, labels)
+        return BarChartData(entries, labels, entries.maxOrNull())
     }
 
     private fun windowIndex(timestamp: Long, dayStart: Long): Int =

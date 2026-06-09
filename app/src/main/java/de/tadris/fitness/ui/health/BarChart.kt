@@ -40,6 +40,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -51,7 +52,11 @@ import androidx.compose.ui.unit.sp
 import de.tadris.fitness.ui.theme.FitoTrackTheme
 import java.text.NumberFormat
 
-data class BarChartData(val entries: List<Int>, val labels: List<String>)
+data class BarChartData(
+    val entries: List<Int>,
+    val labels: List<String>,
+    val horizontal: Int? = null
+)
 
 @Composable
 fun BarChart(
@@ -59,7 +64,7 @@ fun BarChart(
     modifier: Modifier = Modifier,
     animate: Boolean = false,
 ) {
-    val (entries, labels) = data
+    val (entries, labels, horizontal) = data
     val barColor = MaterialTheme.colorScheme.primary
     val barSelectedColor = MaterialTheme.colorScheme.primary.darker()
     val labelStyle = MaterialTheme.typography.labelSmall
@@ -69,8 +74,9 @@ fun BarChart(
     val textMeasurer = rememberTextMeasurer()
     val numberFormat = remember { NumberFormat.getNumberInstance() }
 
-    val maxValue by remember(entries) {
-        mutableFloatStateOf((entries.maxOrNull()?.takeIf { it > 0 } ?: 1).toFloat())
+    val maxValue by remember(entries, horizontal) {
+        val entriesMax = entries.maxOrNull() ?: 0
+        mutableFloatStateOf(maxOf(entriesMax, horizontal ?: 0).coerceAtLeast(1).toFloat())
     }
     var progress by remember { mutableFloatStateOf(if (animate) 0f else 1f) }
     LaunchedEffect(Unit) {
@@ -131,6 +137,30 @@ fun BarChart(
                     topLeft = Offset(left, top),
                     size = Size(barWidth, barHeight),
                     cornerRadius = CornerRadius(radius, radius),
+                )
+            }
+
+            // Horizontal reference line
+            if (horizontal != null) {
+                val lineY = barAreaHeight - (horizontal.toFloat() / maxValue) * barAreaHeight
+                val dashPx = 6.dp.toPx()
+                drawLine(
+                    color = labelColor,
+                    start = Offset(0f, lineY),
+                    end = Offset(size.width, lineY),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashPx, dashPx * 0.67f)),
+                )
+                val hText = numberFormat.format(horizontal)
+                val hStyle = labelStyle.copy(color = labelColor, fontWeight = FontWeight.SemiBold)
+                val hMeasured = textMeasurer.measure(hText, style = hStyle)
+                val hX = size.width - hMeasured.size.width
+                val hY = (lineY - hMeasured.size.height - 2.dp.toPx()).coerceAtLeast(0f)
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = hText,
+                    topLeft = Offset(hX, hY),
+                    style = hStyle,
                 )
             }
 
@@ -231,7 +261,7 @@ private fun BarChartMonthPreview() {
     )
     FitoTrackTheme {
         BarChart(
-            data = BarChartData(entries, listOf("1", "8", "15", "22", "30")),
+            data = BarChartData(entries, listOf("1", "8", "15", "22", "30"), horizontal = 10_000),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),
