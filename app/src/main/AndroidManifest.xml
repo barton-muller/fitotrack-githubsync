@@ -57,6 +57,9 @@
         android:name="android.hardware.sensor.barometer"
         android:required="false" />
     <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="false" />
+    <uses-feature
         android:name="android.hardware.bluetooth"
         android:required="false" />
     <uses-feature
@@ -158,6 +161,9 @@
         <service
             android:name=".recording.RecorderService"
             android:foregroundServiceType="location|health" />
+        <service
+            android:name=".health.StepTrackingService"
+            android:foregroundServiceType="health" />
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"

@@ -25,19 +25,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,61 +45,23 @@ import androidx.compose.ui.unit.dp
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.data.Workout
-import de.tadris.fitness.data.WorkoutDao
-import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.ui.theme.FitoTrackTheme
 
 @Composable
 fun DashboardScreen(
-    workoutDao: WorkoutDao,
-    onWorkoutClick: (Workout) -> Unit = {},
-    onDeleteWorkout: (Workout) -> Unit = {},
-    onRecord: () -> Unit = {},
-    onRecordLast: (WorkoutType) -> Unit = {},
-    onEnterWorkout: () -> Unit = {},
-    onImport: () -> Unit = {},
-    onSettings: () -> Unit = {},
-    onStatistics: () -> Unit = {},
-) {
-    val workouts by workoutDao.getWorkoutsFlow().collectAsState(initial = emptyList())
-    DashboardScreen(
-        workouts = workouts,
-        onWorkoutClick = onWorkoutClick,
-        onDeleteWorkout = onDeleteWorkout,
-        onRecord = onRecord,
-        onRecordLast = onRecordLast,
-        onEnterWorkout = onEnterWorkout,
-        onImport = onImport,
-        onSettings = onSettings,
-        onStatistics = onStatistics,
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DashboardScreen(
     workouts: List<Workout>,
+    contentPadding: PaddingValues,
     onWorkoutClick: (Workout) -> Unit = {},
     onDeleteWorkout: (Workout) -> Unit = {},
-    onRecord: () -> Unit = {},
-    onRecordLast: (WorkoutType) -> Unit = {},
-    onEnterWorkout: () -> Unit = {},
-    onImport: () -> Unit = {},
     onSettings: () -> Unit = {},
-    onStatistics: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    var fabExpanded by rememberSaveable { mutableStateOf(false) }
     var workoutToDelete by remember { mutableStateOf<Workout?>(null) }
     val userPreferences = Instance.getInstance(context).userPreferences
     var showFirstStartDialog by rememberSaveable {
         val isFirstStart = userPreferences.firstStart
         if (isFirstStart) userPreferences.firstStart = false
         mutableStateOf(isFirstStart)
-    }
-
-    val lastWorkoutType = remember(workouts) {
-        workouts.firstOrNull()?.getWorkoutType(context)
     }
 
     if (showFirstStartDialog) {
@@ -139,57 +92,24 @@ fun DashboardScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.workouts)) },
-                actions = {
-                    IconButton(onClick = onStatistics) {
-                        Icon(
-                            painter = painterResource(R.drawable.outline_bar_chart_24),
-                            contentDescription = stringResource(R.string.workout_statistics),
-                        )
-                    }
-                    IconButton(onClick = onSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings),
-                        )
-                    }
-                },
-            )
-        },
-        floatingActionButton = {
-            DashboardFab(
-                expanded = fabExpanded,
-                lastWorkoutType = lastWorkoutType,
-                onToggle = { fabExpanded = !fabExpanded },
-                onRecord = { fabExpanded = false; onRecord() },
-                onRecordLast = { type -> fabExpanded = false; onRecordLast(type) },
-                onEnterWorkout = { fabExpanded = false; onEnterWorkout() },
-                onImport = { fabExpanded = false; onImport() },
-            )
-        },
-    ) { innerPadding ->
-        if (workouts.isEmpty()) {
-            DashboardEmptyPlaceholder(Modifier.padding(innerPadding))
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + 8.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 88.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(workouts, key = { it.id }) { workout ->
-                    WorkoutListItem(
-                        workout = workout,
-                        onClick = { onWorkoutClick(workout) },
-                        onLongClick = { workoutToDelete = workout },
-                    )
-                }
+    if (workouts.isEmpty()) {
+        DashboardEmptyPlaceholder(Modifier.padding(contentPadding))
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(
+                top = contentPadding.calculateTopPadding() + 8.dp,
+                bottom = contentPadding.calculateBottomPadding() + 88.dp,
+                start = 16.dp,
+                end = 16.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(workouts, key = { it.id }) { workout ->
+                WorkoutListItem(
+                    workout = workout,
+                    onClick = { onWorkoutClick(workout) },
+                    onLongClick = { workoutToDelete = workout },
+                )
             }
         }
     }
@@ -251,7 +171,10 @@ private fun DashboardPreview() {
         intervalSetUsedId = -1,
     )
     FitoTrackTheme {
-        DashboardScreen(workouts = listOf(workout, workout, workout))
+        DashboardScreen(
+            workouts = listOf(workout, workout, workout),
+            contentPadding = PaddingValues()
+        )
     }
 }
 
@@ -259,6 +182,6 @@ private fun DashboardPreview() {
 @Composable
 private fun DashboardEmptyPreview() {
     FitoTrackTheme {
-        DashboardScreen(workouts = emptyList())
+        DashboardScreen(workouts = emptyList(), contentPadding = PaddingValues())
     }
 }

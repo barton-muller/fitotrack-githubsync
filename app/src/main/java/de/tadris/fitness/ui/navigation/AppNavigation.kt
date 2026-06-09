@@ -37,7 +37,7 @@ import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecordingStateHolder
 import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
-import de.tadris.fitness.ui.dashboard.DashboardScreen
+import de.tadris.fitness.ui.home.HomeScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
 import de.tadris.fitness.ui.settings.AboutScreen
@@ -149,7 +149,7 @@ fun AppNavigation(
         popExitTransition = { slideOutHorizontally { it } },
     ) {
         composable<Route.Dashboard> {
-            DashboardScreen(
+            HomeScreen(
                 workoutDao = Instance.getInstance(context).db.workoutDao(),
                 onWorkoutClick = { workout ->
                     navController.navigate(Route.ShowWorkout(workout.id))

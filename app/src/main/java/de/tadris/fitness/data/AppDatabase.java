@@ -28,7 +28,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(version = 18, entities = {
+@Database(version = 19, entities = {
         Workout.class,
         RouteSample.class,
         WorkoutPause.class,
@@ -39,6 +39,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
         IntervalSet.class,
         WorkoutType.class,
         ExportTargetConfiguration.class,
+        StepSample.class,
 }, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -51,6 +52,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract IntervalDao intervalDao();
 
     public abstract ExportTargetDao exportTargetDao();
+
+    public abstract StepDao stepDao();
 
     public long getLastWorkoutTimeByType(String type) {
         Workout workout = workoutDao().getLastWorkoutByType(type);
@@ -591,6 +594,21 @@ public abstract class AppDatabase extends RoomDatabase {
                             db.execSQL("create index index_workout_event_workoutId on workout_event (workoutId)");
                             db.execSQL("create index index_workout_pause_workoutId on workout_pause (workoutId)");
                             db.execSQL("create index index_repetition_sample_workoutId on repetition_sample (workoutId)");
+
+                            db.setTransactionSuccessful();
+                        } finally {
+                            db.endTransaction();
+                        }
+                    }
+                }, new Migration(18, 19) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase db) {
+                        try {
+                            db.beginTransaction();
+
+                            db.execSQL("CREATE TABLE step_sample (" +
+                                    "windowStart INTEGER NOT NULL PRIMARY KEY," +
+                                    "steps INTEGER NOT NULL)");
 
                             db.setTransactionSuccessful();
                         } finally {

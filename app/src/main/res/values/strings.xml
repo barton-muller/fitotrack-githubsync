@@ -17,7 +17,9 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  --><resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  -->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">FitoTrack</string>
     <string name="stop">Stop</string>
     <string name="delete">Delete</string>
@@ -163,6 +165,22 @@
     <string name="trackerWaitingMessage">Waiting to start workout</string>
     <string name="trackingInfo">Tracking Info</string>
     <string name="trackingInfoDescription">Info about the tracker running</string>
+    <string name="stepTrackingChannelName">Step Tracking</string>
+    <string name="stepTrackingChannelDescription">Shown while step tracking is active</string>
+    <string name="stepTrackingNotificationTitle">Step tracking active</string>
+    <string name="stepTrackingNotificationText">FitoTrack is counting your steps</string>
+    <string name="tabWorkouts">Workouts</string>
+    <string name="tabSteps">Steps</string>
+    <string name="stepTrackingTitle">Step tracking</string>
+    <string name="stepTrackingRunning">Step tracking active</string>
+    <string name="stepTrackingDescription">Enable step tracking to automatically count your daily steps in the background.</string>
+    <string name="stepTrackingStart">Start</string>
+    <string name="stepTrackingStop">Stop</string>
+    <string name="stepGoalProgress">/ %d steps</string>
+    <string name="todaySteps">Today\'s steps</string>
+    <string name="permissionRequiredTitle">Permission required</string>
+    <string name="stepPermissionExplanation">FitoTrack needs the activity recognition permission to count your steps. Please grant it in the app settings.</string>
+
     <string name="cancel">Cancel</string>
     <string name="exportAsGpxFile">Export as GPX-File</string>
     <string name="pref_weight">Your Weight</string>
