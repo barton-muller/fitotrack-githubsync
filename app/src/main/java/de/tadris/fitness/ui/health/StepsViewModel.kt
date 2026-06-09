@@ -25,6 +25,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
 import de.tadris.fitness.health.StepTrackingService
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -34,11 +35,20 @@ import java.util.Calendar
 class StepsViewModel(app: Application) : AndroidViewModel(app) {
 
     private val dao = Instance.getInstance(app).db.stepDao()
+    private val prefs = Instance.getInstance(app).userPreferences
 
     val serviceRunning: StateFlow<Boolean> = StepTrackingService.isRunning
 
+    private val _dailyStepGoal = MutableStateFlow(prefs.dailyStepGoal)
+    val dailyStepGoal: StateFlow<Int> = _dailyStepGoal
+
+    fun setDailyStepGoal(goal: Int) {
+        prefs.dailyStepGoal = goal
+        _dailyStepGoal.value = goal
+    }
+
     fun stopTracking() {
-        Instance.getInstance(getApplication()).userPreferences.stepTrackingEnabled = false
+        prefs.stepTrackingEnabled = false
         getApplication<Application>().stopService(
             Intent(getApplication(), StepTrackingService::class.java)
         )

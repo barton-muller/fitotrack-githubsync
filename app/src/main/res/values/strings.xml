@@ -177,6 +177,7 @@
     <string name="stepTrackingStart">Start</string>
     <string name="stepTrackingStop">Stop</string>
     <string name="stepGoalProgress">/ %d steps</string>
+    <string name="dailyStepGoal">Daily step goal</string>
     <string name="todaySteps">Today\'s steps</string>
     <string name="stepStatistics">Step Statistics</string>
     <string name="permissionRequiredTitle">Permission required</string>

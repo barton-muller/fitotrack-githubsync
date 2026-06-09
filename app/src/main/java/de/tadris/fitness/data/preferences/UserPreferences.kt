@@ -150,6 +150,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var stepTrackingEnabled by BooleanSharedPreference("stepTrackingEnabled", false)
 
+    var dailyStepGoal by IntSharedPreference("dailyStepGoal", 10_000)
+
     val lastVersionCode: Int
         get() = preferences.getInt("lastVersion", BuildConfig.VERSION_CODE)
 

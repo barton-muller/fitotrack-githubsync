@@ -23,6 +23,8 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -30,17 +32,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.tadris.fitness.ui.theme.FitoTrackTheme
+import java.text.NumberFormat
 
 data class BarChartData(val entries: List<Int>, val labels: List<String>)
 
@@ -52,9 +61,13 @@ fun BarChart(
 ) {
     val (entries, labels) = data
     val barColor = MaterialTheme.colorScheme.primary
+    val barSelectedColor = MaterialTheme.colorScheme.primary.darker()
     val labelStyle = MaterialTheme.typography.labelSmall
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val pillColor = MaterialTheme.colorScheme.surfaceVariant
+    val pillTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     val textMeasurer = rememberTextMeasurer()
+    val numberFormat = remember { NumberFormat.getNumberInstance() }
 
     val maxValue by remember(entries) {
         mutableFloatStateOf((entries.maxOrNull()?.takeIf { it > 0 } ?: 1).toFloat())
@@ -69,7 +82,29 @@ fun BarChart(
         label = "barProgress",
     )
 
-    Canvas(modifier = modifier) {
+    var selectedIndex by remember(entries) { mutableIntStateOf(-1) }
+
+    Canvas(
+        modifier = modifier.pointerInput(entries) {
+            awaitEachGesture {
+                if (entries.isEmpty()) return@awaitEachGesture
+                val slotWidth = size.width / entries.size.toFloat()
+                fun xToIndex(x: Float) = (x / slotWidth).toInt().coerceIn(0, entries.size - 1)
+
+                val down = awaitFirstDown()
+                selectedIndex = xToIndex(down.position.x)
+
+                do {
+                    val event = awaitPointerEvent()
+                    event.changes.forEach { it.consume() }
+                    val position = event.changes.firstOrNull()?.position ?: continue
+                    selectedIndex = xToIndex(position.x)
+                } while (event.changes.any { it.pressed })
+
+                selectedIndex = -1
+            }
+        },
+    ) {
         val labelAreaHeight = if (labels.isNotEmpty()) 20.dp.toPx() else 0f
         val barAreaHeight = size.height - labelAreaHeight
 
@@ -82,8 +117,7 @@ fun BarChart(
             entries.forEachIndexed { index, value ->
                 val barProgress =
                     ((shownProgress * (entries.size + spread - 1) - index) / spread).coerceIn(
-                        0f,
-                        1f
+                        0f, 1f
                     )
                 val barHeight = (value.toFloat() / maxValue) * barAreaHeight * barProgress
                 if (barHeight <= 0f) return@forEachIndexed
@@ -93,10 +127,49 @@ fun BarChart(
                 val radius = minOf(barWidth / 2, barHeight / 2)
 
                 drawRoundRect(
-                    color = barColor,
+                    color = if (index == selectedIndex) barSelectedColor else barColor,
                     topLeft = Offset(left, top),
                     size = Size(barWidth, barHeight),
                     cornerRadius = CornerRadius(radius, radius),
+                )
+            }
+
+            // Tooltip pill for selected bar
+            if (selectedIndex in entries.indices && entries[selectedIndex] > 0) {
+                val value = entries[selectedIndex]
+                val pillText = numberFormat.format(value)
+                val pillStyle = TextStyle(
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = pillTextColor,
+                )
+                val measured = textMeasurer.measure(pillText, style = pillStyle)
+                val pillPaddingH = 6.dp.toPx()
+                val pillPaddingV = 3.dp.toPx()
+                val pillW = measured.size.width + pillPaddingH * 2
+                val pillH = measured.size.height + pillPaddingV * 2
+
+                val barProgress =
+                    ((shownProgress * (entries.size + spread - 1) - selectedIndex) / spread)
+                        .coerceIn(0f, 1f)
+                val barHeight = (value.toFloat() / maxValue) * barAreaHeight * barProgress
+                val barCenterX = selectedIndex * slotWidth + slotWidth / 2
+
+                val pillLeft = (barCenterX - pillW / 2).coerceIn(0f, size.width - pillW)
+                val barTop = barAreaHeight - barHeight
+                val pillTop = (barTop - pillH - 4.dp.toPx()).coerceAtLeast(0f)
+
+                drawRoundRect(
+                    color = pillColor,
+                    topLeft = Offset(pillLeft, pillTop),
+                    size = Size(pillW, pillH),
+                    cornerRadius = CornerRadius(pillH / 2, pillH / 2),
+                )
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = pillText,
+                    topLeft = Offset(pillLeft + pillPaddingH, pillTop + pillPaddingV),
+                    style = pillStyle,
                 )
             }
         }
@@ -121,6 +194,9 @@ fun BarChart(
         }
     }
 }
+
+private fun Color.darker(factor: Float = 0.75f) =
+    copy(red = red * factor, green = green * factor, blue = blue * factor)
 
 @Preview(showBackground = true, name = "Daily (15 min windows)")
 @Composable
