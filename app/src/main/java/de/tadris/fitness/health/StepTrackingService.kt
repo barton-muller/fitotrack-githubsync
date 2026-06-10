@@ -35,6 +35,8 @@ import de.tadris.fitness.data.StepSample
 import de.tadris.fitness.util.NotificationHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class StepTrackingService : Service(), SensorEventListener {
 
@@ -42,8 +44,7 @@ class StepTrackingService : Service(), SensorEventListener {
         const val NOTIFICATION_ID = 20
         private const val WINDOW_SIZE_MS = 15 * 60 * 1000L
         private const val PERSIST_INTERVAL_MS = 3 * 60 * 1000L
-        private const val PREF_NAME = "step_tracking"
-        private const val PREF_LAST_COUNTER = "last_counter"
+        private const val SENSOR_LATENCY_US = 15 * 1_000_000
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
@@ -57,11 +58,9 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private var lastCounterValue = -1f
     private var pendingStepsCount = 0
-    private val lock = Any()
+    private var lastPersistTime = 0L
 
-    private var persisterThread: Thread? = null
-    @Volatile
-    private var persisterRunning = false
+    private val executor = Executors.newSingleThreadExecutor()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -69,9 +68,6 @@ class StepTrackingService : Service(), SensorEventListener {
         super.onCreate()
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
-        lastCounterValue = prefs.getFloat(PREF_LAST_COUNTER, -1f)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -90,13 +86,13 @@ class StepTrackingService : Service(), SensorEventListener {
             sensorManager.registerListener(
                 this,
                 it,
-                SensorManager.SENSOR_DELAY_NORMAL
+                SensorManager.SENSOR_DELAY_NORMAL,
+                SENSOR_LATENCY_US
             )
         }
 
         Instance.getInstance(this).userPreferences.stepTrackingEnabled = true
         _isRunning.value = true
-        startPersister()
         return START_STICKY
     }
 
@@ -104,9 +100,9 @@ class StepTrackingService : Service(), SensorEventListener {
         _isRunning.value = false
         _pendingSteps.value = 0
         sensorManager.unregisterListener(this)
-        persisterRunning = false
-        persisterThread?.interrupt()
-        persistPending()
+        persistPendingAsync()
+        executor.shutdown()
+        executor.awaitTermination(5, TimeUnit.SECONDS)
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
@@ -114,7 +110,7 @@ class StepTrackingService : Service(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
         val counter = event.values[0]
-        synchronized(lock) {
+        synchronized(this) {
             if (lastCounterValue >= 0f) {
                 val delta = if (counter >= lastCounterValue) {
                     (counter - lastCounterValue).toInt()
@@ -125,40 +121,29 @@ class StepTrackingService : Service(), SensorEventListener {
                 if (delta > 0) {
                     pendingStepsCount += delta
                     _pendingSteps.value = pendingStepsCount
+                    if (System.currentTimeMillis() - lastPersistTime > PERSIST_INTERVAL_MS) {
+                        persistPendingAsync()
+                    }
                 }
             }
             lastCounterValue = counter
         }
-        getSharedPreferences(PREF_NAME, MODE_PRIVATE)
-            .edit()
-            .putFloat(PREF_LAST_COUNTER, counter)
-            .apply()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    private fun startPersister() {
-        persisterRunning = true
-        persisterThread = Thread({
-            while (persisterRunning) {
-                try {
-                    Thread.sleep(PERSIST_INTERVAL_MS)
-                    persistPending()
-                } catch (_: InterruptedException) {
-                    break
-                }
-            }
-        }, "StepPersister")
-        persisterThread!!.start()
+    private fun persistPendingAsync() {
+        executor.submit { persistPending() }
     }
 
     private fun persistPending() {
         val steps: Int
-        synchronized(lock) {
+        synchronized(this) {
             steps = pendingStepsCount
             if (steps == 0) return
             pendingStepsCount = 0
             _pendingSteps.value = 0
+            lastPersistTime = System.currentTimeMillis()
         }
         val windowStart = currentWindowStart()
         val dao = Instance.getInstance(this).db.stepDao()
