@@ -49,12 +49,61 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Instance.getInstance(app).userPreferences
 
     val selectedPeriod = MutableStateFlow(StepStatsPeriod.WEEK)
+    val timeFrameOffset = MutableStateFlow(0)
+
+    fun setPeriod(period: StepStatsPeriod) {
+        timeFrameOffset.value = 0
+        selectedPeriod.value = period
+    }
+
+    fun shiftOffset(delta: Int) {
+        timeFrameOffset.value += delta
+    }
+
+    fun setReferenceDate(dateMillis: Long) {
+        timeFrameOffset.value = when (selectedPeriod.value) {
+            StepStatsPeriod.DAY -> {
+                val targetMidnight = midnightOf(dateMillis)
+                ((targetMidnight - todayMidnight()) / DAY_MS).toInt()
+            }
+
+            StepStatsPeriod.WEEK -> {
+                val currentWeekStart = weekRange(prefs.firstDayOfWeek, 0).first
+                val targetWeekStart = weekStartContaining(dateMillis, prefs.firstDayOfWeek)
+                ((targetWeekStart - currentWeekStart) / (7 * DAY_MS)).toInt()
+            }
+
+            StepStatsPeriod.MONTH -> {
+                val now = Calendar.getInstance()
+                val target = Calendar.getInstance().also { it.timeInMillis = dateMillis }
+                (target.get(Calendar.YEAR) - now.get(Calendar.YEAR)) * 12 +
+                        (target.get(Calendar.MONTH) - now.get(Calendar.MONTH))
+            }
+
+            StepStatsPeriod.YEAR -> {
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                val target = Calendar.getInstance().also { it.timeInMillis = dateMillis }
+                target.get(Calendar.YEAR) - currentYear
+            }
+        }
+    }
+
+    val referenceTimestamp: StateFlow<Long> =
+        combine(selectedPeriod, timeFrameOffset) { period, offset ->
+            when (period) {
+                StepStatsPeriod.DAY -> todayMidnight() + offset * DAY_MS
+                StepStatsPeriod.WEEK -> weekRange(prefs.firstDayOfWeek, offset).first
+                StepStatsPeriod.MONTH -> monthRange(offset).start
+                StepStatsPeriod.YEAR -> yearRange(offset).first
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), todayMidnight())
 
     val chartData: StateFlow<BarChartData> = combine(
         selectedPeriod,
+        timeFrameOffset,
         StepTrackingService.pendingSteps,
-    ) { period: StepStatsPeriod, _: Int ->
-        buildChartData(period)
+    ) { period, offset, _ ->
+        buildChartData(period, offset)
     }
         .flowOn(Dispatchers.IO)
         .stateIn(
@@ -63,26 +112,29 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
             BarChartData(emptyList(), emptyList())
         )
 
-    private fun buildChartData(period: StepStatsPeriod): BarChartData {
+    private fun buildChartData(period: StepStatsPeriod, offset: Int): BarChartData {
         return when (period) {
-            StepStatsPeriod.DAY -> buildDayData()
-            StepStatsPeriod.WEEK -> buildWeekData()
-            StepStatsPeriod.MONTH -> buildMonthData()
-            StepStatsPeriod.YEAR -> buildYearData()
+            StepStatsPeriod.DAY -> buildDayData(offset)
+            StepStatsPeriod.WEEK -> buildWeekData(offset)
+            StepStatsPeriod.MONTH -> buildMonthData(offset)
+            StepStatsPeriod.YEAR -> buildYearData(offset)
         }
     }
 
-    private fun buildDayData(): BarChartData {
-        val dayStart = todayMidnight()
+    private fun buildDayData(offset: Int): BarChartData {
+        val dayStart = todayMidnight() + offset * DAY_MS
         val dayEnd = dayStart + DAY_MS
         val samples = dao.getStepsInRange(dayStart, dayEnd)
         val byWindow = samples.associateBy { windowIndex(it.windowStart, dayStart) }
 
-        val slotCount = 96 // 24h / 15min
+        val slotCount = 96
         val mutableEntries = MutableList(slotCount) { i -> byWindow[i]?.steps ?: 0 }
-        val nowWindow = windowIndex(System.currentTimeMillis(), dayStart).coerceIn(0, slotCount - 1)
-        mutableEntries[nowWindow] =
-            mutableEntries[nowWindow] + StepTrackingService.pendingSteps.value
+        if (offset == 0) {
+            val nowWindow =
+                windowIndex(System.currentTimeMillis(), dayStart).coerceIn(0, slotCount - 1)
+            mutableEntries[nowWindow] =
+                mutableEntries[nowWindow] + StepTrackingService.pendingSteps.value
+        }
 
         return BarChartData(
             mutableEntries,
@@ -91,9 +143,9 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
-    private fun buildWeekData(): BarChartData {
-        val firstDay = prefs.firstDayOfWeek // Calendar constant: 1=Sun, 2=Mon, …
-        val (weekStart, weekEnd) = currentWeekRange(firstDay)
+    private fun buildWeekData(offset: Int): BarChartData {
+        val firstDay = prefs.firstDayOfWeek
+        val (weekStart, weekEnd) = weekRange(firstDay, offset)
         val samples = dao.getStepsInRange(weekStart, weekEnd)
 
         val byDay = mutableMapOf<Int, Int>()
@@ -114,8 +166,8 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         return BarChartData(entries, labels, prefs.dailyStepGoal)
     }
 
-    private fun buildMonthData(): BarChartData {
-        val (monthStart, monthEnd, daysInMonth) = currentMonthRange()
+    private fun buildMonthData(offset: Int): BarChartData {
+        val (monthStart, monthEnd, daysInMonth) = monthRange(offset)
         val samples = dao.getStepsInRange(monthStart, monthEnd)
         val byDay = mutableMapOf<Int, Int>()
         for (sample in samples) {
@@ -129,8 +181,8 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         return BarChartData(entries, labels, prefs.dailyStepGoal)
     }
 
-    private fun buildYearData(): BarChartData {
-        val (yearStart, yearEnd) = currentYearRange()
+    private fun buildYearData(offset: Int): BarChartData {
+        val (yearStart, yearEnd) = yearRange(offset)
         val samples = dao.getStepsInRange(yearStart, yearEnd)
         val byMonth = mutableMapOf<Int, Int>()
         for (sample in samples) {
@@ -152,7 +204,7 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
     private fun dayOfWeekIndex(timestamp: Long, weekStart: Long): Int =
         ((timestamp - weekStart) / DAY_MS).toInt().coerceIn(0, 6)
 
-    private fun currentWeekRange(firstDay: Int): Pair<Long, Long> {
+    private fun weekRange(firstDay: Int, offset: Int): Pair<Long, Long> {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
@@ -160,27 +212,42 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         cal.set(Calendar.MILLISECOND, 0)
         val dow = cal.get(Calendar.DAY_OF_WEEK)
         val daysFromStart = (dow - firstDay + 7) % 7
-        cal.add(Calendar.DAY_OF_YEAR, -daysFromStart)
+        cal.add(Calendar.DAY_OF_YEAR, -daysFromStart + offset * 7)
         val weekStart = cal.timeInMillis
         return weekStart to weekStart + 7 * DAY_MS
     }
 
+    private fun weekStartContaining(dateMillis: Long, firstDay: Int): Long {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = dateMillis
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val dow = cal.get(Calendar.DAY_OF_WEEK)
+        val daysFromStart = (dow - firstDay + 7) % 7
+        cal.add(Calendar.DAY_OF_YEAR, -daysFromStart)
+        return cal.timeInMillis
+    }
+
     private data class MonthRange(val start: Long, val end: Long, val daysInMonth: Int)
 
-    private fun currentMonthRange(): MonthRange {
+    private fun monthRange(offset: Int): MonthRange {
         val cal = Calendar.getInstance()
         cal.set(Calendar.DAY_OF_MONTH, 1)
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
         cal.set(Calendar.SECOND, 0)
         cal.set(Calendar.MILLISECOND, 0)
+        cal.add(Calendar.MONTH, offset)
         val monthStart = cal.timeInMillis
         val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         return MonthRange(monthStart, monthStart + daysInMonth * DAY_MS, daysInMonth)
     }
 
-    private fun currentYearRange(): Pair<Long, Long> {
+    private fun yearRange(offset: Int): Pair<Long, Long> {
         val cal = Calendar.getInstance()
+        cal.add(Calendar.YEAR, offset)
         cal.set(Calendar.MONTH, Calendar.JANUARY)
         cal.set(Calendar.DAY_OF_MONTH, 1)
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -208,5 +275,16 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
             cal.set(Calendar.MILLISECOND, 0)
             return cal.timeInMillis
         }
+
+        fun midnightOf(millis: Long): Long {
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = millis
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            return cal.timeInMillis
+        }
+
     }
 }
