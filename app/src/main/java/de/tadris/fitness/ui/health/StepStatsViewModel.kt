@@ -164,7 +164,7 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
 
         return BarChartData(
             mutableEntries,
-            listOf("0", "6", "12", "18"),
+            listOf("0", "6", "12", "18", "24"),
             mutableEntries.maxOrNull()
         )
     }

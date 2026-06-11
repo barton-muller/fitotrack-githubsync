@@ -241,7 +241,7 @@ private fun BarChartDayPreview() {
     }
     FitoTrackTheme {
         BarChart(
-            data = BarChartData(entries, listOf("0", "6", "12", "18")),
+            data = BarChartData(entries, listOf("0", "6", "12", "18", "24")),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),
