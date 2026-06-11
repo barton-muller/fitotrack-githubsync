@@ -213,7 +213,7 @@ private fun TimeFrameNavigationRow(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
         )
-        IconButton(onClick = { onShift(+1) }) {
+        IconButton(onClick = { onShift(+1) }, enabled = canShiftForward) {
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
         }
     }
@@ -233,6 +233,7 @@ private fun TimeFrameNavigationRow(
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH),
             )
+            dialog.datePicker.maxDate = System.currentTimeMillis()
             dialog.setOnDismissListener { showDatePicker = false }
             dialog.show()
             onDispose { if (dialog.isShowing) dialog.dismiss() }
