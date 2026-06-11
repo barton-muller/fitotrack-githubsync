@@ -122,15 +122,15 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
         chartData,
         selectedPeriod,
         timeFrameOffset,
-    ) { data, period, offset ->
+    ) { data, period, _ ->
         val total = data.entries.sum()
-        val days = when (period) {
-            StepStatsPeriod.DAY -> 1
-            StepStatsPeriod.WEEK -> 7
-            StepStatsPeriod.MONTH -> monthRange(offset).daysInMonth
-            StepStatsPeriod.YEAR -> daysInYearPeriod(offset)
+        val avg = when (period) {
+            StepStatsPeriod.DAY -> total
+            else -> {
+                val activeDays = data.entries.count { it > 0 }
+                if (activeDays > 0) total / activeDays else 0
+            }
         }
-        val avg = if (days > 0) total / days else total
         StepProgressData(total, avg, prefs.dailyStepGoal)
     }.stateIn(
         viewModelScope,
