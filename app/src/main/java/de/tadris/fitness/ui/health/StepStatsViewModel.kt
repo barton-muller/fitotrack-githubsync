@@ -43,6 +43,12 @@ enum class StepStatsPeriod(val labelRes: Int) {
     YEAR(R.string.year),
 }
 
+data class StepProgressData(
+    val totalSteps: Int,
+    val dailyAverage: Int,
+    val stepGoal: Int,
+)
+
 class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
 
     private val dao = Instance.getInstance(app).db.stepDao()
@@ -111,6 +117,26 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
             SharingStarted.WhileSubscribed(5_000),
             BarChartData(emptyList(), emptyList())
         )
+
+    val progressData: StateFlow<StepProgressData> = combine(
+        chartData,
+        selectedPeriod,
+        timeFrameOffset,
+    ) { data, period, offset ->
+        val total = data.entries.sum()
+        val days = when (period) {
+            StepStatsPeriod.DAY -> 1
+            StepStatsPeriod.WEEK -> 7
+            StepStatsPeriod.MONTH -> monthRange(offset).daysInMonth
+            StepStatsPeriod.YEAR -> daysInYearPeriod(offset)
+        }
+        val avg = if (days > 0) total / days else total
+        StepProgressData(total, avg, prefs.dailyStepGoal)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        StepProgressData(0, 0, prefs.dailyStepGoal)
+    )
 
     private fun buildChartData(period: StepStatsPeriod, offset: Int): BarChartData {
         return when (period) {
@@ -196,6 +222,13 @@ class StepStatsViewModel(app: Application) : AndroidViewModel(app) {
             .take(12)
             .mapIndexed { i, name -> if (i % 2 == 0) name else "" }
         return BarChartData(entries, labels, entries.maxOrNull())
+    }
+
+    private fun daysInYearPeriod(offset: Int): Int {
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.YEAR, offset)
+        return if (offset == 0) cal.get(Calendar.DAY_OF_YEAR)
+        else cal.getActualMaximum(Calendar.DAY_OF_YEAR)
     }
 
     private fun windowIndex(timestamp: Long, dayStart: Long): Int =

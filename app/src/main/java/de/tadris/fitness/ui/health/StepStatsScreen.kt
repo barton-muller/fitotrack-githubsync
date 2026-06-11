@@ -35,10 +35,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -64,6 +66,7 @@ import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.util.UserDateTimeUtils
 import java.text.DateFormatSymbols
+import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -78,6 +81,7 @@ fun StepStatsScreen(onBack: () -> Unit) {
     val timeFrameOffset by vm.timeFrameOffset.collectAsStateWithLifecycle()
     val referenceTimestamp by vm.referenceTimestamp.collectAsStateWithLifecycle()
     val chartData by vm.chartData.collectAsStateWithLifecycle()
+    val progressData by vm.progressData.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -114,6 +118,12 @@ fun StepStatsScreen(onBack: () -> Unit) {
                 onSetDate = { vm.setReferenceDate(it) },
             )
 
+            StepProgressCard(
+                data = progressData,
+                period = selectedPeriod,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             key(chartData.entries) {
                 BarChart(
                     data = chartData,
@@ -121,6 +131,70 @@ fun StepStatsScreen(onBack: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(220.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StepProgressCard(
+    data: StepProgressData,
+    period: StepStatsPeriod,
+    modifier: Modifier = Modifier,
+) {
+    val numberFormat = remember { NumberFormat.getNumberInstance() }
+    val progress = if (data.stepGoal > 0) {
+        (data.dailyAverage.toFloat() / data.stepGoal).coerceIn(0f, 1f)
+    } else 0f
+    val pct = (progress * 100).toInt()
+
+    Card(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Column {
+                    if (period != StepStatsPeriod.DAY) {
+                        Text(
+                            text = stringResource(R.string.stepProgressAvgPerDay),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Text(
+                        text = "${numberFormat.format(data.dailyAverage)} / ${
+                            numberFormat.format(
+                                data.stepGoal
+                            )
+                        }",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                Text(
+                    text = "$pct%",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (period != StepStatsPeriod.DAY) {
+                Text(
+                    text = "${stringResource(R.string.stepProgressTotal)}: ${
+                        numberFormat.format(
+                            data.totalSteps
+                        )
+                    }",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

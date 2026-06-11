@@ -17,7 +17,9 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  --><resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  -->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">FitoTrack</string>
     <string name="backup">Sichern</string>
     <string name="cancel">Abbrechen</string>
@@ -577,4 +579,6 @@
     <string name="zoom_in">Hineinzoomen</string>
     <string name="zoom_out">Herauszoomen</string>
     <string name="recording_hold_to_stop">Lange drücken, um den Workout anzuhalten</string>
+    <string name="stepProgressAvgPerDay">Ø / Tag</string>
+    <string name="stepProgressTotal">Gesamt</string>
 </resources>
