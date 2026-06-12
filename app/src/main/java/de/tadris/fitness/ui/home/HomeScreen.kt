@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import de.tadris.fitness.R
+import de.tadris.fitness.data.Workout
 import de.tadris.fitness.data.WorkoutDao
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.ui.dashboard.DashboardFab
@@ -51,8 +52,8 @@ import de.tadris.fitness.ui.health.StepsScreen
 @Composable
 fun HomeScreen(
     workoutDao: WorkoutDao,
-    onWorkoutClick: (de.tadris.fitness.data.Workout) -> Unit = {},
-    onDeleteWorkout: (de.tadris.fitness.data.Workout) -> Unit = {},
+    onWorkoutClick: (Workout) -> Unit = {},
+    onDeleteWorkout: (Workout) -> Unit = {},
     onRecord: () -> Unit = {},
     onRecordLast: (WorkoutType) -> Unit = {},
     onEnterWorkout: () -> Unit = {},
@@ -65,12 +66,16 @@ fun HomeScreen(
     val workouts by workoutDao.getWorkoutsFlow().collectAsState(initial = emptyList())
     val lastWorkoutType = remember(workouts) { workouts.firstOrNull()?.getWorkoutType(context) }
 
-    var selectedTab by rememberSaveable { mutableIntStateOf(TAB_WORKOUTS) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
     var fabExpanded by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             when (selectedTab) {
+                TAB_HOME -> TopAppBar(
+                    title = { Text("FitoTrack") },
+                )
+
                 TAB_WORKOUTS -> TopAppBar(
                     title = { Text(stringResource(R.string.workouts)) },
                     actions = {
@@ -78,12 +83,6 @@ fun HomeScreen(
                             Icon(
                                 painter = painterResource(R.drawable.outline_bar_chart_24),
                                 contentDescription = stringResource(R.string.workout_statistics),
-                            )
-                        }
-                        IconButton(onClick = onSettings) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.settings),
                             )
                         }
                     },
@@ -105,6 +104,17 @@ fun HomeScreen(
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
+                    selected = selectedTab == TAB_HOME,
+                    onClick = { selectedTab = TAB_HOME; fabExpanded = false },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_home_24),
+                            contentDescription = null,
+                        )
+                    },
+                    label = { Text(stringResource(R.string.tabHome)) },
+                )
+                NavigationBarItem(
                     selected = selectedTab == TAB_WORKOUTS,
                     onClick = { selectedTab = TAB_WORKOUTS },
                     icon = {
@@ -120,11 +130,22 @@ fun HomeScreen(
                     onClick = { selectedTab = TAB_STEPS; fabExpanded = false },
                     icon = {
                         Icon(
-                            painter = painterResource(R.drawable.ic_walk),
+                            painter = painterResource(R.drawable.outline_steps_24),
                             contentDescription = null,
                         )
                     },
                     label = { Text(stringResource(R.string.tabSteps)) },
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onSettings,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                        )
+                    },
+                    label = { Text(stringResource(R.string.tabSettings)) },
                 )
             }
         },
@@ -143,6 +164,13 @@ fun HomeScreen(
         },
     ) { innerPadding ->
         when (selectedTab) {
+            TAB_HOME -> DashboardTab(
+                contentPadding = innerPadding,
+                onStepDetails = onStepStats,
+                onSeeAllWorkouts = { selectedTab = TAB_WORKOUTS },
+                onWorkoutClick = onWorkoutClick,
+            )
+
             TAB_WORKOUTS -> DashboardScreen(
                 workouts = workouts,
                 contentPadding = innerPadding,
@@ -156,5 +184,6 @@ fun HomeScreen(
     }
 }
 
-private const val TAB_WORKOUTS = 0
-private const val TAB_STEPS = 1
+private const val TAB_HOME = 0
+private const val TAB_WORKOUTS = 1
+private const val TAB_STEPS = 2

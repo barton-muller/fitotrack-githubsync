@@ -169,8 +169,17 @@
     <string name="stepTrackingChannelDescription">Shown while step tracking is active</string>
     <string name="stepTrackingNotificationTitle">Step tracking active</string>
     <string name="stepTrackingNotificationText">FitoTrack is counting your steps</string>
+    <string name="tabHome">Home</string>
     <string name="tabWorkouts">Workouts</string>
     <string name="tabSteps">Steps</string>
+    <string name="tabSettings">Settings</string>
+    <string name="homeStepsToday">Steps · today</string>
+    <string name="homeThisWeekSteps">This week · steps</string>
+    <string name="homeThisWeek">This week</string>
+    <string name="homeLatestWorkout">Latest workout</string>
+    <string name="homeSeeAll">See all</string>
+    <string name="homeActiveLabel">Active</string>
+    <string name="homeDistanceLabel">Distance</string>
     <string name="stepTrackingTitle">Step tracking</string>
     <string name="stepTrackingRunning">Step tracking active</string>
     <string name="stepTrackingDescription">Enable step tracking to automatically count your daily steps in the background.</string>

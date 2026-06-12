@@ -130,7 +130,7 @@ fun BarChart(
 
                 val left = index * slotWidth + gap / 2
                 val top = barAreaHeight - barHeight
-                val radius = minOf(barWidth / 2, barHeight / 2)
+                val radius = minOf(8.dp.toPx(), minOf(barWidth / 2, barHeight / 2))
 
                 drawRoundRect(
                     color = if (index == selectedIndex) barSelectedColor else barColor,
