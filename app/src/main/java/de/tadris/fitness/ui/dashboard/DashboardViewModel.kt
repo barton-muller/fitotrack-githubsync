@@ -25,6 +25,16 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     private val stepDao = Instance.getInstance(app).db.stepDao()
     private val prefs = Instance.getInstance(app).userPreferences
 
+    val stepTrackingEnabled: Boolean get() = prefs.stepTrackingEnabled
+
+    private val _stepTrackingPromptDismissed = MutableStateFlow(prefs.stepTrackingPromptDismissed)
+    val stepTrackingPromptDismissed: StateFlow<Boolean> = _stepTrackingPromptDismissed
+
+    fun dismissStepTrackingPrompt() {
+        prefs.stepTrackingPromptDismissed = true
+        _stepTrackingPromptDismissed.value = true
+    }
+
     private val _stepGoal = MutableStateFlow(prefs.dailyStepGoal)
     val stepGoal: StateFlow<Int> = _stepGoal
 

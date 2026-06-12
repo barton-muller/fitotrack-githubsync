@@ -110,6 +110,7 @@ fun DashboardScreen(
     val todayDistanceMeters by vm.todayDistanceMeters.collectAsStateWithLifecycle()
     val weeklyStepChart by vm.weeklyStepChart.collectAsStateWithLifecycle()
     val weeklyWorkouts by vm.weeklyWorkouts.collectAsStateWithLifecycle()
+    val stepTrackingPromptDismissed by vm.stepTrackingPromptDismissed.collectAsStateWithLifecycle()
 
     var fabExpanded by rememberSaveable { mutableStateOf(false) }
     var workoutToDelete by remember { mutableStateOf<Workout?>(null) }
@@ -201,16 +202,25 @@ fun DashboardScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item {
-                StepsTodayCard(
-                    todaySteps = todaySteps,
-                    stepGoal = stepGoal,
-                    todayActiveMinutes = todayActiveMinutes,
-                    todayDistanceMeters = todayDistanceMeters,
-                    weeklyStepChart = weeklyStepChart,
-                    onDetails = onStepDetails,
-                    onGoalClick = { showGoalDialog = true },
-                )
+            if (vm.stepTrackingEnabled || todaySteps > 0) {
+                item {
+                    StepsTodayCard(
+                        todaySteps = todaySteps,
+                        stepGoal = stepGoal,
+                        todayActiveMinutes = todayActiveMinutes,
+                        todayDistanceMeters = todayDistanceMeters,
+                        weeklyStepChart = weeklyStepChart,
+                        onDetails = onStepDetails,
+                        onGoalClick = { showGoalDialog = true },
+                    )
+                }
+            } else if (!stepTrackingPromptDismissed) {
+                item {
+                    StepTrackingPromptCard(
+                        onMore = onStepDetails,
+                        onDismiss = { vm.dismissStepTrackingPrompt() },
+                    )
+                }
             }
             if (weeklyWorkouts.isNotEmpty()) {
                 item {
@@ -540,6 +550,39 @@ private fun SportTypeCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+@Composable
+private fun StepTrackingPromptCard(
+    onMore: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.stepTrackingPromptTitle).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.stepTrackingPromptMessage),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.dismiss))
+                }
+                TextButton(onClick = onMore) {
+                    Text(stringResource(R.string.more))
+                }
+            }
         }
     }
 }

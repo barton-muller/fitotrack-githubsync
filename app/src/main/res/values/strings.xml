@@ -191,6 +191,9 @@
     <string name="stepTrackingDescription">Enable step tracking to automatically count your daily steps in the background.</string>
     <string name="stepTrackingStart">Start</string>
     <string name="stepTrackingStop">Stop</string>
+    <string name="stepTrackingPromptTitle">Step tracking</string>
+    <string name="stepTrackingPromptMessage">Track your daily steps automatically in the background.</string>
+    <string name="dismiss">Dismiss</string>
     <string name="stepGoalProgress">/ %d steps</string>
     <string name="dailyStepGoal">Daily step goal</string>
     <string name="todaySteps">Today\'s steps</string>
