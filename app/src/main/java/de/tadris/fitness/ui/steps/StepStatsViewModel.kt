@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.ui.health
+package de.tadris.fitness.ui.steps
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.health.StepTrackingService
+import de.tadris.fitness.ui.components.BarChartData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

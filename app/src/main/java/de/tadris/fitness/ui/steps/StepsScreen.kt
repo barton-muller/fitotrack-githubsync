@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.ui.health
+package de.tadris.fitness.ui.steps
 
 import android.Manifest
 import android.content.Intent
@@ -32,7 +32,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,17 +43,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -77,8 +80,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.R
 import de.tadris.fitness.health.StepTrackingService
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StepsScreen(contentPadding: PaddingValues) {
+fun StepsScreen(
+    onBack: () -> Unit = {},
+    onStepStats: () -> Unit = {},
+) {
     val vm: StepsViewModel = viewModel()
     val serviceRunning by vm.serviceRunning.collectAsStateWithLifecycle()
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
@@ -161,28 +168,52 @@ fun StepsScreen(contentPadding: PaddingValues) {
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(contentPadding)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        ServiceStatusCard(
-            running = serviceRunning,
-            onStart = { startTracking() },
-            onStop = { vm.stopTracking() },
-        )
-
-        StepProgressRing(
-            steps = todaySteps,
-            goal = dailyStepGoal,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tabSteps)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onStepStats) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_bar_chart_24),
+                            contentDescription = stringResource(R.string.stepStatistics),
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .clickable { showGoalDialog = true },
-        )
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            ServiceStatusCard(
+                running = serviceRunning,
+                onStart = { startTracking() },
+                onStop = { vm.stopTracking() },
+            )
+
+            StepProgressRing(
+                steps = todaySteps,
+                goal = dailyStepGoal,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable { showGoalDialog = true },
+            )
+        }
     }
 }
 

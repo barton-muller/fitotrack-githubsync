@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.ui.health
+package de.tadris.fitness.ui.steps
 
 import android.app.DatePickerDialog
 import androidx.compose.animation.core.animateFloatAsState
@@ -68,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
+import de.tadris.fitness.ui.components.BarChart
 import de.tadris.fitness.util.UserDateTimeUtils
 import java.text.DateFormatSymbols
 import java.text.NumberFormat

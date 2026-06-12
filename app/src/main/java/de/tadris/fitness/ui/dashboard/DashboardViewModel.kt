@@ -1,23 +1,4 @@
-/*
- * Copyright (c) 2026 Jannis Scheibe <jannis@tadris.de>
- *
- * This file is part of FitoTrack
- *
- * FitoTrack is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     FitoTrack is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-package de.tadris.fitness.ui.home
+package de.tadris.fitness.ui.dashboard
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -25,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
 import de.tadris.fitness.data.Workout
 import de.tadris.fitness.health.StepTrackingService
-import de.tadris.fitness.ui.health.BarChartData
+import de.tadris.fitness.ui.components.BarChartData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -85,25 +66,7 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val latestWorkout: StateFlow<Workout?> = workoutDao.getWorkoutsFlow()
-        .map { it.firstOrNull() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
     val last7DaysStartMillis: Long get() = todayMidnight() - 6 * DAY_MS
-
-    private fun currentWeekRange(): Pair<Long, Long> {
-        val firstDay = prefs.firstDayOfWeek
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val dow = cal.get(Calendar.DAY_OF_WEEK)
-        val daysFromStart = (dow - firstDay + 7) % 7
-        cal.add(Calendar.DAY_OF_YEAR, -daysFromStart)
-        val weekStart = cal.timeInMillis
-        return weekStart to weekStart + 7 * DAY_MS
-    }
 
     private fun buildLast7DaysStepData(): BarChartData {
         val rangeStart = todayMidnight() - 6 * DAY_MS

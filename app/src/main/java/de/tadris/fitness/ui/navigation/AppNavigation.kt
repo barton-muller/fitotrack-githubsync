@@ -37,8 +37,9 @@ import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecordingStateHolder
 import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
-import de.tadris.fitness.ui.health.StepStatsScreen
-import de.tadris.fitness.ui.home.HomeScreen
+import de.tadris.fitness.ui.dashboard.DashboardScreen
+import de.tadris.fitness.ui.steps.StepStatsScreen
+import de.tadris.fitness.ui.steps.StepsScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
 import de.tadris.fitness.ui.settings.AboutScreen
@@ -131,6 +132,9 @@ sealed interface Route {
 
     @Serializable
     data object StepStats : Route
+
+    @Serializable
+    data object StepsOverview : Route
 }
 
 @Composable
@@ -153,7 +157,7 @@ fun AppNavigation(
         popExitTransition = { slideOutHorizontally { it } },
     ) {
         composable<Route.Dashboard> {
-            HomeScreen(
+            DashboardScreen(
                 workoutDao = Instance.getInstance(context).db.workoutDao(),
                 onWorkoutClick = { workout ->
                     navController.navigate(Route.ShowWorkout(workout.id))
@@ -167,12 +171,16 @@ fun AppNavigation(
                 onRecordLast = onRecordLast,
                 onEnterWorkout = { navController.navigate(Route.EnterWorkout()) },
                 onImport = { importVm.requestImport() },
-                onSettings = {
-                    navController.navigate(Route.Settings)
-                },
+                onSettings = { navController.navigate(Route.Settings) },
                 onStatistics = {
                     context.startActivity(Intent(context, StatisticsActivity::class.java))
                 },
+                onStepDetails = { navController.navigate(Route.StepsOverview) },
+            )
+        }
+        composable<Route.StepsOverview> {
+            StepsScreen(
+                onBack = { navController.popBackStack() },
                 onStepStats = { navController.navigate(Route.StepStats) },
             )
         }

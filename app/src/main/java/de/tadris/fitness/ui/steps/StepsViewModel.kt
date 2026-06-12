@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.ui.health
+package de.tadris.fitness.ui.steps
 
 import android.app.Application
 import android.content.Intent
