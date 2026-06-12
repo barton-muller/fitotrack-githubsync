@@ -87,6 +87,8 @@ fun DashboardTab(
     val vm: DashboardViewModel = viewModel()
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
     val stepGoal by vm.stepGoal.collectAsStateWithLifecycle()
+    val todayActiveMinutes by vm.todayActiveMinutes.collectAsStateWithLifecycle()
+    val todayDistanceMeters by vm.todayDistanceMeters.collectAsStateWithLifecycle()
     val weeklyStepChart by vm.weeklyStepChart.collectAsStateWithLifecycle()
     val weeklyWorkouts by vm.weeklyWorkouts.collectAsStateWithLifecycle()
     val latestWorkout by vm.latestWorkout.collectAsStateWithLifecycle()
@@ -116,6 +118,8 @@ fun DashboardTab(
             StepsTodayCard(
                 todaySteps = todaySteps,
                 stepGoal = stepGoal,
+                todayActiveMinutes = todayActiveMinutes,
+                todayDistanceMeters = todayDistanceMeters,
                 weeklyStepChart = weeklyStepChart,
                 onDetails = onStepDetails,
                 onGoalClick = { showGoalDialog = true },
@@ -143,10 +147,16 @@ fun DashboardTab(
 private fun StepsTodayCard(
     todaySteps: Int,
     stepGoal: Int,
+    todayActiveMinutes: Int,
+    todayDistanceMeters: Int,
     weeklyStepChart: BarChartData,
     onDetails: () -> Unit,
     onGoalClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val distanceText = remember(todayDistanceMeters) {
+        Instance.getInstance(context).distanceUnitUtils.getDistance(todayDistanceMeters)
+    }
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -182,11 +192,11 @@ private fun StepsTodayCard(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     LabeledValue(
                         label = stringResource(R.string.homeActiveLabel).uppercase(),
-                        value = "-- min",
+                        value = "$todayActiveMinutes min",
                     )
                     LabeledValue(
                         label = stringResource(R.string.homeDistanceLabel).uppercase(),
-                        value = "-- km",
+                        value = distanceText,
                     )
                 }
             }

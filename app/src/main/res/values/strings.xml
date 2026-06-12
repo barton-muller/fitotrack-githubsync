@@ -175,7 +175,7 @@
     <string name="tabSettings">Settings</string>
     <string name="homeStepsToday">Steps · today</string>
     <string name="homeThisWeekSteps">This week · steps</string>
-    <string name="homeThisWeek">This week</string>
+    <string name="homeThisWeek">Workouts · this week</string>
     <string name="homeLatestWorkout">Latest workout</string>
     <string name="homeSeeAll">See all</string>
     <string name="homeActiveLabel">Active</string>

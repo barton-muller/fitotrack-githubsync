@@ -59,6 +59,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private var lastCounterValue = -1f
     private var pendingStepsCount = 0
     private var lastPersistTime = 0L
+    private val minuteSteps = HashMap<Long, Int>()
 
     private val executor = Executors.newSingleThreadExecutor()
 
@@ -121,6 +122,8 @@ class StepTrackingService : Service(), SensorEventListener {
                 if (delta > 0) {
                     pendingStepsCount += delta
                     _pendingSteps.value = pendingStepsCount
+                    val minute = currentMinuteStart()
+                    minuteSteps[minute] = (minuteSteps[minute] ?: 0) + delta
                     if (System.currentTimeMillis() - lastPersistTime > PERSIST_INTERVAL_MS) {
                         persistPendingAsync()
                     }
@@ -138,22 +141,39 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun persistPending() {
         val steps: Int
+        val activeMinutes: Int
         synchronized(this) {
             steps = pendingStepsCount
             if (steps == 0) return
             pendingStepsCount = 0
             _pendingSteps.value = 0
             lastPersistTime = System.currentTimeMillis()
+            val windowStart = currentWindowStart()
+            activeMinutes = minuteSteps.entries.count { (minute, count) ->
+                minute >= windowStart && minute < windowStart + WINDOW_SIZE_MS && count > 100
+            }
+            minuteSteps.keys.removeAll { it < windowStart }
         }
         val windowStart = currentWindowStart()
         val dao = Instance.getInstance(this).db.stepDao()
         val existing = dao.getStepSample(windowStart)
-        dao.insertStepSample(StepSample(windowStart, (existing?.steps ?: 0) + steps))
+        dao.insertStepSample(
+            StepSample(
+                windowStart,
+                (existing?.steps ?: 0) + steps,
+                maxOf(existing?.activeMinutes ?: 0, activeMinutes),
+            )
+        )
     }
 
     private fun currentWindowStart(): Long {
         val now = System.currentTimeMillis()
         return now - (now % WINDOW_SIZE_MS)
+    }
+
+    private fun currentMinuteStart(): Long {
+        val now = System.currentTimeMillis()
+        return now - (now % 60_000L)
     }
 
     private fun buildNotification(): Notification {

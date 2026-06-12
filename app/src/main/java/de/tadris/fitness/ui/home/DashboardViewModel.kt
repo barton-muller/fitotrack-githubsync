@@ -58,6 +58,14 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     ) { persisted, pending -> persisted + pending }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
+    val todayActiveMinutes: StateFlow<Int> =
+        stepDao.getTodayActiveMinutesFlow(todayMidnight(), todayMidnight() + DAY_MS)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    val todayDistanceMeters: StateFlow<Int> = todaySteps
+        .map { steps -> (steps * prefs.measurements.stepLength).toInt() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
     val weeklyStepChart: StateFlow<BarChartData> = combine(
         todaySteps,
         StepTrackingService.pendingSteps,

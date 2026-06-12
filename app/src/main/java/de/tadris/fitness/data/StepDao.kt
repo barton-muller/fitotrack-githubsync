@@ -42,4 +42,7 @@ interface StepDao {
 
     @Query("SELECT COALESCE(SUM(steps), 0) FROM step_sample WHERE windowStart >= :dayStart AND windowStart < :dayEnd")
     fun getTodayStepCountFlow(dayStart: Long, dayEnd: Long): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(activeMinutes), 0) FROM step_sample WHERE windowStart >= :dayStart AND windowStart < :dayEnd")
+    fun getTodayActiveMinutesFlow(dayStart: Long, dayEnd: Long): Flow<Int>
 }

@@ -26,4 +26,5 @@ import androidx.room.PrimaryKey
 data class StepSample(
     @PrimaryKey val windowStart: Long,
     val steps: Int,
+    val activeMinutes: Int = 0,
 )
