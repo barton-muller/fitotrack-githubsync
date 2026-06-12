@@ -423,6 +423,7 @@
     <string name="pref_render_theme_style_info">No menu available for selected theme.</string>
     <string name="downloadMapsTitle">Download Maps</string>
     <string name="downloadMapsSpecifyDirectory">Please specify a directory for offline maps first</string>
+    <string name="offlineMapRequiresOfflineStyle">Set map style to offline to configure the offline map</string>
     <string name="overwriteMapConfirmation">Overwrite the existing \\\"%s\\\" map file\?</string>
     <string name="actionDownloadMap">Download map</string>
     <string name="downloadMapConfirmation">Download the \\\"%s\\\" map file\?</string>

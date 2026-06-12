@@ -20,13 +20,19 @@
 package de.tadris.fitness.ui.settings
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,12 +46,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
+import de.tadris.fitness.ui.map.GradientColoringStrategy
+import de.tadris.fitness.ui.map.TrackStyles
+import androidx.core.graphics.createBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,29 +180,43 @@ fun InterfaceSettingsScreen(onBack: () -> Unit) {
             }
 
             item {
+                val trackStyleValues = stringArrayResource(R.array.pref_track_style_values)
                 ListPreferenceItem(
                     title = stringResource(R.string.trackStyle),
                     entries = stringArrayResource(R.array.pref_track_style),
-                    entryValues = stringArrayResource(R.array.pref_track_style_values),
+                    entryValues = trackStyleValues,
                     selectedValue = trackStyle,
                     onValueChange = { value ->
                         trackStyle = value
                         prefs.trackStyle = value
                     },
+                    itemSupportingContent = { index ->
+                        val strategy = remember(trackStyleValues[index]) {
+                            TrackStyles.gradientStrategy(trackStyleValues[index])
+                        }
+                        if (strategy != null) {
+                            GradientSwatch(strategy)
+                        }
+                    },
                 )
             }
 
             item {
+                val isOffline = mapStyle == "offline"
                 ClickableSettingsItem(
                     title = stringResource(R.string.pref_map_directory),
-                    supporting = offlineMapDir.ifEmpty { null },
+                    supporting = if (isOffline) offlineMapDir.ifEmpty { null } else stringResource(R.string.offlineMapRequiresOfflineStyle),
+                    enabled = isOffline,
                     onClick = { folderPickerLauncher.launch(null) },
                 )
             }
 
             item {
+                val isOffline = mapStyle == "offline"
                 ClickableSettingsItem(
                     title = stringResource(R.string.downloadMapsTitle),
+                    supporting = if (!isOffline) stringResource(R.string.offlineMapRequiresOfflineStyle) else null,
+                    enabled = isOffline,
                     onClick = {
                         val mapDir = prefs.offlineMapDirectoryName
                         if (mapDir != null) {
@@ -281,4 +309,27 @@ fun InterfaceSettingsScreen(onBack: () -> Unit) {
         }
     }
 
+}
+
+@Composable
+private fun GradientSwatch(drawable: GradientColoringStrategy) {
+    val gradient = remember(drawable) { drawable.asGradientDrawable() }
+    Spacer(
+        modifier = Modifier
+            .padding(top = 6.dp)
+            .fillMaxWidth()
+            .height(12.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .drawBehind {
+                val bmp = createBitmap(
+                    size.width.toInt().coerceAtLeast(1),
+                    size.height.toInt().coerceAtLeast(1),
+                )
+                val canvas = android.graphics.Canvas(bmp)
+                gradient.setBounds(0, 0, bmp.width, bmp.height)
+                gradient.draw(canvas)
+                drawImage(bmp.asImageBitmap())
+                bmp.recycle()
+            }
+    )
 }

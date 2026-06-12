@@ -74,7 +74,8 @@ internal fun WorkoutMap(
 ) {
     val activity = LocalActivity.current ?: return
     val instance = Instance.getInstance(LocalContext.current)
-    val coloringStrategy = getColoringStrategy(instance.userPreferences.trackStyle)
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val coloringStrategy = TrackStyles.coloringStrategy(instance.userPreferences.trackStyle, primaryColor)
 
     key(data) {
         val holder = remember { WorkoutMapHolder() }
@@ -190,37 +191,3 @@ internal fun WorkoutMap(
     }
 }
 
-@Composable
-private fun getColoringStrategy(trackStyle: String) = when (trackStyle) {
-    "purple_rain" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_PURPLE,
-        true
-    )
-
-    "pink_mist" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_PINK,
-        false
-    )
-
-    "rainbow_warrior" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_MAP,
-        true
-    )
-
-    "height_map" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_HEIGHT_MAP,
-        true
-    )
-
-    "bright_night" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_BRIGHT,
-        false
-    )
-
-    "mondriaan" -> GradientColoringStrategy.fromPattern(
-        GradientColoringStrategy.PATTERN_YELLOW_RED_BLUE,
-        false
-    )
-
-    else -> SimpleColoringStrategy(MaterialTheme.colorScheme.primary.toArgb())
-}
