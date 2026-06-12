@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,6 +69,11 @@ fun HomeScreen(
 
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
     var fabExpanded by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler(enabled = selectedTab != TAB_HOME) {
+        selectedTab = TAB_HOME
+        fabExpanded = false
+    }
 
     Scaffold(
         topBar = {

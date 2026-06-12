@@ -19,12 +19,15 @@
 
 package de.tadris.fitness.ui.home
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,16 +41,23 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +71,7 @@ import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.ui.dashboard.WorkoutListItem
 import de.tadris.fitness.ui.health.BarChart
 import de.tadris.fitness.ui.health.BarChartData
+import de.tadris.fitness.ui.health.StepGoalDialog
 import de.tadris.fitness.util.Icon
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,9 +86,22 @@ fun DashboardTab(
 ) {
     val vm: DashboardViewModel = viewModel()
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
+    val stepGoal by vm.stepGoal.collectAsStateWithLifecycle()
     val weeklyStepChart by vm.weeklyStepChart.collectAsStateWithLifecycle()
     val weeklyWorkouts by vm.weeklyWorkouts.collectAsStateWithLifecycle()
     val latestWorkout by vm.latestWorkout.collectAsStateWithLifecycle()
+
+    var showGoalDialog by rememberSaveable { mutableStateOf(false) }
+    if (showGoalDialog) {
+        StepGoalDialog(
+            currentGoal = stepGoal,
+            onConfirm = { goal ->
+                vm.setDailyStepGoal(goal)
+                showGoalDialog = false
+            },
+            onDismiss = { showGoalDialog = false },
+        )
+    }
 
     LazyColumn(
         contentPadding = PaddingValues(
@@ -91,9 +115,10 @@ fun DashboardTab(
         item {
             StepsTodayCard(
                 todaySteps = todaySteps,
-                stepGoal = vm.stepGoal,
+                stepGoal = stepGoal,
                 weeklyStepChart = weeklyStepChart,
                 onDetails = onStepDetails,
+                onGoalClick = { showGoalDialog = true },
             )
         }
         item {
@@ -120,6 +145,7 @@ private fun StepsTodayCard(
     stepGoal: Int,
     weeklyStepChart: BarChartData,
     onDetails: () -> Unit,
+    onGoalClick: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -148,7 +174,9 @@ private fun StepsTodayCard(
                 CompactStepRing(
                     steps = todaySteps,
                     goal = stepGoal,
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier
+                        .size(130.dp)
+                        .clickable(onClick = onGoalClick),
                 )
                 Spacer(Modifier.width(24.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -175,7 +203,7 @@ private fun StepsTodayCard(
 
             if (weeklyStepChart.entries.isNotEmpty()) {
                 BarChart(
-                    data = weeklyStepChart,
+                    data = weeklyStepChart.copy(horizontal = stepGoal),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
@@ -192,13 +220,21 @@ private fun CompactStepRing(
     goal: Int,
     modifier: Modifier = Modifier,
 ) {
-    val progress = if (goal > 0) (steps.toFloat() / goal).coerceIn(0f, 1f) else 0f
+    var progress by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(steps, goal) {
+        progress = if (goal > 0) (steps.toFloat() / goal).coerceIn(0f, 1f) else 0f
+    }
+    val displayedProgress by animateFloatAsState(
+        progress,
+        ProgressIndicatorDefaults.ProgressAnimationSpec
+    )
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.size(100.dp),
+            progress = { displayedProgress },
+            modifier = Modifier.fillMaxSize(),
             strokeWidth = 8.dp,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            trackColor = MaterialTheme.colorScheme.outlineVariant,
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -304,12 +340,24 @@ private fun ThisWeekCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    val resources = LocalResources.current
                     byType.forEach { (_, workouts) ->
                         val workoutType = workouts.first().getWorkoutType(context)
-                        val typeDistance = workouts.sumOf { it.distance }.toInt()
+                        val totalDistance = workouts.sumOf { it.distance }.toInt()
+                        val totalReps = workouts.sumOf { it.repetitions }
+                        val metric = if (totalDistance == 0 && totalReps > 0) {
+                            "$totalReps ${
+                                resources.getQuantityString(
+                                    workoutType.repeatingExerciseName,
+                                    totalReps
+                                )
+                            }"
+                        } else {
+                            instance.distanceUnitUtils.getDistance(totalDistance)
+                        }
                         SportTypeCard(
                             workoutType = workoutType,
-                            distance = instance.distanceUnitUtils.getDistance(typeDistance),
+                            metric = metric,
                             count = workouts.size,
                             modifier = Modifier.weight(1f),
                         )
@@ -346,13 +394,13 @@ private fun SummaryStatColumn(
 @Composable
 private fun SportTypeCard(
     workoutType: WorkoutType,
-    distance: String,
+    metric: String,
     count: Int,
     modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Surface(
@@ -371,7 +419,7 @@ private fun SportTypeCard(
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                text = distance,
+                text = metric,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
             )

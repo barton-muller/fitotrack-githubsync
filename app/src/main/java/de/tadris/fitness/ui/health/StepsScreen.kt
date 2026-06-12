@@ -27,6 +27,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,10 +52,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -233,7 +237,7 @@ private fun ServiceStatusCard(
 }
 
 @Composable
-private fun StepGoalDialog(
+internal fun StepGoalDialog(
     currentGoal: Int,
     onConfirm: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -275,14 +279,21 @@ private fun StepProgressRing(
     goal: Int,
     modifier: Modifier = Modifier,
 ) {
-    val progress = (steps.toFloat() / goal).coerceIn(0f, 1f)
+    var progress by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(steps, goal) {
+        progress = if (goal > 0) (steps.toFloat() / goal).coerceIn(0f, 1f) else 0f
+    }
+    val displayedProgress by animateFloatAsState(
+        progress,
+        ProgressIndicatorDefaults.ProgressAnimationSpec
+    )
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
-            progress = { progress },
+            progress = { displayedProgress },
             modifier = Modifier.size(220.dp),
             strokeWidth = 14.dp,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,

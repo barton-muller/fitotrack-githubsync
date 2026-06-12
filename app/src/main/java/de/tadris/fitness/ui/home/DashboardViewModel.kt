@@ -27,6 +27,7 @@ import de.tadris.fitness.data.Workout
 import de.tadris.fitness.health.StepTrackingService
 import de.tadris.fitness.ui.health.BarChartData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -43,7 +44,13 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     private val stepDao = Instance.getInstance(app).db.stepDao()
     private val prefs = Instance.getInstance(app).userPreferences
 
-    val stepGoal: Int get() = prefs.dailyStepGoal
+    private val _stepGoal = MutableStateFlow(prefs.dailyStepGoal)
+    val stepGoal: StateFlow<Int> = _stepGoal
+
+    fun setDailyStepGoal(goal: Int) {
+        prefs.dailyStepGoal = goal
+        _stepGoal.value = goal
+    }
 
     val todaySteps: StateFlow<Int> = combine(
         stepDao.getTodayStepCountFlow(todayMidnight(), todayMidnight() + DAY_MS),

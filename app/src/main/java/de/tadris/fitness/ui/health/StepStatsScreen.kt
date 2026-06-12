@@ -20,6 +20,7 @@
 package de.tadris.fitness.ui.health
 
 import android.app.DatePickerDialog
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -148,6 +150,10 @@ private fun StepProgressCard(
         (data.dailyAverage.toFloat() / data.stepGoal).coerceIn(0f, 1f)
     } else 0f
     val pct = (progress * 100).toInt()
+    val displayedProgress by animateFloatAsState(
+        progress,
+        ProgressIndicatorDefaults.ProgressAnimationSpec
+    )
 
     Card(modifier = modifier) {
         Column(
@@ -183,7 +189,7 @@ private fun StepProgressCard(
                 )
             }
             LinearProgressIndicator(
-                progress = { progress },
+                progress = { displayedProgress },
                 modifier = Modifier.fillMaxWidth(),
             )
             if (period != StepStatsPeriod.DAY) {
