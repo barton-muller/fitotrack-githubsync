@@ -617,4 +617,11 @@
     <string name="selectYear">Jahr auswählen</string>
     <string name="permissionRequiredTitle">Berechtigung erforderlich</string>
     <string name="stepPermissionExplanation">FitoTrack benötigt die Berechtigung zur Aktivitätserkennung, um deine Schritte zu zählen. Bitte erteile sie in den App-Einstellungen.</string>
+    <string name="stepTrackingPromptTitle">Schrittzählung</string>
+    <string name="stepTrackingPromptMessage">Zähle deine täglichen Schritte automatisch im Hintergrund.</string>
+    <string name="dismiss">Schließen</string>
+    <string name="preferencesProfileTitle">Profil</string>
+    <string name="preferencesProfileSummary">Deine persönlichen Maße</string>
+    <string name="offlineMapRequiresOfflineStyle">Kartenstil auf Offline setzen, um die Offline-Karte zu konfigurieren</string>
+    <string name="stepTrackingNotSupported">Schrittzählung wird auf diesem Gerät nicht unterstützt.</string>
 </resources>
