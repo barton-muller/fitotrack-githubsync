@@ -168,7 +168,7 @@ fun DashboardScreen(
                 actions = {
                     IconButton(onClick = onStatistics) {
                         Icon(
-                            painter = painterResource(R.drawable.outline_bar_chart_24),
+                            painter = painterResource(R.drawable.ic_bar_chart),
                             contentDescription = stringResource(R.string.workout_statistics),
                         )
                     }

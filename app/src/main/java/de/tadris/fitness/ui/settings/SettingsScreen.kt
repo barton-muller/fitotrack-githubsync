@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import de.tadris.fitness.R
 
@@ -65,6 +66,7 @@ fun SettingsScreen(
                 ClickableSettingsItem(
                     title = stringResource(R.string.preferencesProfileTitle),
                     supporting = stringResource(R.string.preferencesProfileSummary),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_person), contentDescription = null) },
                     onClick = onNavigateToProfile,
                 )
             }
@@ -72,6 +74,7 @@ fun SettingsScreen(
                 ClickableSettingsItem(
                     title = stringResource(R.string.preferencesUserInterfaceTitle),
                     supporting = stringResource(R.string.preferencesUserInterfaceSummary),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_palette), contentDescription = null) },
                     onClick = onNavigateToInterfaceSettings,
                 )
             }
@@ -79,6 +82,7 @@ fun SettingsScreen(
                 ClickableSettingsItem(
                     title = stringResource(R.string.preferencesRecordingTitle),
                     supporting = stringResource(R.string.preferencesRecordingSummary),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_walk), contentDescription = null) },
                     onClick = onNavigateToRecordingSettings,
                 )
             }
@@ -86,12 +90,14 @@ fun SettingsScreen(
                 ClickableSettingsItem(
                     title = stringResource(R.string.stepTrackingTitle),
                     supporting = stringResource(R.string.stepTrackingDescription),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_steps), contentDescription = null) },
                     onClick = onNavigateToStepTracking,
                 )
             }
             item {
                 ClickableSettingsItem(
                     title = stringResource(R.string.customWorkoutTypesTitle),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_list), contentDescription = null) },
                     onClick = onNavigateToWorkoutTypes,
                 )
             }
@@ -99,18 +105,21 @@ fun SettingsScreen(
                 ClickableSettingsItem(
                     title = stringResource(R.string.preferencesBackupTitle),
                     supporting = stringResource(R.string.preferencesBackupSummary),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_database), contentDescription = null) },
                     onClick = onNavigateToBackupSettings,
                 )
             }
             item {
                 ClickableSettingsItem(
                     title = stringResource(R.string.preferencesDebugTitle),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_bug_report), contentDescription = null) },
                     onClick = onNavigateToDebugSettings,
                 )
             }
             item {
                 ClickableSettingsItem(
                     title = stringResource(R.string.aboutTitle),
+                    icon = { Icon(painter = painterResource(R.drawable.ic_info), contentDescription = null) },
                     onClick = onNavigateToAbout,
                 )
             }

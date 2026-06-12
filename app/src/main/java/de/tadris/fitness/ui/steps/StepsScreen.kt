@@ -183,7 +183,7 @@ fun StepsScreen(
                 actions = {
                     IconButton(onClick = onStepStats) {
                         Icon(
-                            painter = painterResource(R.drawable.outline_bar_chart_24),
+                            painter = painterResource(R.drawable.ic_bar_chart),
                             contentDescription = stringResource(R.string.stepStatistics),
                         )
                     }
@@ -242,7 +242,7 @@ private fun ServiceStatusCard(
                 )
                 IconButton(onClick = onStop) {
                     Icon(
-                        painterResource(R.drawable.outline_stop_24),
+                        painterResource(R.drawable.ic_stop),
                         contentDescription = stringResource(R.string.stepTrackingStop),
                     )
                 }
