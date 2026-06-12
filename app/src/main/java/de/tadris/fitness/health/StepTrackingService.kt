@@ -24,27 +24,25 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.StepSample
 import de.tadris.fitness.util.NotificationHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class StepTrackingService : Service(), SensorEventListener {
+class StepTrackingService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 20
+        const val SENSOR_LATENCY_US = 15 * 1_000_000
         private const val WINDOW_SIZE_MS = 15 * 60 * 1000L
         private const val PERSIST_INTERVAL_MS = 3 * 60 * 1000L
-        private const val SENSOR_LATENCY_US = 15 * 1_000_000
+        private const val ACTIVE_MINUTE_THRESHOLD = 100
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
@@ -53,44 +51,48 @@ class StepTrackingService : Service(), SensorEventListener {
         val pendingSteps: StateFlow<Int> = _pendingSteps
     }
 
-    private lateinit var sensorManager: SensorManager
-    private var stepSensor: Sensor? = null
-
-    private var lastCounterValue = -1f
-    private var pendingStepsCount = 0
-    private var lastPersistTime = 0L
-    private val minuteSteps = HashMap<Long, Int>()
-
     private val executor = Executors.newSingleThreadExecutor()
+
+    private lateinit var registrar: StepRegistrar
+    private lateinit var minuteConsolidator: TimeConsolidator
+    private lateinit var consolidator: SampleConsolidator
+    private lateinit var persister: StepPersister
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        val db = Instance.getInstance(this).db
+        persister = StepPersister(db.stepDao())
+        consolidator = SampleConsolidator(
+            persistIntervalMs = PERSIST_INTERVAL_MS,
+            windowSizeMs = WINDOW_SIZE_MS,
+            activeMinuteThreshold = ACTIVE_MINUTE_THRESHOLD,
+            onPendingStepsChanged = { _pendingSteps.value = it },
+            onPersistReady = { windowStart, steps, activeMinutes ->
+                executor.submit { persister.persist(windowStart, steps, activeMinutes) }
+            },
+        )
+        minuteConsolidator = TimeConsolidator(60_000){
+            consolidator.onMinuteReceived(it)
+        }
+        registrar = StepRegistrar(
+            sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager,
+            executor = executor,
+            onStep = { delta -> minuteConsolidator.receiveSteps(delta) },
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = buildNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
-            )
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
 
-        stepSensor?.let {
-            sensorManager.registerListener(
-                this,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL,
-                SENSOR_LATENCY_US
-            )
-        }
+        val sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.let { registrar.start(it) }
 
         Instance.getInstance(this).userPreferences.stepTrackingEnabled = true
         _isRunning.value = true
@@ -99,81 +101,12 @@ class StepTrackingService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         _isRunning.value = false
-        _pendingSteps.value = 0
-        sensorManager.unregisterListener(this)
-        persistPendingAsync()
+        registrar.stop()
+        executor.submit { minuteConsolidator.flush(); consolidator.flush() }
         executor.shutdown()
         executor.awaitTermination(5, TimeUnit.SECONDS)
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
-    }
-
-    override fun onSensorChanged(event: SensorEvent) {
-        if (event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
-        val counter = event.values[0]
-        synchronized(this) {
-            if (lastCounterValue >= 0f) {
-                val delta = if (counter >= lastCounterValue) {
-                    (counter - lastCounterValue).toInt()
-                } else {
-                    // counter reset (reboot) — treat new value as steps since reboot
-                    counter.toInt()
-                }
-                if (delta > 0) {
-                    pendingStepsCount += delta
-                    _pendingSteps.value = pendingStepsCount
-                    val minute = currentMinuteStart()
-                    minuteSteps[minute] = (minuteSteps[minute] ?: 0) + delta
-                    if (System.currentTimeMillis() - lastPersistTime > PERSIST_INTERVAL_MS) {
-                        persistPendingAsync()
-                    }
-                }
-            }
-            lastCounterValue = counter
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-    private fun persistPendingAsync() {
-        executor.submit { persistPending() }
-    }
-
-    private fun persistPending() {
-        val steps: Int
-        val activeMinutes: Int
-        synchronized(this) {
-            steps = pendingStepsCount
-            if (steps == 0) return
-            pendingStepsCount = 0
-            _pendingSteps.value = 0
-            lastPersistTime = System.currentTimeMillis()
-            val windowStart = currentWindowStart()
-            activeMinutes = minuteSteps.entries.count { (minute, count) ->
-                minute >= windowStart && minute < windowStart + WINDOW_SIZE_MS && count > 100
-            }
-            minuteSteps.keys.removeAll { it < windowStart }
-        }
-        val windowStart = currentWindowStart()
-        val dao = Instance.getInstance(this).db.stepDao()
-        val existing = dao.getStepSample(windowStart)
-        dao.insertStepSample(
-            StepSample(
-                windowStart,
-                (existing?.steps ?: 0) + steps,
-                maxOf(existing?.activeMinutes ?: 0, activeMinutes),
-            )
-        )
-    }
-
-    private fun currentWindowStart(): Long {
-        val now = System.currentTimeMillis()
-        return now - (now % WINDOW_SIZE_MS)
-    }
-
-    private fun currentMinuteStart(): Long {
-        val now = System.currentTimeMillis()
-        return now - (now % 60_000L)
     }
 
     private fun buildNotification(): Notification {
@@ -182,9 +115,7 @@ class StepTrackingService : Service(), SensorEventListener {
             .setContentTitle(getString(R.string.stepTrackingNotificationTitle))
             .setContentText(getString(R.string.stepTrackingNotificationText))
             .setSmallIcon(R.drawable.notification)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(NotificationHelper.CHANNEL_STEP_TRACKING)
-        }
+        builder.setChannelId(NotificationHelper.CHANNEL_STEP_TRACKING)
         return builder.build()
     }
 }
