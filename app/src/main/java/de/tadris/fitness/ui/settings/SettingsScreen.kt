@@ -36,8 +36,10 @@ import de.tadris.fitness.R
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     onNavigateToInterfaceSettings: () -> Unit = {},
     onNavigateToRecordingSettings: () -> Unit = {},
+    onNavigateToStepTracking: () -> Unit = {},
     onNavigateToBackupSettings: () -> Unit = {},
     onNavigateToWorkoutTypes: () -> Unit = {},
     onNavigateToDebugSettings: () -> Unit = {},
@@ -61,6 +63,13 @@ fun SettingsScreen(
         LazyColumn(contentPadding = padding) {
             item {
                 ClickableSettingsItem(
+                    title = stringResource(R.string.preferencesProfileTitle),
+                    supporting = stringResource(R.string.preferencesProfileSummary),
+                    onClick = onNavigateToProfile,
+                )
+            }
+            item {
+                ClickableSettingsItem(
                     title = stringResource(R.string.preferencesUserInterfaceTitle),
                     supporting = stringResource(R.string.preferencesUserInterfaceSummary),
                     onClick = onNavigateToInterfaceSettings,
@@ -71,6 +80,13 @@ fun SettingsScreen(
                     title = stringResource(R.string.preferencesRecordingTitle),
                     supporting = stringResource(R.string.preferencesRecordingSummary),
                     onClick = onNavigateToRecordingSettings,
+                )
+            }
+            item {
+                ClickableSettingsItem(
+                    title = stringResource(R.string.stepTrackingTitle),
+                    supporting = stringResource(R.string.stepTrackingDescription),
+                    onClick = onNavigateToStepTracking,
                 )
             }
             item {

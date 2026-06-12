@@ -267,6 +267,8 @@
     <string name="avgSpeedInMotion">Avg. Speed (in Motion)</string>
     <string name="avgSpeedTotalShort">Avg. Speed (Total)</string>
     <string name="avgSpeedTotalLong">Average Speed in total</string>
+    <string name="preferencesProfileTitle">Profile</string>
+    <string name="preferencesProfileSummary">Your personal measurements</string>
     <string name="preferencesUserInterfaceTitle">User Interface</string>
     <string name="preferencesUserInterfaceSummary">Personalize the app</string>
     <string name="preferencesRecordingTitle">Recording</string>

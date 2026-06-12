@@ -43,6 +43,7 @@ import de.tadris.fitness.ui.steps.StepsScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
 import de.tadris.fitness.ui.settings.AboutScreen
+import de.tadris.fitness.ui.settings.ProfileSettingsScreen
 import de.tadris.fitness.ui.settings.BackupSettingsScreen
 import de.tadris.fitness.ui.settings.ConfigureExportTargetsScreen
 import de.tadris.fitness.ui.settings.InterfaceSettingsScreen
@@ -89,6 +90,9 @@ sealed interface Route {
 
     @Serializable
     data object Settings : Route
+
+    @Serializable
+    data object ProfileSettings : Route
 
     @Serializable
     data object InterfaceSettings : Route
@@ -235,6 +239,12 @@ fun AppNavigation(
                 onNavigateToRecordingSettings = {
                     navController.navigate(Route.RecordingSettings)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Route.ProfileSettings)
+                },
+                onNavigateToStepTracking = {
+                    navController.navigate(Route.StepsOverview)
+                },
                 onNavigateToBackupSettings = {
                     navController.navigate(Route.BackupSettings)
                 },
@@ -248,6 +258,9 @@ fun AppNavigation(
                     navController.navigate(Route.About)
                 },
             )
+        }
+        composable<Route.ProfileSettings> {
+            ProfileSettingsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.About> {
             AboutScreen(
