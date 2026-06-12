@@ -128,7 +128,7 @@ fun DashboardTab(
         item {
             ThisWeekCard(
                 weeklyWorkouts = weeklyWorkouts,
-                weekStartMillis = vm.weekStartMillis,
+                rangeStartMillis = vm.last7DaysStartMillis,
             )
         }
         if (latestWorkout != null) {
@@ -280,7 +280,7 @@ private fun LabeledValue(label: String, value: String) {
 @Composable
 private fun ThisWeekCard(
     weeklyWorkouts: List<Workout>,
-    weekStartMillis: Long,
+    rangeStartMillis: Long,
 ) {
     val context = LocalContext.current
     val instance = Instance.getInstance(context)
@@ -293,10 +293,10 @@ private fun ThisWeekCard(
     val timeText = instance.distanceUnitUtils.getHourMinuteTime(totalDuration)
 
     val todayLabel = stringResource(R.string.today)
-    val weekStartLabel = remember(weekStartMillis) {
-        SimpleDateFormat("EEE d", Locale.getDefault()).format(Date(weekStartMillis))
+    val rangeStartLabel = remember(rangeStartMillis) {
+        SimpleDateFormat("EEE d", Locale.getDefault()).format(Date(rangeStartMillis))
     }
-    val weekRangeText = "$weekStartLabel — ${todayLabel.lowercase()}"
+    val weekRangeText = "$rangeStartLabel — ${todayLabel.lowercase()}"
 
     val byType = remember(weeklyWorkouts) {
         weeklyWorkouts.groupBy { it.workoutTypeId }
@@ -312,7 +312,7 @@ private fun ThisWeekCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(R.string.homeThisWeek).uppercase(),
+                    text = stringResource(R.string.homeLast7DaysWorkouts).uppercase(),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

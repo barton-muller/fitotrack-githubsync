@@ -79,8 +79,9 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
 
     val weeklyWorkouts: StateFlow<List<Workout>> = workoutDao.getWorkoutsFlow()
         .map { workouts ->
-            val (weekStart, weekEnd) = currentWeekRange()
-            workouts.filter { it.start >= weekStart && it.start < weekEnd }
+            val rangeStart = todayMidnight() - 6 * DAY_MS
+            val rangeEnd = todayMidnight() + DAY_MS
+            workouts.filter { it.start >= rangeStart && it.start < rangeEnd }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -88,7 +89,7 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
         .map { it.firstOrNull() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    val weekStartMillis: Long get() = currentWeekRange().first
+    val last7DaysStartMillis: Long get() = todayMidnight() - 6 * DAY_MS
 
     private fun currentWeekRange(): Pair<Long, Long> {
         val firstDay = prefs.firstDayOfWeek
