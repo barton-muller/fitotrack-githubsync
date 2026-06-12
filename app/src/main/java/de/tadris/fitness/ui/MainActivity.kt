@@ -74,7 +74,6 @@ class MainActivity : AppCompatActivity() {
 
         splashScreen.setKeepOnScreenCondition { initializer.state.value is InitState.Loading }
         initializer.start()
-        restartStepTrackingIfNeeded()
 
         val isNewLaunch = savedInstanceState == null
 
@@ -172,6 +171,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        OAuthAuthentication.resetCustomTabState(this)
+        restartStepTrackingIfNeeded()
+    }
+
     private fun restartStepTrackingIfNeeded() {
         val prefs = Instance.getInstance(this).userPreferences
         if (!prefs.stepTrackingEnabled || StepTrackingService.isRunning.value) return
@@ -184,11 +189,6 @@ class MainActivity : AppCompatActivity() {
                 Intent(this, StepTrackingService::class.java)
             )
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        OAuthAuthentication.resetCustomTabState(this)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
