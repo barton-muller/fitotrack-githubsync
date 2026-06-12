@@ -20,8 +20,11 @@
 package de.tadris.fitness.ui.steps
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -91,6 +94,10 @@ fun StepsScreen(
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
     val dailyStepGoal by vm.dailyStepGoal.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val stepSensorSupported = remember(context) {
+        (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+            .getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
+    }
 
     var showPermissionDeniedDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
@@ -201,6 +208,7 @@ fun StepsScreen(
         ) {
             ServiceStatusCard(
                 running = serviceRunning,
+                supported = stepSensorSupported,
                 onStart = { startTracking() },
                 onStop = { vm.stopTracking() },
             )
@@ -220,6 +228,7 @@ fun StepsScreen(
 @Composable
 private fun ServiceStatusCard(
     running: Boolean,
+    supported: Boolean,
     onStart: () -> Unit,
     onStop: () -> Unit,
 ) {
@@ -244,6 +253,19 @@ private fun ServiceStatusCard(
                     Icon(
                         painterResource(R.drawable.ic_stop),
                         contentDescription = stringResource(R.string.stepTrackingStop),
+                    )
+                }
+            } else if (!supported) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.stepTrackingTitle),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(R.string.stepTrackingNotSupported),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {

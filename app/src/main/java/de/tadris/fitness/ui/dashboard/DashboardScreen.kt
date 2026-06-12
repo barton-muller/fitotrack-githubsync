@@ -18,6 +18,9 @@
  */
 package de.tadris.fitness.ui.dashboard
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -100,6 +103,10 @@ fun DashboardScreen(
     onStepDetails: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val stepSensorSupported = remember(context) {
+        (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+            .getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
+    }
     val workouts by workoutDao.getWorkoutsFlow().collectAsState(initial = emptyList())
     val lastWorkoutType = remember(workouts) { workouts.firstOrNull()?.getWorkoutType(context) }
 
@@ -214,7 +221,7 @@ fun DashboardScreen(
                         onGoalClick = { showGoalDialog = true },
                     )
                 }
-            } else if (!stepTrackingPromptDismissed) {
+            } else if (stepSensorSupported && !stepTrackingPromptDismissed) {
                 item {
                     StepTrackingPromptCard(
                         onMore = onStepDetails,
