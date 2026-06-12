@@ -76,6 +76,7 @@ public abstract class AppDatabase extends RoomDatabase {
             db.execSQL("DELETE FROM interval_set");
             db.execSQL("DELETE FROM workout_type");
             db.execSQL("DELETE FROM workout");
+            db.execSQL("DELETE FROM step_sample");
         });
     }
 

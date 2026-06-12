@@ -34,11 +34,17 @@ interface StepDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertStepSample(sample: StepSample)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertStepSamples(samples: List<StepSample>)
+
     @Query("SELECT * FROM step_sample WHERE windowStart >= :from AND windowStart < :to ORDER BY windowStart ASC")
     fun getStepsInRange(from: Long, to: Long): List<StepSample>
 
-    @Query("SELECT * FROM step_sample ORDER BY windowStart ASC")
-    fun getAllSteps(): List<StepSample>
+    @Query("SELECT DISTINCT CAST(strftime('%Y', windowStart / 1000, 'unixepoch') AS INTEGER) FROM step_sample")
+    fun getDistinctYears(): List<Int>
+
+    @Query("SELECT * FROM step_sample WHERE CAST(strftime('%Y', windowStart / 1000, 'unixepoch') AS INTEGER) = :year ORDER BY windowStart ASC")
+    fun getStepsForYear(year: Int): List<StepSample>
 
     @Query("SELECT COALESCE(SUM(steps), 0) FROM step_sample WHERE windowStart >= :dayStart AND windowStart < :dayEnd")
     fun getTodayStepCountFlow(dayStart: Long, dayEnd: Long): Flow<Int>
