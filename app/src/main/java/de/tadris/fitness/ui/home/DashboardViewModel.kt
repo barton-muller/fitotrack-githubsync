@@ -69,7 +69,7 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     val weeklyStepChart: StateFlow<BarChartData> = combine(
         todaySteps,
         StepTrackingService.pendingSteps,
-    ) { _, _ -> buildWeeklyStepData() }
+    ) { _, _ -> buildLast7DaysStepData() }
         .flowOn(Dispatchers.IO)
         .stateIn(
             viewModelScope,
@@ -104,23 +104,23 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
         return weekStart to weekStart + 7 * DAY_MS
     }
 
-    private fun buildWeeklyStepData(): BarChartData {
-        val (weekStart, _) = currentWeekRange()
-        val samples = stepDao.getStepsInRange(weekStart, weekStart + 7 * DAY_MS)
+    private fun buildLast7DaysStepData(): BarChartData {
+        val rangeStart = todayMidnight() - 6 * DAY_MS
+        val rangeEnd = todayMidnight() + DAY_MS
+        val samples = stepDao.getStepsInRange(rangeStart, rangeEnd)
 
         val byDay = mutableMapOf<Int, Int>()
         for (sample in samples) {
-            val day = ((sample.windowStart - weekStart) / DAY_MS).toInt().coerceIn(0, 6)
+            val day = ((sample.windowStart - rangeStart) / DAY_MS).toInt().coerceIn(0, 6)
             byDay[day] = (byDay[day] ?: 0) + sample.steps
         }
 
-        val todayIndex = ((todayMidnight() - weekStart) / DAY_MS).toInt().coerceIn(0, 6)
-        byDay[todayIndex] = (byDay[todayIndex] ?: 0) + StepTrackingService.pendingSteps.value
+        byDay[6] = (byDay[6] ?: 0) + StepTrackingService.pendingSteps.value
 
         val entries = List(7) { i -> byDay[i] ?: 0 }
         val shortWeekdays = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
         val dayCal = Calendar.getInstance()
-        dayCal.timeInMillis = weekStart
+        dayCal.timeInMillis = rangeStart
         val labels = List(7) { i ->
             val c = dayCal.clone() as Calendar
             c.add(Calendar.DAY_OF_YEAR, i)

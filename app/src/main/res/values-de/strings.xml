@@ -595,6 +595,7 @@
     <string name="tabSettings">Einstellungen</string>
     <string name="homeStepsToday">Schritte · heute</string>
     <string name="homeThisWeekSteps">Diese Woche · Schritte</string>
+    <string name="homeLast7DaysSteps">Letzte 7 Tage · Schritte</string>
     <string name="homeThisWeek">Workouts · diese Woche</string>
     <string name="homeLatestWorkout">Letztes Workout</string>
     <string name="homeSeeAll">Alle anzeigen</string>

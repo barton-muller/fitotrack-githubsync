@@ -179,6 +179,7 @@
     <string name="tabSettings">Settings</string>
     <string name="homeStepsToday">Steps · today</string>
     <string name="homeThisWeekSteps">This week · steps</string>
+    <string name="homeLast7DaysSteps">Last 7 days · steps</string>
     <string name="homeThisWeek">Workouts · this week</string>
     <string name="homeLatestWorkout">Latest workout</string>
     <string name="homeSeeAll">See all</string>

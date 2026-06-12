@@ -204,7 +204,7 @@ private fun StepsTodayCard(
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
             Text(
-                text = stringResource(R.string.homeThisWeekSteps).uppercase(),
+                text = stringResource(R.string.homeLast7DaysSteps).uppercase(),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
