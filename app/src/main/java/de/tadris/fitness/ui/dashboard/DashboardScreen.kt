@@ -212,11 +212,13 @@ fun DashboardScreen(
                     onGoalClick = { showGoalDialog = true },
                 )
             }
-            item {
-                ThisWeekCard(
-                    weeklyWorkouts = weeklyWorkouts,
-                    rangeStartMillis = vm.last7DaysStartMillis,
-                )
+            if (weeklyWorkouts.isNotEmpty()) {
+                item {
+                    ThisWeekCard(
+                        weeklyWorkouts = weeklyWorkouts,
+                        rangeStartMillis = vm.last7DaysStartMillis,
+                    )
+                }
             }
             if (workouts.isEmpty()) {
                 item {
