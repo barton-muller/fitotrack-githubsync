@@ -20,6 +20,7 @@
 package de.tadris.fitness.ui.home
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,34 +78,36 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            when (selectedTab) {
-                TAB_HOME -> TopAppBar(
-                    title = { Text("FitoTrack") },
-                )
+            Crossfade(targetState = selectedTab, label = "topbar_crossfade") { tab ->
+                when (tab) {
+                    TAB_HOME -> TopAppBar(
+                        title = { Text("FitoTrack") },
+                    )
 
-                TAB_WORKOUTS -> TopAppBar(
-                    title = { Text(stringResource(R.string.workouts)) },
-                    actions = {
-                        IconButton(onClick = onStatistics) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_bar_chart_24),
-                                contentDescription = stringResource(R.string.workout_statistics),
-                            )
-                        }
-                    },
-                )
+                    TAB_WORKOUTS -> TopAppBar(
+                        title = { Text(stringResource(R.string.workouts)) },
+                        actions = {
+                            IconButton(onClick = onStatistics) {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_bar_chart_24),
+                                    contentDescription = stringResource(R.string.workout_statistics),
+                                )
+                            }
+                        },
+                    )
 
-                else -> TopAppBar(
-                    title = { Text(stringResource(R.string.tabSteps)) },
-                    actions = {
-                        IconButton(onClick = onStepStats) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_bar_chart_24),
-                                contentDescription = stringResource(R.string.stepStatistics),
-                            )
-                        }
-                    },
-                )
+                    else -> TopAppBar(
+                        title = { Text(stringResource(R.string.tabSteps)) },
+                        actions = {
+                            IconButton(onClick = onStepStats) {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_bar_chart_24),
+                                    contentDescription = stringResource(R.string.stepStatistics),
+                                )
+                            }
+                        },
+                    )
+                }
             }
         },
         bottomBar = {
@@ -169,23 +172,25 @@ fun HomeScreen(
             }
         },
     ) { innerPadding ->
-        when (selectedTab) {
-            TAB_HOME -> DashboardTab(
-                contentPadding = innerPadding,
-                onStepDetails = onStepStats,
-                onSeeAllWorkouts = { selectedTab = TAB_WORKOUTS },
-                onWorkoutClick = onWorkoutClick,
-            )
+        Crossfade(targetState = selectedTab, label = "content_crossfade") { tab ->
+            when (tab) {
+                TAB_HOME -> DashboardTab(
+                    contentPadding = innerPadding,
+                    onStepDetails = onStepStats,
+                    onSeeAllWorkouts = { selectedTab = TAB_WORKOUTS },
+                    onWorkoutClick = onWorkoutClick,
+                )
 
-            TAB_WORKOUTS -> DashboardScreen(
-                workouts = workouts,
-                contentPadding = innerPadding,
-                onWorkoutClick = onWorkoutClick,
-                onDeleteWorkout = onDeleteWorkout,
-                onSettings = onSettings,
-            )
+                TAB_WORKOUTS -> DashboardScreen(
+                    workouts = workouts,
+                    contentPadding = innerPadding,
+                    onWorkoutClick = onWorkoutClick,
+                    onDeleteWorkout = onDeleteWorkout,
+                    onSettings = onSettings,
+                )
 
-            TAB_STEPS -> StepsScreen(contentPadding = innerPadding)
+                TAB_STEPS -> StepsScreen(contentPadding = innerPadding)
+            }
         }
     }
 }
