@@ -169,6 +169,10 @@
     <string name="stepTrackingChannelDescription">Shown while step tracking is active</string>
     <string name="stepTrackingNotificationTitle">Step tracking active</string>
     <string name="stepTrackingNotificationText">FitoTrack is counting your steps</string>
+    <plurals name="stepTrackingNotificationSteps">
+        <item quantity="one">%d step today</item>
+        <item quantity="other">%d steps today</item>
+    </plurals>
     <string name="tabHome">Home</string>
     <string name="tabWorkouts">Workouts</string>
     <string name="tabSteps">Steps</string>

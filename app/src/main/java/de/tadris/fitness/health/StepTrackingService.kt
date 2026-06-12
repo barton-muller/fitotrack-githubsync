@@ -19,7 +19,7 @@
 
 package de.tadris.fitness.health
 
-import android.app.Notification
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -28,8 +28,6 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import de.tadris.fitness.Instance
-import de.tadris.fitness.R
-import de.tadris.fitness.util.NotificationHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.concurrent.Executors
@@ -57,23 +55,35 @@ class StepTrackingService : Service() {
     private lateinit var minuteConsolidator: TimeConsolidator
     private lateinit var consolidator: SampleConsolidator
     private lateinit var persister: StepPersister
+    private lateinit var dailyStepCounter: DailyStepCounter
+    private lateinit var notificationBuilder: StepNotificationBuilder
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         val db = Instance.getInstance(this).db
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationBuilder = StepNotificationBuilder(this, notificationManager)
+        dailyStepCounter = DailyStepCounter(
+            dao = db.stepDao(),
+            onTodayStepsChanged = { notificationBuilder.update(it) },
+        )
         persister = StepPersister(db.stepDao())
         consolidator = SampleConsolidator(
             persistIntervalMs = PERSIST_INTERVAL_MS,
             windowSizeMs = WINDOW_SIZE_MS,
             activeMinuteThreshold = ACTIVE_MINUTE_THRESHOLD,
-            onPendingStepsChanged = { _pendingSteps.value = it },
+            onPendingStepsChanged = { pending ->
+                _pendingSteps.value = pending
+                dailyStepCounter.onPendingStepsChanged(pending)
+            },
             onPersistReady = { windowStart, steps, activeMinutes ->
+                dailyStepCounter.onStepsPersisted(steps)
                 executor.submit { persister.persist(windowStart, steps, activeMinutes) }
             },
         )
-        minuteConsolidator = TimeConsolidator(60_000){
+        minuteConsolidator = TimeConsolidator(60_000) {
             consolidator.onMinuteReceived(it)
         }
         registrar = StepRegistrar(
@@ -84,7 +94,7 @@ class StepTrackingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = buildNotification()
+        val notification = notificationBuilder.buildInitial()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
         } else {
@@ -93,6 +103,7 @@ class StepTrackingService : Service() {
 
         val sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.let { registrar.start(it) }
+        executor.submit { dailyStepCounter.initialize() }
 
         Instance.getInstance(this).userPreferences.stepTrackingEnabled = true
         _isRunning.value = true
@@ -107,15 +118,5 @@ class StepTrackingService : Service() {
         executor.awaitTermination(5, TimeUnit.SECONDS)
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
-    }
-
-    private fun buildNotification(): Notification {
-        NotificationHelper.createChannels(this)
-        val builder = Notification.Builder(this)
-            .setContentTitle(getString(R.string.stepTrackingNotificationTitle))
-            .setContentText(getString(R.string.stepTrackingNotificationText))
-            .setSmallIcon(R.drawable.notification)
-        builder.setChannelId(NotificationHelper.CHANNEL_STEP_TRACKING)
-        return builder.build()
     }
 }
