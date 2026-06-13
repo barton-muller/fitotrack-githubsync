@@ -150,6 +150,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var stepTrackingEnabled by BooleanSharedPreference("stepTrackingEnabled", false)
 
+    var autoStartRecordingEnabled by BooleanSharedPreference("autoStartRecordingEnabled", false)
+
     var stepTrackingPromptDismissed by BooleanSharedPreference("stepTrackingPromptDismissed", false)
 
     var dailyStepGoal by IntSharedPreference("dailyStepGoal", 10_000)

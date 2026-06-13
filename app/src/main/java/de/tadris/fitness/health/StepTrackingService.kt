@@ -57,6 +57,7 @@ class StepTrackingService : Service() {
     private lateinit var persister: StepPersister
     private lateinit var dailyStepCounter: DailyStepCounter
     private lateinit var notificationBuilder: StepNotificationBuilder
+    private lateinit var activityRecognizer: ActivityRecognizer
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -70,6 +71,7 @@ class StepTrackingService : Service() {
             onTodayStepsChanged = { notificationBuilder.update(it) },
         )
         persister = StepPersister(db.stepDao())
+        activityRecognizer = ActivityRecognizer(this, db.workoutDao())
         consolidator = SampleConsolidator(
             persistIntervalMs = PERSIST_INTERVAL_MS,
             windowSizeMs = WINDOW_SIZE_MS,
@@ -85,6 +87,9 @@ class StepTrackingService : Service() {
         )
         minuteConsolidator = TimeConsolidator(60_000) {
             consolidator.onMinuteReceived(it)
+            if (Instance.getInstance(this).userPreferences.autoStartRecordingEnabled) {
+                activityRecognizer.onMinuteReceived(it)
+            }
         }
         registrar = StepRegistrar(
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager,
