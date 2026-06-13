@@ -58,6 +58,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -93,6 +94,7 @@ fun StepsScreen(
     val serviceRunning by vm.serviceRunning.collectAsStateWithLifecycle()
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
     val dailyStepGoal by vm.dailyStepGoal.collectAsStateWithLifecycle()
+    val autoStartRecordingEnabled by vm.autoStartRecordingEnabled.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val stepSensorSupported = remember(context) {
         (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
@@ -100,7 +102,32 @@ fun StepsScreen(
     }
 
     var showPermissionDeniedDialog by remember { mutableStateOf(false) }
+    var showLocationPermissionDeniedDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            vm.setAutoStartRecordingEnabled(true)
+        } else {
+            showLocationPermissionDeniedDialog = true
+        }
+    }
+
+    fun enableAutoStart() {
+        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (hasFine || hasCoarse) {
+            vm.setAutoStartRecordingEnabled(true)
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        }
+    }
 
     val permissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -175,6 +202,30 @@ fun StepsScreen(
         )
     }
 
+    if (showLocationPermissionDeniedDialog) {
+        AlertDialog(
+            onDismissRequest = { showLocationPermissionDeniedDialog = false },
+            title = { Text(stringResource(R.string.permissionRequiredTitle)) },
+            text = { Text(stringResource(R.string.autoStartLocationPermissionExplanation)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLocationPermissionDeniedDialog = false
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                }) {
+                    Text(stringResource(R.string.openSettings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLocationPermissionDeniedDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -212,6 +263,15 @@ fun StepsScreen(
                 onStart = { startTracking() },
                 onStop = { vm.stopTracking() },
             )
+
+            if (serviceRunning) {
+                AutoStartRecordingCard(
+                    enabled = autoStartRecordingEnabled,
+                    onCheckedChange = { checked ->
+                        if (checked) enableAutoStart() else vm.setAutoStartRecordingEnabled(false)
+                    },
+                )
+            }
 
             StepProgressRing(
                 steps = todaySteps,
@@ -285,6 +345,37 @@ private fun ServiceStatusCard(
                     Text(stringResource(R.string.stepTrackingStart))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AutoStartRecordingCard(
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.autoStartRecordingTitle),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.autoStartRecordingDescription),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onCheckedChange,
+            )
         }
     }
 }

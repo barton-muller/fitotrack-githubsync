@@ -47,6 +47,14 @@ class StepsViewModel(app: Application) : AndroidViewModel(app) {
         _dailyStepGoal.value = goal
     }
 
+    private val _autoStartRecordingEnabled = MutableStateFlow(prefs.autoStartRecordingEnabled)
+    val autoStartRecordingEnabled: StateFlow<Boolean> = _autoStartRecordingEnabled
+
+    fun setAutoStartRecordingEnabled(enabled: Boolean) {
+        prefs.autoStartRecordingEnabled = enabled
+        _autoStartRecordingEnabled.value = enabled
+    }
+
     fun stopTracking() {
         prefs.stepTrackingEnabled = false
         getApplication<Application>().stopService(

@@ -19,11 +19,13 @@
 
 package de.tadris.fitness.recording.component
 
+import de.tadris.fitness.Instance
 import de.tadris.fitness.data.preferences.UserPreferences
 import de.tadris.fitness.recording.GpsState
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.StopReason
+import de.tadris.fitness.recording.actions.WorkoutActionDiscard
 import de.tadris.fitness.recording.event.WorkoutAutoStopEvent
 import de.tadris.fitness.recording.event.WorkoutGPSStateChanged
 import de.tadris.fitness.util.WorkoutLogger.Companion.log
@@ -37,6 +39,7 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
         private const val AUTO_PAUSE_TIMEOUT_MS = 7 * 60 * 1000L
         private const val GPS_LOST_TIMEOUT_MS = 1 * 60 * 1000L
         private const val NO_SAMPLE_TIMEOUT_MS = 7 * 60 * 1000L
+        private const val MIN_SAMPLES_TO_KEEP = 10
     }
 
     private var autoPauseEnabled = false
@@ -88,7 +91,15 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
     }
 
     private fun triggerStop() {
-        service.actions.stop(StopReason.AUTO_STOP)
-        EventBus.getDefault().post(WorkoutAutoStopEvent())
+        val workoutId = service.stateHolder.workoutId
+        val sampleCount = Instance.getInstance(service).db.workoutDao()
+            .getAllSamplesOfWorkout(workoutId).size
+        if (sampleCount < MIN_SAMPLES_TO_KEEP) {
+            log(TAG, "Discarding workout: only $sampleCount samples recorded")
+            EventBus.getDefault().post(WorkoutActionDiscard)
+        } else {
+            service.actions.stop(StopReason.AUTO_STOP)
+            EventBus.getDefault().post(WorkoutAutoStopEvent())
+        }
     }
 }

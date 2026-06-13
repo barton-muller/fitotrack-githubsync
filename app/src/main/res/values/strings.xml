@@ -192,6 +192,9 @@
     <string name="stepTrackingNotSupported">Step tracking is not supported on this device.</string>
     <string name="stepTrackingStart">Start</string>
     <string name="stepTrackingStop">Stop</string>
+    <string name="autoStartRecordingTitle">Auto-start workouts</string>
+    <string name="autoStartRecordingDescription">Automatically start a walking workout when elevated step activity is detected.</string>
+    <string name="autoStartLocationPermissionExplanation">FitoTrack needs location permission to automatically start and record workouts. Please grant it in the app settings.</string>
     <string name="stepTrackingPromptTitle">Step tracking</string>
     <string name="stepTrackingPromptMessage">Track your daily steps automatically in the background.</string>
     <string name="dismiss">Dismiss</string>
