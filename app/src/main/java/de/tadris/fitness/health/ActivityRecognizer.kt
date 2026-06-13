@@ -88,6 +88,7 @@ class ActivityRecognizer(
     private fun startRecording() {
         val intent = Intent(context, RecorderService::class.java).apply {
             putExtra(RecorderService.EXTRA_WORKOUT_TYPE, WorkoutTypeManager.WORKOUT_TYPE_ID_WALKING)
+            putExtra(RecorderService.EXTRA_AUTO_STARTED, true)
         }
         context.startForegroundService(intent)
     }

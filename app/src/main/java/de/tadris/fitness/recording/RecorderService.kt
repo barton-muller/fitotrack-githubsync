@@ -33,6 +33,7 @@ import de.tadris.fitness.recording.autostart.AutoStartComponent
 import de.tadris.fitness.recording.autostart.AutoStartStateEvent
 import de.tadris.fitness.recording.component.AnnouncementComponent
 import de.tadris.fitness.recording.component.AutoPauseComponent
+import de.tadris.fitness.recording.component.AutoStopBackgroundRecordingsComponent
 import de.tadris.fitness.recording.component.AutoStopComponent
 import de.tadris.fitness.recording.component.ExerciseRecognitionComponent
 import de.tadris.fitness.recording.component.GnssComponent
@@ -63,6 +64,7 @@ class RecorderService : Service() {
 
     companion object {
         const val EXTRA_WORKOUT_TYPE = "workoutType"
+        const val EXTRA_AUTO_STARTED = "autoStarted"
 
         const val TAG: String = "RecorderService"
 
@@ -72,6 +74,7 @@ class RecorderService : Service() {
     }
 
     private var wakeLock: WakeLock? = null
+    var autoStarted = false
 
     private val components = mutableListOf<RecorderServiceComponent>()
     private var notificationComponent: ServiceNotificationComponent? = null
@@ -136,6 +139,8 @@ class RecorderService : Service() {
             stateHolder.initFresh(this, workoutType)
         }
 
+        autoStarted = intent?.getBooleanExtra(EXTRA_AUTO_STARTED, false) ?: false
+
         acquireWakelock()
 
         startRelevantComponents()
@@ -194,6 +199,9 @@ class RecorderService : Service() {
             startComponent(GpsStateComponent())
             startComponent(PressureComponent())
             startComponent(GnssComponent())
+            if (autoStarted) {
+                startComponent(AutoStopBackgroundRecordingsComponent())
+            }
         } else {
             startComponent(ExerciseRecognitionComponent())
             startComponent(RepetitionSampleComponent())
