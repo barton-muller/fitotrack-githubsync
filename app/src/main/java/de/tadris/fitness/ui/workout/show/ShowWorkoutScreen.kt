@@ -378,17 +378,17 @@ private fun ShowWorkoutContent(
                 )
             }
 
-            // Frequency
+            // Cadence
             if (data.hasRepetitions) {
-                SectionHeader(stringResource(R.string.workoutFrequency))
+                SectionHeader(stringResource(R.string.workoutCadence))
                 if (data.repetitionSamples.isNotEmpty()) {
                     KeyValueRow(
-                        stringResource(R.string.workoutAvgFrequencyShort),
+                        stringResource(R.string.workoutAvgCadenceShort),
                         UnitUtils.round(
                             workout.averageFrequency,
                             2
                         ) + " " + UnitUtils.unitHertzShort,
-                        stringResource(R.string.workoutMaxFrequency),
+                        stringResource(R.string.workoutMaxCadence),
                         UnitUtils.round(
                             calculatedValues.maxFrequency,
                             2
@@ -404,7 +404,7 @@ private fun ShowWorkoutContent(
                     )
                 } else {
                     KeyValueRow(
-                        stringResource(R.string.workoutAvgFrequencyShort),
+                        stringResource(R.string.workoutAvgCadenceShort),
                         UnitUtils.round(
                             workout.averageFrequency,
                             2

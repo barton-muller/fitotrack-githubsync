@@ -85,6 +85,9 @@
     <string name="workoutAvgFrequencyLong">Average Frequency</string>
     <string name="workoutCurrentFrequency">Current Frequency</string>
     <string name="workoutMaxFrequency">Max Frequency</string>
+    <string name="workoutCadence">Cadence</string>
+    <string name="workoutAvgCadenceShort">Avg. Cadence</string>
+    <string name="workoutMaxCadence">Max Cadence</string>
     <string name="workoutIntensity">Intensity</string>
     <string name="workoutAvgIntensityShort">Avg. Intensity</string>
     <string name="workoutMaxIntensity">Max Intensity</string>
