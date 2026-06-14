@@ -29,6 +29,7 @@ import androidx.room.PrimaryKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
+import java.util.Set;
 
 @Entity(tableName = "workout_type")
 public class WorkoutType implements Serializable {
@@ -71,10 +72,12 @@ public class WorkoutType implements Serializable {
     public int MET;
 
     /**
-     * @see RecordingType
+     * Comma-separated list of {@link WorkoutCapability} IDs (e.g. "gps,repetitions").
+     *
+     * @see WorkoutCapability
      */
-    @ColumnInfo(name = "type")
-    public String recordingType;
+    @ColumnInfo(name = "capabilities")
+    public String capabilities;
 
     /**
      * Specified the plural resource ID for the unit measured (only for indoor workouts)
@@ -85,19 +88,19 @@ public class WorkoutType implements Serializable {
     public int repeatingExerciseName;
 
     @Ignore
-    public WorkoutType(@NonNull String id, String title, int minDistance, int color, String icon, int MET, String recordingType) {
-        this(id, title, minDistance, color, icon, MET, recordingType, -1);
+    public WorkoutType(@NonNull String id, String title, int minDistance, int color, String icon, int MET, String capabilities) {
+        this(id, title, minDistance, color, icon, MET, capabilities, -1);
     }
 
     @Ignore
-    public WorkoutType(@NonNull String id, String title, int minDistance, int color, String icon, int MET, String recordingType, int repeatingExerciseName) {
+    public WorkoutType(@NonNull String id, String title, int minDistance, int color, String icon, int MET, String capabilities, int repeatingExerciseName) {
         this.id = id;
         this.title = title;
         this.minDistance = minDistance;
         this.color = color;
         this.icon = icon;
         this.MET = MET;
-        this.recordingType = recordingType;
+        this.capabilities = capabilities;
         this.repeatingExerciseName = repeatingExerciseName;
     }
 
@@ -106,8 +109,19 @@ public class WorkoutType implements Serializable {
 
     @Ignore
     @JsonIgnore
-    public RecordingType getRecordingTypeDecoded() {
-        return RecordingType.findById(this.recordingType);
+    public boolean hasCapability(WorkoutCapability capability) {
+        return WorkoutCapability.parseSet(capabilities).contains(capability);
+    }
+
+    /**
+     * Returns the preference mode key for this workout type.
+     * GPS-capable workouts use "gps", others use "indoor".
+     * These keys are used in SharedPreferences and must remain stable.
+     */
+    @Ignore
+    @JsonIgnore
+    public String getPreferenceMode() {
+        return hasCapability(WorkoutCapability.GPS) ? WorkoutCapability.GPS.getId() : WorkoutCapability.PREFERENCE_MODE_NON_GPS;
     }
 
     @NonNull

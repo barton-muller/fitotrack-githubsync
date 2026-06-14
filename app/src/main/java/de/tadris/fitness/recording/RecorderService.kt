@@ -27,7 +27,7 @@ import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import de.tadris.fitness.BuildConfig
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.autostart.AutoStartComponent
 import de.tadris.fitness.recording.autostart.AutoStartStateEvent
@@ -149,7 +149,7 @@ class RecorderService : Service() {
         initializeWatchdog()
         val notification = notificationComponent!!.getNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val serviceType = if (stateHolder.recordingType == RecordingType.GPS) {
+            val serviceType = if (stateHolder.workoutType.hasCapability(WorkoutCapability.GPS)) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             } else {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
@@ -184,7 +184,7 @@ class RecorderService : Service() {
     }
 
     private fun startRelevantComponents() {
-        val type = stateHolder.recordingType
+        val workoutType = stateHolder.workoutType
 
         notificationComponent = ServiceNotificationComponent(this)
         startComponent(notificationComponent!!)
@@ -192,7 +192,7 @@ class RecorderService : Service() {
         startComponent(AutoPauseComponent())
         startComponent(AutoStopComponent())
         startComponent(TemporaryAggregationComponent())
-        if (type == RecordingType.GPS) {
+        if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             startComponent(AutoStartComponent())
             startComponent(GpsComponent())
             startComponent(GpsSampleComponent())
@@ -202,7 +202,8 @@ class RecorderService : Service() {
             if (autoStarted) {
                 startComponent(AutoStopBackgroundRecordingsComponent())
             }
-        } else {
+        }
+        if (workoutType.hasCapability(WorkoutCapability.REPETITIONS)) {
             startComponent(ExerciseRecognitionComponent())
             startComponent(RepetitionSampleComponent())
         }

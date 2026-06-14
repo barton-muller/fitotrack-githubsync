@@ -22,30 +22,30 @@ package de.tadris.fitness.recording.information;
 import android.content.Context;
 
 import de.tadris.fitness.Instance;
-import de.tadris.fitness.data.RecordingType;
+import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.data.preferences.RecordingScreenInformationPreferences;
 import de.tadris.fitness.data.preferences.UserPreferences;
 import de.tadris.fitness.recording.event.AggregatedRecordingValuesEvent;
 
 public class InformationDisplay {
 
-    private final RecordingType mode;
+    private final WorkoutType workoutType;
     private final UserPreferences preferences;
     private final InformationManager manager;
 
-    public InformationDisplay(RecordingType mode, Context context) {
-        this.mode = mode;
+    public InformationDisplay(WorkoutType workoutType, Context context) {
+        this.workoutType = workoutType;
         this.preferences = Instance.getInstance(context).userPreferences;
-        this.manager = new InformationManager(mode, context);
+        this.manager = new InformationManager(workoutType, context);
     }
 
     public DisplaySlot getDisplaySlot(AggregatedRecordingValuesEvent values, int slot) {
         String informationId = null;
         try {
-            informationId = preferences.recordingScreenInformationPreferences.getIdOfDisplayedInformation(mode.id, slot);
+            informationId = preferences.recordingScreenInformationPreferences.getIdOfDisplayedInformation(workoutType.getPreferenceMode(), slot);
         } catch (RecordingScreenInformationPreferences.UnknownModeException e) {
             e.printStackTrace();
-            // Should never happen as long as all Workout Recording Types are handled inside RecordingScreenInformationPreferences
+            // Should never happen as long as getPreferenceMode() returns "gps" or "indoor"
             return new DisplaySlot(slot, "ERR", "ERR");
         }
         RecordingInformation information = manager.getInformationById(informationId);

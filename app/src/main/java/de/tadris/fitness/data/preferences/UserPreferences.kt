@@ -25,7 +25,7 @@ import android.preference.PreferenceManager
 import androidx.collection.ArraySet
 import androidx.core.content.edit
 import de.tadris.fitness.BuildConfig
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.stats.aggregation.AggregationSpan
@@ -62,7 +62,7 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
     @Deprecated("")
     fun getIdOfDisplayedInformation(mode: String?, slot: Int): String {
         var defValue = ""
-        if (RecordingType.INDOOR.id == mode) {
+        if (WorkoutCapability.PREFERENCE_MODE_NON_GPS == mode) {
             when (slot) {
                 0 -> defValue = "avg_frequency"
                 1 -> defValue = "energy_burned"

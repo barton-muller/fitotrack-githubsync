@@ -39,7 +39,7 @@ class ExerciseRecognitionComponent : RecorderServiceComponent, SensorEventListen
 
     override fun register(service: RecorderService) {
         init(service)
-        exerciseRecognizer = ExerciseRecognizer.findByType(service.stateHolder.workoutType.id)
+        exerciseRecognizer = ExerciseRecognizer.findByWorkoutType(service.stateHolder.workoutType)
         if (exerciseRecognizer != null) {
             WorkoutLogger.log(
                 "RecoderService",

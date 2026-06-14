@@ -33,6 +33,7 @@ import de.tadris.fitness.R
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.event.AggregatedRecordingValuesEvent
+import de.tadris.fitness.ui.MainActivity
 import de.tadris.fitness.ui.record.RecordingConstants
 import de.tadris.fitness.util.NotificationHelper
 import java.util.Date
@@ -99,7 +100,7 @@ class ServiceNotificationComponent(private val context: Context) : RecorderServi
             builder.setChannelId(NotificationHelper.CHANNEL_WORKOUT)
         }
 
-        val recorderActivityIntent = Intent(context, service.stateHolder.recordingType.recorderActivityClass)
+        val recorderActivityIntent = Intent(context, MainActivity::class.java)
         recorderActivityIntent.setAction(RecordingConstants.RESUME_ACTION)
         val flag =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0

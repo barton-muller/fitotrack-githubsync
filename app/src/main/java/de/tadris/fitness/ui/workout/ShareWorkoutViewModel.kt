@@ -26,7 +26,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.Workout
 import de.tadris.fitness.data.WorkoutData
 import de.tadris.fitness.data.WorkoutType
@@ -104,7 +104,7 @@ class ShareWorkoutViewModel(
         val prefs = Instance.getInstance(getApplication())
             .userPreferences.sharingScreenInformationPreferences
         return (0..2).map { slot ->
-            val id = prefs.getIdOfDisplayedInformation(RecordingType.GPS.id, slot)
+            val id = prefs.getIdOfDisplayedInformation(WorkoutCapability.GPS.id, slot)
             val info = informationManager.findById(id) ?: Hidden(getApplication())
             if (info is Hidden) {
                 ShareMetricSlot("", "")
@@ -120,7 +120,7 @@ class ShareWorkoutViewModel(
     fun selectMetric(slot: Int, informationTypeId: String) {
         val current = _uiState.value as? ShareWorkoutUiState.Ready ?: return
         Instance.getInstance(getApplication()).userPreferences.sharingScreenInformationPreferences
-            .setIdOfDisplayedInformation(RecordingType.GPS.id, slot, informationTypeId)
+            .setIdOfDisplayedInformation(WorkoutCapability.GPS.id, slot, informationTypeId)
         _uiState.value = current.copy(
             form = current.form.copy(slots = buildSlots(current.form.workout))
         )

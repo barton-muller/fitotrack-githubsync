@@ -52,7 +52,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.autostart.AutoStartMode
 import de.tadris.fitness.util.NotificationHelper
@@ -167,8 +166,7 @@ fun GpsRecordingRoute(
     LaunchedEffect(selectInfoSlot) {
         val slot = selectInfoSlot ?: return@LaunchedEffect
         val activity = context as? Activity ?: return@LaunchedEffect
-        val recordingType = RecordingType.findById(workoutType.recordingType)
-        SelectWorkoutInformationDialog(activity, recordingType, slot) { s, info ->
+        SelectWorkoutInformationDialog(activity, workoutType, slot) { s, info ->
             vm.onInfoSlotSelected(s, info)
         }.show()
         vm.dismissSelectInfoDialog()

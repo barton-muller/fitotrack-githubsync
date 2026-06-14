@@ -31,7 +31,7 @@ class VoiceAnnouncements(
 ) {
 
     private val informationAnnouncements =
-        InformationAnnouncements(context, service.stateHolder.recordingType, ttsController)
+        InformationAnnouncements(context, service.stateHolder.workoutType, ttsController)
     private val intervalAnnouncements =
         IntervalAnnouncements(context, service, ttsController, intervals)
 

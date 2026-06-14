@@ -28,7 +28,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(version = 20, entities = {
+@Database(version = 21, entities = {
         Workout.class,
         RouteSample.class,
         WorkoutPause.class,
@@ -620,6 +620,15 @@ public abstract class AppDatabase extends RoomDatabase {
                     @Override
                     public void migrate(@NonNull SupportSQLiteDatabase db) {
                         db.execSQL("ALTER TABLE step_sample ADD COLUMN activeMinutes INTEGER NOT NULL DEFAULT 0");
+                    }
+                }, new Migration(20, 21) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase db) {
+                        db.execSQL("ALTER TABLE workout_type ADD COLUMN capabilities TEXT NOT NULL DEFAULT ''");
+                        db.execSQL("UPDATE workout_type SET capabilities = CASE " +
+                                "WHEN type = 'indoor' THEN 'repetitions' " +
+                                "ELSE 'gps' " +
+                                "END");
                     }
                 })
                 .allowMainThreadQueries()

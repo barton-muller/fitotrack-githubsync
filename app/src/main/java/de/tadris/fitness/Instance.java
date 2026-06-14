@@ -28,7 +28,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import de.tadris.fitness.data.AppDatabase;
-import de.tadris.fitness.data.RecordingType;
+import de.tadris.fitness.data.WorkoutCapability;
 import de.tadris.fitness.data.Workout;
 import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.data.WorkoutTypeManager;
@@ -113,9 +113,8 @@ public class Instance {
         }
 
         WorkoutType type = WorkoutTypeManager.getInstance().getWorkoutTypeById(context, workout.getWorkoutTypeId());
-        boolean isGps = RecordingType.findById(type.recordingType) == RecordingType.GPS;
         boolean hasPermission;
-        if (isGps) {
+        if (type.hasCapability(WorkoutCapability.GPS)) {
             hasPermission = PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                     || PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION);
         } else {

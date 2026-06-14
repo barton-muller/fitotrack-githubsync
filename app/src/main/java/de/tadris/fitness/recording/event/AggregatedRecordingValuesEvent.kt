@@ -19,13 +19,11 @@
 
 package de.tadris.fitness.recording.event
 
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecordingState
 import org.greenrobot.eventbus.EventBus
 
 data class AggregatedRecordingValuesEvent(
-    val recordingType: RecordingType,
     val workoutType: WorkoutType,
     val currentState: RecordingState, // note that this can be outdated a bit until next aggregation. to get current state, use RecordingStateChangeEvent
     val activeDuration: Long, // in ms
@@ -45,7 +43,6 @@ data class AggregatedRecordingValuesEvent(
     companion object {
 
         val EMPTY = AggregatedRecordingValuesEvent(
-            RecordingType.GPS,
             WorkoutType(),
             RecordingState.IDLE,
             0L, 0L, 0.0, 0.0, 0.0,

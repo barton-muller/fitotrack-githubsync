@@ -103,7 +103,6 @@ class TemporaryAggregationComponent : RecorderServiceComponent {
     private fun publishAggregatedValues() {
         EventBus.getDefault().postSticky(
             AggregatedRecordingValuesEvent(
-                recordingType = service.stateHolder.recordingType,
                 workoutType = service.stateHolder.workoutType,
                 currentState = service.stateHolder.state,
                 activeDuration = service.stateHolder.currentActiveDuration,

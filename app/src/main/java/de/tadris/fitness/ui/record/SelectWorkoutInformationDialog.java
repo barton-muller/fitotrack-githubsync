@@ -26,7 +26,7 @@ import android.widget.ArrayAdapter;
 import java.util.List;
 
 import de.tadris.fitness.R;
-import de.tadris.fitness.data.RecordingType;
+import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.recording.information.InformationManager;
 import de.tadris.fitness.recording.information.RecordingInformation;
 
@@ -37,16 +37,14 @@ public class SelectWorkoutInformationDialog {
 
     private final Activity context;
     private final WorkoutInformationSelectListener listener;
-    private final RecordingType mode;
     private final int slot;
     private final List<RecordingInformation> informationList;
 
-    public SelectWorkoutInformationDialog(Activity context, RecordingType mode, int slot, WorkoutInformationSelectListener listener) {
+    public SelectWorkoutInformationDialog(Activity context, WorkoutType workoutType, int slot, WorkoutInformationSelectListener listener) {
         this.context = context;
         this.listener = listener;
-        this.mode = mode;
         this.slot = slot;
-        this.informationList = new InformationManager(mode, context).getDisplayableInformation();
+        this.informationList = new InformationManager(workoutType, context).getDisplayableInformation();
     }
 
     public void show() {
