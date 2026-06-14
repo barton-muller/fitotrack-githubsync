@@ -22,7 +22,6 @@ package de.tadris.fitness.health
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.data.WorkoutDao
 import de.tadris.fitness.recording.RecorderService
@@ -30,7 +29,7 @@ import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.event.RecordingStateChangeEvent
 import de.tadris.fitness.util.PermissionUtils
 
-class ActivityRecognizer(
+class StepActivityRecognizer(
     private val context: Context,
     private val workoutDao: WorkoutDao,
 ) {
