@@ -77,6 +77,7 @@ public class WorkoutType implements Serializable {
      * @see WorkoutCapability
      */
     @ColumnInfo(name = "capabilities")
+    @NonNull
     public String capabilities;
 
     /**

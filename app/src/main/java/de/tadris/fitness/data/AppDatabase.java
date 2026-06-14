@@ -624,11 +624,20 @@ public abstract class AppDatabase extends RoomDatabase {
                 }, new Migration(20, 21) {
                     @Override
                     public void migrate(@NonNull SupportSQLiteDatabase db) {
-                        db.execSQL("ALTER TABLE workout_type ADD COLUMN capabilities TEXT NOT NULL DEFAULT ''");
-                        db.execSQL("UPDATE workout_type SET capabilities = CASE " +
-                                "WHEN type = 'indoor' THEN 'repetitions' " +
-                                "ELSE 'gps' " +
-                                "END");
+                        db.execSQL("ALTER TABLE workout_type RENAME TO workout_type_old");
+                        db.execSQL("CREATE TABLE workout_type (" +
+                                "id TEXT NOT NULL PRIMARY KEY," +
+                                "title TEXT," +
+                                "min_distance INTEGER NOT NULL," +
+                                "color INTEGER NOT NULL," +
+                                "icon TEXT," +
+                                "met INTEGER NOT NULL," +
+                                "capabilities TEXT NOT NULL)");
+                        db.execSQL("INSERT INTO workout_type (id, title, min_distance, color, icon, met, capabilities) " +
+                                "SELECT id, title, min_distance, color, icon, met, " +
+                                "CASE WHEN type = 'indoor' THEN 'repetitions' ELSE 'gps' END " +
+                                "FROM workout_type_old");
+                        db.execSQL("DROP TABLE workout_type_old");
                     }
                 })
                 .allowMainThreadQueries()
