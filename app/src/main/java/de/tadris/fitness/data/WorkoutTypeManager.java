@@ -33,6 +33,7 @@ import de.tadris.fitness.util.Icon;
 public class WorkoutTypeManager {
 
 
+    public static final String WORKOUT_TYPE_ID_AUTO = "auto";
     public static final String WORKOUT_TYPE_ID_OTHER = "other";
     public static final String WORKOUT_TYPE_ID_RUNNING = "running";
     public static final String WORKOUT_TYPE_ID_WALKING = "walking";

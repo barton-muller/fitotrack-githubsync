@@ -25,6 +25,7 @@ import android.util.Log
 import de.tadris.fitness.data.CalculatedValues
 import de.tadris.fitness.data.WorkoutDao
 import de.tadris.fitness.data.WorkoutData
+import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.data.autoexport.AutoExportPlanner
 import de.tadris.fitness.data.calorie.CalorieCalculator
 import de.tadris.fitness.data.preferences.UserMeasurements
@@ -48,11 +49,20 @@ class WorkoutFinalizer(val context: Context, val workoutDao: WorkoutDao, val wor
         updateMSLValues()
         updateRouteSamples()
 
+        val activeDuration = getActiveDuration()
+
+        val resolvedTypeId = if (workout.workoutTypeId == WorkoutTypeManager.WORKOUT_TYPE_ID_AUTO) {
+            WorkoutTypeClassifier(data, calculatedValues, activeDuration).classify()
+        } else {
+            workout.workoutTypeId
+        }
+
         val finalVersion = workout.copy(
-            activeDuration = getActiveDuration(),
+            activeDuration = activeDuration,
             distance = data.samples.totalDistance,
             repetitions = data.repetitionSamples.sumOf { it.repetitions },
-            energy = getEnergy(),
+            energy = getEnergy(resolvedTypeId, activeDuration),
+            workoutTypeId = resolvedTypeId,
         )
 
         workoutDao.updateWorkout(finalVersion)
@@ -154,12 +164,12 @@ class WorkoutFinalizer(val context: Context, val workoutDao: WorkoutDao, val wor
         return activeDuration
     }
 
-    private fun getEnergy() = CalorieCalculator(context).calculateEnergy(
+    private fun getEnergy(typeId: String, activeDuration: Long) = CalorieCalculator(context).calculateEnergy(
         UserMeasurements.from(context),
-        getActiveDuration(),
+        activeDuration,
         calculatedValues.getAscentAndDescent().first.roundToInt(),
-        workout.workoutTypeId,
-        data.samples.totalDistance / (getActiveDuration() / 1000.0)
+        typeId,
+        data.samples.totalDistance / (activeDuration / 1000.0)
     )
 
 }
