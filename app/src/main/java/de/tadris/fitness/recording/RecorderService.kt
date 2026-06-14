@@ -18,8 +18,10 @@
  */
 package de.tadris.fitness.recording
 
+import android.Manifest
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
@@ -149,7 +151,11 @@ class RecorderService : Service() {
         initializeWatchdog()
         val notification = notificationComponent!!.getNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val serviceType = if (stateHolder.workoutType.hasCapability(WorkoutCapability.GPS)) {
+            val hasBackgroundLocation = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                    checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val useLocationFgsType = stateHolder.workoutType.hasCapability(WorkoutCapability.GPS) &&
+                    (!autoStarted || hasBackgroundLocation)
+            val serviceType = if (useLocationFgsType) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             } else {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH

@@ -22,8 +22,8 @@ package de.tadris.fitness.steps
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.data.WorkoutDao
+import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.event.RecordingStateChangeEvent
@@ -76,10 +76,17 @@ class StepActivityRecognizer(
     }
 
     private fun hasLocationPermission(): Boolean {
-        if (!PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            if (!PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                return false
-            }
+        val hasFine =
+            PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val hasCoarse =
+            PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (!hasFine && !hasCoarse) return false
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            if (!PermissionUtils.checkPermission(
+                    context,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                )
+            ) return false
         }
         return true
     }

@@ -103,7 +103,18 @@ fun StepsScreen(
 
     var showPermissionDeniedDialog by remember { mutableStateOf(false) }
     var showLocationPermissionDeniedDialog by remember { mutableStateOf(false) }
+    var showBackgroundLocationDeniedDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
+
+    val backgroundLocationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            vm.setAutoStartRecordingEnabled(true)
+        } else {
+            showBackgroundLocationDeniedDialog = true
+        }
+    }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -111,7 +122,16 @@ fun StepsScreen(
         val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (granted) {
-            vm.setAutoStartRecordingEnabled(true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                vm.setAutoStartRecordingEnabled(true)
+            }
         } else {
             showLocationPermissionDeniedDialog = true
         }
@@ -120,12 +140,18 @@ fun StepsScreen(
     fun enableAutoStart() {
         val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        if (hasFine || hasCoarse) {
-            vm.setAutoStartRecordingEnabled(true)
-        } else {
-            locationPermissionLauncher.launch(
+        val hasBackground = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+        when {
+            !hasFine && !hasCoarse -> locationPermissionLauncher.launch(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             )
+
+            !hasBackground -> backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            else -> vm.setAutoStartRecordingEnabled(true)
         }
     }
 
@@ -220,6 +246,30 @@ fun StepsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showLocationPermissionDeniedDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    if (showBackgroundLocationDeniedDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundLocationDeniedDialog = false },
+            title = { Text(stringResource(R.string.permissionRequiredTitle)) },
+            text = { Text(stringResource(R.string.autoStartBackgroundLocationPermissionExplanation)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackgroundLocationDeniedDialog = false
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                }) {
+                    Text(stringResource(R.string.openSettings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackgroundLocationDeniedDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             },
