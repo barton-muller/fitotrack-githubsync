@@ -1,4 +1,4 @@
-package de.tadris.fitness.health
+package de.tadris.fitness.steps
 
 class TimeConsolidator(
     val consolidationTime: Long,

@@ -24,7 +24,7 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.Instance
-import de.tadris.fitness.health.StepTrackingService
+import de.tadris.fitness.steps.StepTrackingService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

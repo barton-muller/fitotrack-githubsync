@@ -82,7 +82,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.R
-import de.tadris.fitness.health.StepTrackingService
+import de.tadris.fitness.steps.StepTrackingService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

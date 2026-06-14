@@ -163,10 +163,10 @@
             android:name=".recording.RecorderService"
             android:foregroundServiceType="location|health" />
         <service
-            android:name=".health.StepTrackingService"
+            android:name=".steps.StepTrackingService"
             android:foregroundServiceType="health" />
         <receiver
-            android:name=".health.StepTrackingBootReceiver"
+            android:name=".steps.StepTrackingBootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

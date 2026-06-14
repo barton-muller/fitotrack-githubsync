@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.health
+package de.tadris.fitness.steps
 
 import android.app.Notification
 import android.app.NotificationManager

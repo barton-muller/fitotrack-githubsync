@@ -43,7 +43,7 @@ import de.tadris.fitness.Instance
 import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
-import de.tadris.fitness.health.StepTrackingService
+import de.tadris.fitness.steps.StepTrackingService
 import de.tadris.fitness.ui.components.WorkoutTypePickerDialog
 import de.tadris.fitness.ui.map.MapManager
 import de.tadris.fitness.ui.navigation.AppNavigation
