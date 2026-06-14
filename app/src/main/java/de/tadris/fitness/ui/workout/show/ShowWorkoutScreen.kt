@@ -62,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -171,6 +172,7 @@ private fun ShowWorkoutContent(
     val activity = LocalActivity.current
     val context = LocalContext.current
     val workout = state.workout
+    val type = workout.getWorkoutType(context)
     val data = state.data
     val calculatedValues = state.calculatedValues
     val sets = state.sets
@@ -196,7 +198,7 @@ private fun ShowWorkoutContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(workout.getWorkoutType(context).title) },
+                title = { Text(type.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -314,6 +316,12 @@ private fun ShowWorkoutContent(
                     stringResource(R.string.workoutPace),
                     distanceUnitUtils.getPace(workout.averagePaceActive)
                 )
+                if(data.hasRepetitions){
+                    KeyValueRow(
+                        LocalResources.current.getQuantityString(type.repeatingExerciseName, workout.repetitions),
+                        workout.repetitions.toString()
+                    )
+                }
             } else {
                 KeyValueRow(
                     stringResource(R.string.workoutRepetitions),
