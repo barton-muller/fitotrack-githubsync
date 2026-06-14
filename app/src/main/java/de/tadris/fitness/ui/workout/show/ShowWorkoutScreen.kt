@@ -307,7 +307,7 @@ private fun ShowWorkoutContent(
             )
 
             // Distance / Repetitions
-            if (data.repetitionSamples.isEmpty()) {
+            if (data.hasRouteData || !data.hasRepetitions) {
                 KeyValueRow(
                     stringResource(R.string.workoutDistance),
                     distanceUnitUtils.getDistance(workout.distance.toInt()),

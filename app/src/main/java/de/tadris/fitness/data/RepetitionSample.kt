@@ -61,6 +61,14 @@ data class RepetitionSample(
         const val REPETITION_TYPE_PUSH_UP = 3
         const val REPETITION_TYPE_PULL_UP = 4
 
+        fun getMinSampleCount(type: Int) = when(type) {
+            REPETITION_TYPE_STEP -> 10
+            REPETITION_TYPE_JUMP -> 3
+            REPETITION_TYPE_PUSH_UP -> 1
+            REPETITION_TYPE_PULL_UP -> 1
+            else -> 1
+        }
+
     }
 
 }

@@ -31,7 +31,6 @@ import org.greenrobot.eventbus.Subscribe
 class RepetitionSampleComponent : RecorderServiceComponent {
 
     private lateinit var service: RecorderService
-    val minRepetitionCount get() = service.stateHolder.workoutType.minDistance
     var lastPush = 0L
     val repetitionAggregation = mutableListOf<RepetitionRecognizedEvent>()
 
@@ -49,7 +48,7 @@ class RepetitionSampleComponent : RecorderServiceComponent {
         val state = service.stateHolder.state
         if (state != RecordingState.RUNNING && state != RecordingState.AUTO_PAUSE) return
         repetitionAggregation.add(e)
-        if(repetitionAggregation.size >= minRepetitionCount){
+        if(repetitionAggregation.size >= RepetitionSample.getMinSampleCount(e.type)){
             pushSample()
         }
     }
