@@ -90,7 +90,10 @@ fun GpsRecordingRoute(
         if (granted) vm.restartService()
     }
 
-    var showActivityConsent by remember { mutableStateOf(false) }
+    fun hasActivityRecognitionPermission() = !needsActivityRecognition ||
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+
+    var showActivityConsent by remember { mutableStateOf(vm.hasServicePermission() && !hasActivityRecognitionPermission()) }
     if (showActivityConsent) {
         AlertDialog(
             onDismissRequest = { showActivityConsent = false; vm.finish() },

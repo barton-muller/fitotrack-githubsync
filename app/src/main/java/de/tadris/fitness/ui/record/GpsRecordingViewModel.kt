@@ -84,19 +84,12 @@ class GpsRecordingViewModel(application: Application) : RecordingViewModel(appli
     }
 
     override fun hasServicePermission(): Boolean {
-        val hasLocation = ActivityCompat.checkSelfPermission(
+        return ActivityCompat.checkSelfPermission(
             getApplication(), Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(
                     getApplication(), Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
-        if (!hasLocation) return false
-        if (workoutType.hasCapability(WorkoutCapability.REPETITIONS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return ActivityCompat.checkSelfPermission(
-                getApplication(), Manifest.permission.ACTIVITY_RECOGNITION
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-        return true
     }
 
     private fun checkGpsStatus() {
