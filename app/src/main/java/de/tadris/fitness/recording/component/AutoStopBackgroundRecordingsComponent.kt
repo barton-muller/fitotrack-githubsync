@@ -26,6 +26,7 @@ import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.StopReason
 import de.tadris.fitness.recording.actions.WorkoutActionDiscard
+import de.tadris.fitness.recording.event.AggregatedRecordingValuesEvent
 import de.tadris.fitness.recording.event.WorkoutAutoStopEvent
 import de.tadris.fitness.recording.event.WorkoutGPSStateChanged
 import de.tadris.fitness.util.WorkoutLogger.Companion.log
@@ -37,6 +38,7 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
     companion object {
         private const val TAG = "AutoStopBackground"
         private const val AUTO_PAUSE_TIMEOUT_MS = 7 * 60 * 1000L
+        private const val INITIAL_ACTIVITY_TIMEOUT_MS = 1 * 60 * 1000L
         private const val GPS_LOST_TIMEOUT_MS = 1 * 60 * 1000L
         private const val NO_SAMPLE_TIMEOUT_MS = 7 * 60 * 1000L
         private const val MIN_SAMPLES_TO_KEEP = 10
@@ -61,6 +63,7 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
 
     override fun checkSlow() {
         val state = service.stateHolder.state
+        val data = AggregatedRecordingValuesEvent.getCurrent()
         val now = System.currentTimeMillis()
 
         // Auto pause has been active too long
@@ -87,6 +90,11 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
                 log(TAG, "Stopping: no sample for ${timeSinceLastSample}ms and auto pause is off")
                 triggerStop()
             }
+        }
+
+        if(data.sampleCount < MIN_SAMPLES_TO_KEEP && data.totalDuration > INITIAL_ACTIVITY_TIMEOUT_MS){
+            log(TAG, "Stopping: not enough activity after starting the workout for ${INITIAL_ACTIVITY_TIMEOUT_MS}ms")
+            triggerStop()
         }
     }
 
