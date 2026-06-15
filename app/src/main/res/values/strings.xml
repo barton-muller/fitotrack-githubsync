@@ -123,6 +123,7 @@
     <string name="workoutTypeRowing">Rowing</string>
     <string name="workoutTypeSwimming">Swimming</string>
     <string name="workoutTypeOther">Other</string>
+    <string name="workoutTypeAuto">Auto</string>
     <string name="workoutTypeTreadmill">Treadmill</string>
     <plurals name="workoutStep">
         <item quantity="one">Step</item>
