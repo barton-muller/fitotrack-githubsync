@@ -33,6 +33,7 @@ abstract class AbstractWorkoutSaver(
     var routeSamples = data.samples
     var hrSamples = data.heartRateSamples
     var pauses = data.pauses
+    var repetitionSamples = data.repetitionSamples
 
     abstract fun save()
 
@@ -124,7 +125,7 @@ abstract class AbstractWorkoutSaver(
         Instance.getInstance(context).db.workoutDao().updateWorkoutData(getCurrentWorkoutData())
     }
 
-    protected fun getCurrentWorkoutData() = WorkoutData(workout, routeSamples, pauses, emptyList(), emptyList(), hrSamples)
+    protected fun getCurrentWorkoutData() = WorkoutData(workout, routeSamples, pauses, emptyList(), repetitionSamples, hrSamples)
 
 
 

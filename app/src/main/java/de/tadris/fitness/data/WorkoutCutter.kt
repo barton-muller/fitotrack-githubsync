@@ -53,6 +53,7 @@ class WorkoutCutter(
         }
 
         deleteSamples(removedSamples)
+        deleteRepetitionSamplesBefore(startSample.timestamp)
         workout = workout.copy(start = startSample.timestamp)
     }
 
@@ -69,6 +70,7 @@ class WorkoutCutter(
         }
 
         deleteSamples(removedSamples)
+        deleteRepetitionSamplesAfter(endSample.timestamp)
         workout = workout.copy(end = endSample.timestamp)
     }
 
@@ -77,6 +79,22 @@ class WorkoutCutter(
             Instance.getInstance(context).db.workoutDao().deleteSample(sample)
         }
         routeSamples = routeSamples.filter { it !in samples }
+    }
+
+    private fun deleteRepetitionSamplesBefore(timestamp: Long) {
+        val removed = repetitionSamples.filter { it.timestampEnd <= timestamp }
+        for(sample in removed){
+            Instance.getInstance(context).db.workoutDao().deleteSample(sample)
+        }
+        repetitionSamples = repetitionSamples.filter { it !in removed }
+    }
+
+    private fun deleteRepetitionSamplesAfter(timestamp: Long) {
+        val removed = repetitionSamples.filter { it.timestamp >= timestamp }
+        for(sample in removed){
+            Instance.getInstance(context).db.workoutDao().deleteSample(sample)
+        }
+        repetitionSamples = repetitionSamples.filter { it !in removed }
     }
 
 }
