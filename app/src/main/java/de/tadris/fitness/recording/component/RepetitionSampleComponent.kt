@@ -20,6 +20,7 @@
 package de.tadris.fitness.recording.component
 
 import de.tadris.fitness.data.RepetitionSample
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.event.RecordingStateChangeEvent
@@ -46,7 +47,10 @@ class RepetitionSampleComponent : RecorderServiceComponent {
     @Subscribe
     fun onRepetitionDetected(e: RepetitionRecognizedEvent){
         val state = service.stateHolder.state
-        if (state != RecordingState.RUNNING && state != RecordingState.AUTO_PAUSE) return
+        val isGpsWorkout = service.stateHolder.workoutType.hasCapability(WorkoutCapability.GPS)
+        val allowedStates = if (isGpsWorkout) setOf(RecordingState.RUNNING)
+                            else setOf(RecordingState.RUNNING, RecordingState.AUTO_PAUSE)
+        if (state !in allowedStates) return
         repetitionAggregation.add(e)
         if(repetitionAggregation.size >= RepetitionSample.getMinSampleCount(e.type)){
             pushSample()
