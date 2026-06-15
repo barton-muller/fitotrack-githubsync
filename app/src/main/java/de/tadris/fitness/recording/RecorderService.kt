@@ -148,6 +148,10 @@ class RecorderService : Service() {
         startRelevantComponents()
         actions.register()
 
+        if (autoStarted) {
+            actions.start(StartReason.AUTO_START)
+        }
+
         initializeWatchdog()
         val notification = notificationComponent!!.getNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
