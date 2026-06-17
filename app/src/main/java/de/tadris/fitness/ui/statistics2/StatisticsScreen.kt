@@ -157,6 +157,23 @@ private fun StatisticsProgressCard(
     formatter: (Int) -> String,
     modifier: Modifier = Modifier,
 ) {
+    if (period == StatisticsPeriod.YEAR) {
+        Card(modifier = modifier) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text(
+                    text = stringResource(R.string.stepProgressTotal),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = formatter(data.total),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+        return
+    }
+
     val progress = if (data.dailyGoal > 0) {
         (data.dailyAverage.toFloat() / data.dailyGoal).coerceIn(0f, 1f)
     } else 0f
