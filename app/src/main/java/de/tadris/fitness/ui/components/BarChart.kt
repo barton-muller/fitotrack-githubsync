@@ -63,6 +63,7 @@ fun BarChart(
     data: BarChartData,
     modifier: Modifier = Modifier,
     animate: Boolean = false,
+    formatter: (Int) -> String = remember { NumberFormat.getNumberInstance()::format },
 ) {
     val (entries, labels, horizontal) = data
     val barColor = MaterialTheme.colorScheme.primary
@@ -72,7 +73,6 @@ fun BarChart(
     val pillColor = MaterialTheme.colorScheme.surfaceVariant
     val pillTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     val textMeasurer = rememberTextMeasurer()
-    val numberFormat = remember { NumberFormat.getNumberInstance() }
 
     val maxValue by remember(entries, horizontal) {
         val entriesMax = entries.maxOrNull() ?: 0
@@ -151,7 +151,7 @@ fun BarChart(
                     strokeWidth = 1.dp.toPx(),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashPx, dashPx * 0.67f)),
                 )
-                val hText = numberFormat.format(horizontal)
+                val hText = formatter(horizontal)
                 val hStyle = labelStyle.copy(color = labelColor, fontWeight = FontWeight.SemiBold)
                 val hMeasured = textMeasurer.measure(hText, style = hStyle)
                 val hX = size.width - hMeasured.size.width
@@ -167,7 +167,7 @@ fun BarChart(
             // Tooltip pill for selected bar
             if (selectedIndex in entries.indices && entries[selectedIndex] > 0) {
                 val value = entries[selectedIndex]
-                val pillText = numberFormat.format(value)
+                val pillText = formatter(value)
                 val pillStyle = TextStyle(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,

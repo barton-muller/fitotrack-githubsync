@@ -72,7 +72,6 @@ import de.tadris.fitness.R
 import de.tadris.fitness.ui.components.BarChart
 import de.tadris.fitness.util.UserDateTimeUtils
 import java.text.DateFormatSymbols
-import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -133,6 +132,7 @@ fun StatisticsScreen(
             StatisticsProgressCard(
                 data = progressData,
                 period = selectedPeriod,
+                formatter = adapter::format,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -140,6 +140,7 @@ fun StatisticsScreen(
                 BarChart(
                     data = chartData,
                     animate = true,
+                    formatter = adapter::format,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(220.dp),
@@ -153,9 +154,9 @@ fun StatisticsScreen(
 private fun StatisticsProgressCard(
     data: StatisticsProgressData,
     period: StatisticsPeriod,
+    formatter: (Int) -> String,
     modifier: Modifier = Modifier,
 ) {
-    val numberFormat = remember { NumberFormat.getNumberInstance() }
     val progress = if (data.dailyGoal > 0) {
         (data.dailyAverage.toFloat() / data.dailyGoal).coerceIn(0f, 1f)
     } else 0f
@@ -184,9 +185,7 @@ private fun StatisticsProgressCard(
                         )
                     }
                     Text(
-                        text = "${numberFormat.format(data.dailyAverage)} / ${
-                            numberFormat.format(data.dailyGoal)
-                        }",
+                        text = "${formatter(data.dailyAverage)} / ${formatter(data.dailyGoal)}",
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -202,9 +201,7 @@ private fun StatisticsProgressCard(
             )
             if (period != StatisticsPeriod.DAY) {
                 Text(
-                    text = "${stringResource(R.string.stepProgressTotal)}: ${
-                        numberFormat.format(data.total)
-                    }",
+                    text = "${stringResource(R.string.stepProgressTotal)}: ${formatter(data.total)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

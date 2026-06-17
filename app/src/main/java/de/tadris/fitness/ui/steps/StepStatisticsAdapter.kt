@@ -23,14 +23,18 @@ import android.app.Application
 import de.tadris.fitness.Instance
 import de.tadris.fitness.ui.statistics2.CountSample
 import de.tadris.fitness.ui.statistics2.StatisticsAdapter
+import java.text.NumberFormat
 
 class StepStatisticsAdapter(app: Application) : StatisticsAdapter {
 
     private val dao = Instance.getInstance(app).db.stepDao()
     private val prefs = Instance.getInstance(app).userPreferences
+    private val numberFormat = NumberFormat.getNumberInstance()
 
     override fun getCountsInRange(start: Long, end: Long): List<CountSample> =
         dao.getStepsInRange(start, end).map { CountSample(it.windowStart, it.steps) }
 
     override val dailyGoal: Int get() = prefs.dailyStepGoal
+
+    override fun format(count: Int): String = numberFormat.format(count)
 }

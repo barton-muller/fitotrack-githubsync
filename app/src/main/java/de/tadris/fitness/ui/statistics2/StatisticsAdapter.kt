@@ -24,4 +24,5 @@ data class CountSample(val windowStart: Long, val count: Int)
 interface StatisticsAdapter {
     fun getCountsInRange(start: Long, end: Long): List<CountSample>
     val dailyGoal: Int
+    fun format(count: Int): String
 }
