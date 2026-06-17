@@ -42,8 +42,8 @@ class WorkoutFinalizer(val context: Context, val workoutDao: WorkoutDao, val wor
         workoutDao.getWorkoutById(workoutId) ?: throw Exception("Workout not found")
     private var data = WorkoutData.fromWorkout(workoutDao, workout)
     private val calculatedValues = CalculatedValues(data)
-
-    fun finalize() {
+    
+    fun finalizeWorkout() {
         recalculateElevation()
         smoothElevation()
         updateMSLValues()
