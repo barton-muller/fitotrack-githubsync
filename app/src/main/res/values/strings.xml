@@ -215,6 +215,7 @@
     <string name="dailyStepGoal">Daily step goal</string>
     <string name="todaySteps">Today\'s steps</string>
     <string name="stepStatistics">Step Statistics</string>
+    <string name="activeMinuteStatistics">Active Minute Statistics</string>
     <string name="stepProgressAvgPerDay">Avg. / day</string>
     <string name="stepProgressTotal">Total</string>
     <string name="today">Today</string>

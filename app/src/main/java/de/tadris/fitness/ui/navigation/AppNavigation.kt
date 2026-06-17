@@ -38,6 +38,7 @@ import de.tadris.fitness.recording.RecordingStateHolder
 import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
 import de.tadris.fitness.ui.dashboard.DashboardScreen
+import de.tadris.fitness.ui.steps.ActiveMinuteStatsScreen
 import de.tadris.fitness.ui.steps.StepStatsScreen
 import de.tadris.fitness.ui.steps.StepsScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
@@ -138,6 +139,9 @@ sealed interface Route {
     data object StepStats : Route
 
     @Serializable
+    data object ActiveMinuteStats : Route
+
+    @Serializable
     data object StepsOverview : Route
 }
 
@@ -180,6 +184,7 @@ fun AppNavigation(
                     context.startActivity(Intent(context, StatisticsActivity::class.java))
                 },
                 onStepDetails = { navController.navigate(Route.StepsOverview) },
+                onActiveMinuteStats = { navController.navigate(Route.ActiveMinuteStats) },
             )
         }
         composable<Route.StepsOverview> {
@@ -190,6 +195,9 @@ fun AppNavigation(
         }
         composable<Route.StepStats> {
             StepStatsScreen(onBack = { navController.popBackStack() })
+        }
+        composable<Route.ActiveMinuteStats> {
+            ActiveMinuteStatsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.ShowWorkoutFullscreenMap> { backStackEntry ->
             ShowWorkoutFullscreenMapScreen(

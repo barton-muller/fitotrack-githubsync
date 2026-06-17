@@ -101,6 +101,7 @@ fun DashboardScreen(
     onSettings: () -> Unit = {},
     onStatistics: () -> Unit = {},
     onStepDetails: () -> Unit = {},
+    onActiveMinuteStats: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val stepSensorSupported = remember(context) {
@@ -219,6 +220,7 @@ fun DashboardScreen(
                         weeklyStepChart = weeklyStepChart,
                         onDetails = onStepDetails,
                         onGoalClick = { showGoalDialog = true },
+                        onActiveMinuteClick = onActiveMinuteStats,
                     )
                 }
             } else if (stepSensorSupported && !stepTrackingPromptDismissed) {
@@ -271,6 +273,7 @@ private fun StepsTodayCard(
     weeklyStepChart: BarChartData,
     onDetails: () -> Unit,
     onGoalClick: () -> Unit = {},
+    onActiveMinuteClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val distanceText = remember(todayDistanceMeters) {
@@ -312,6 +315,7 @@ private fun StepsTodayCard(
                     LabeledValue(
                         label = stringResource(R.string.homeActiveLabel).uppercase(),
                         value = "$todayActiveMinutes min",
+                        onClick = onActiveMinuteClick,
                     )
                     LabeledValue(
                         label = stringResource(R.string.homeDistanceLabel).uppercase(),
@@ -381,8 +385,8 @@ private fun CompactStepRing(
 }
 
 @Composable
-private fun LabeledValue(label: String, value: String) {
-    Column {
+private fun LabeledValue(label: String, value: String, onClick: (() -> Unit)? = null) {
+    Column(modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
