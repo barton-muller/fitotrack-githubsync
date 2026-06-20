@@ -102,12 +102,15 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
         val workoutId = service.stateHolder.workoutId
         val sampleCount = Instance.getInstance(service).db.workoutDao()
             .getAllSamplesOfWorkout(workoutId).size
+
+        service.actions.stop(StopReason.AUTO_STOP)
+
         if (sampleCount < MIN_SAMPLES_TO_KEEP) {
             log(TAG, "Discarding workout: only $sampleCount samples recorded")
             EventBus.getDefault().post(WorkoutActionDiscard)
-        } else {
-            service.actions.stop(StopReason.AUTO_STOP)
-            EventBus.getDefault().post(WorkoutAutoStopEvent())
         }
+
+        EventBus.getDefault().post(WorkoutAutoStopEvent()) // notify UI if attached
+        service.stopSelf()
     }
 }
