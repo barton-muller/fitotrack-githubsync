@@ -188,6 +188,7 @@
     <string name="tabHome">Home</string>
     <string name="tabWorkouts">Workouts</string>
     <string name="tabSteps">Steps</string>
+    <string name="stepSettings">Step Settings</string>
     <string name="tabSettings">Settings</string>
     <string name="homeStepsToday">Steps · today</string>
     <string name="homeThisWeekSteps">This week · steps</string>

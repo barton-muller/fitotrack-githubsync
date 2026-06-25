@@ -30,59 +30,36 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.R
 import de.tadris.fitness.steps.StepTrackingService
+import de.tadris.fitness.ui.settings.ClickableSettingsItem
+import de.tadris.fitness.ui.settings.SwitchSettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +69,6 @@ fun StepsScreen(
 ) {
     val vm: StepsViewModel = viewModel()
     val serviceRunning by vm.serviceRunning.collectAsStateWithLifecycle()
-    val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
     val dailyStepGoal by vm.dailyStepGoal.collectAsStateWithLifecycle()
     val autoStartRecordingEnabled by vm.autoStartRecordingEnabled.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -279,7 +255,7 @@ fun StepsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.tabSteps)) },
+                title = { Text(stringResource(R.string.stepSettings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -288,147 +264,47 @@ fun StepsScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onStepStats) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_bar_chart),
-                            contentDescription = stringResource(R.string.stepStatistics),
-                        )
-                    }
-                },
             )
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            ServiceStatusCard(
-                running = serviceRunning,
-                supported = stepSensorSupported,
-                onStart = { startTracking() },
-                onStop = { vm.stopTracking() },
-            )
+        LazyColumn(contentPadding = innerPadding) {
+            item {
+                SwitchSettingsItem(
+                    title = stringResource(R.string.stepTrackingTitle),
+                    supporting = if (serviceRunning) stringResource(R.string.stepTrackingRunning)
+                                 else if (!stepSensorSupported) stringResource(R.string.stepTrackingNotSupported)
+                                 else stringResource(R.string.stepTrackingDescription),
+                    checked = serviceRunning,
+                    enabled = stepSensorSupported,
+                    onCheckedChange = { checked ->
+                        if (checked) startTracking() else vm.stopTracking()
+                    },
+                )
+            }
 
-            if (serviceRunning) {
-                AutoStartRecordingCard(
-                    enabled = autoStartRecordingEnabled,
+            item {
+                SwitchSettingsItem(
+                    title = stringResource(R.string.autoStartRecordingTitle),
+                    supporting = stringResource(R.string.autoStartRecordingDescription),
+                    checked = autoStartRecordingEnabled,
+                    enabled = serviceRunning,
                     onCheckedChange = { checked ->
                         if (checked) enableAutoStart() else vm.setAutoStartRecordingEnabled(false)
                     },
                 )
             }
 
-            StepProgressRing(
-                steps = todaySteps,
-                goal = dailyStepGoal,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .clickable { showGoalDialog = true },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ServiceStatusCard(
-    running: Boolean,
-    supported: Boolean,
-    onStart: () -> Unit,
-    onStop: () -> Unit,
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (running) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+            item {
+                ClickableSettingsItem(
+                    title = stringResource(R.string.dailyStepGoal),
+                    supporting = dailyStepGoal.toString(),
+                    onClick = { showGoalDialog = true },
                 )
-                Text(
-                    text = stringResource(R.string.stepTrackingRunning),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onStop) {
-                    Icon(
-                        painterResource(R.drawable.ic_stop),
-                        contentDescription = stringResource(R.string.stepTrackingStop),
-                    )
-                }
-            } else if (!supported) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.stepTrackingTitle),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.stepTrackingNotSupported),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.stepTrackingTitle),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.stepTrackingDescription),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                TextButton(onClick = onStart) {
-                    Text(stringResource(R.string.stepTrackingStart))
-                }
             }
         }
     }
 }
 
-@Composable
-private fun AutoStartRecordingCard(
-    enabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.autoStartRecordingTitle),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.autoStartRecordingDescription),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Switch(
-                checked = enabled,
-                onCheckedChange = onCheckedChange,
-            )
-        }
-    }
-}
 
 @Composable
 internal fun StepGoalDialog(
@@ -466,44 +342,3 @@ internal fun StepGoalDialog(
         },
     )
 }
-
-@Composable
-private fun StepProgressRing(
-    steps: Int,
-    goal: Int,
-    modifier: Modifier = Modifier,
-) {
-    var progress by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(steps, goal) {
-        progress = if (goal > 0) (steps.toFloat() / goal).coerceIn(0f, 1f) else 0f
-    }
-    val displayedProgress by animateFloatAsState(
-        progress,
-        ProgressIndicatorDefaults.ProgressAnimationSpec
-    )
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator(
-            progress = { displayedProgress },
-            modifier = Modifier.size(220.dp),
-            strokeWidth = 14.dp,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = steps.toString(),
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = stringResource(R.string.stepGoalProgress, goal),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
