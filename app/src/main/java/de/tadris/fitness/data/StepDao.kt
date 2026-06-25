@@ -54,4 +54,7 @@ interface StepDao {
 
     @Query("SELECT COUNT(*) FROM step_sample")
     fun countStepSamples(): Long
+
+    @Query("SELECT COUNT(*) > 0 FROM step_sample")
+    fun hasAnyStepsFlow(): Flow<Boolean>
 }

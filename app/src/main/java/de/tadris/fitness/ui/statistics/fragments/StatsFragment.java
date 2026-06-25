@@ -19,14 +19,16 @@
 
 package de.tadris.fitness.ui.statistics.fragments;
 
+import android.app.Activity;
+
 import androidx.fragment.app.Fragment;
 
 import de.tadris.fitness.ui.FitoTrackActivity;
 
 public abstract class StatsFragment extends Fragment {
-    protected FitoTrackActivity context;
+    protected Activity context;
 
-    protected StatsFragment(int layoutID, FitoTrackActivity ctx) {
+    protected StatsFragment(int layoutID, Activity ctx) {
         super(layoutID);
         this.context = ctx;
     }

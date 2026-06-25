@@ -19,7 +19,6 @@
 
 package de.tadris.fitness.ui.navigation
 
-import android.content.Intent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
@@ -39,8 +38,8 @@ import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
 import de.tadris.fitness.ui.dashboard.DashboardScreen
 import de.tadris.fitness.ui.steps.ActiveMinuteStatsScreen
-import de.tadris.fitness.ui.steps.StepStatsScreen
 import de.tadris.fitness.ui.steps.StepsScreen
+import de.tadris.fitness.ui.statistics.WorkoutStatisticsScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
 import de.tadris.fitness.ui.settings.AboutScreen
@@ -56,7 +55,6 @@ import de.tadris.fitness.ui.settings.interval.EditIntervalSetScreen
 import de.tadris.fitness.ui.settings.interval.ManageIntervalSetsScreen
 import de.tadris.fitness.ui.settings.workout_type.EditWorkoutTypeScreen
 import de.tadris.fitness.ui.settings.workout_type.ManageWorkoutTypesScreen
-import de.tadris.fitness.ui.statistics.StatisticsActivity
 import de.tadris.fitness.ui.workout.ShareWorkoutScreen
 import de.tadris.fitness.ui.workout.enter.EnterWorkoutScreen
 import de.tadris.fitness.ui.workout.show.DiagramType
@@ -136,13 +134,13 @@ sealed interface Route {
     data class RecordIndoorWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
 
     @Serializable
-    data object StepStats : Route
-
-    @Serializable
     data object ActiveMinuteStats : Route
 
     @Serializable
     data object StepsOverview : Route
+
+    @Serializable
+    data object WorkoutStatistics : Route
 }
 
 @Composable
@@ -180,9 +178,7 @@ fun AppNavigation(
                 onEnterWorkout = { navController.navigate(Route.EnterWorkout()) },
                 onImport = { importVm.requestImport() },
                 onSettings = { navController.navigate(Route.Settings) },
-                onStatistics = {
-                    context.startActivity(Intent(context, StatisticsActivity::class.java))
-                },
+                onStatistics = { navController.navigate(Route.WorkoutStatistics) },
                 onStepDetails = { navController.navigate(Route.StepsOverview) },
                 onActiveMinuteStats = { navController.navigate(Route.ActiveMinuteStats) },
             )
@@ -190,11 +186,10 @@ fun AppNavigation(
         composable<Route.StepsOverview> {
             StepsScreen(
                 onBack = { navController.popBackStack() },
-                onStepStats = { navController.navigate(Route.StepStats) },
             )
         }
-        composable<Route.StepStats> {
-            StepStatsScreen(onBack = { navController.popBackStack() })
+        composable<Route.WorkoutStatistics> {
+            WorkoutStatisticsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.ActiveMinuteStats> {
             ActiveMinuteStatsScreen(onBack = { navController.popBackStack() })

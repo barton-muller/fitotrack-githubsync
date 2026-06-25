@@ -65,7 +65,6 @@ import de.tadris.fitness.ui.settings.SwitchSettingsItem
 @Composable
 fun StepsScreen(
     onBack: () -> Unit = {},
-    onStepStats: () -> Unit = {},
 ) {
     val vm: StepsViewModel = viewModel()
     val serviceRunning by vm.serviceRunning.collectAsStateWithLifecycle()

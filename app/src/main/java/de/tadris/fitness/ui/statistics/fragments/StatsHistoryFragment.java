@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.statistics.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -68,7 +69,7 @@ import de.tadris.fitness.ui.statistics.TextToggle;
 import de.tadris.fitness.ui.statistics.workout_type_picker.WorkoutTypeSelection;
 
 public class StatsHistoryFragment extends StatsFragment {
-    FitoTrackActivity activity;
+    Activity activity;
 
     TextToggle speedTitle;
     CombinedChart speedChart;
@@ -94,7 +95,7 @@ public class StatsHistoryFragment extends StatsFragment {
 
     UserPreferences preferences;
 
-    public StatsHistoryFragment(FitoTrackActivity ctx) {
+    public StatsHistoryFragment(Activity ctx) {
         super(R.layout.fragment_stats_history, ctx);
         synchronizer = new ChartSynchronizer();
         statsProvider = new StatsProvider(ctx);

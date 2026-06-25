@@ -20,12 +20,13 @@
 package de.tadris.fitness.ui.steps
 
 import android.app.Application
+import android.content.Context
 import de.tadris.fitness.Instance
 import de.tadris.fitness.ui.statistics2.CountSample
 import de.tadris.fitness.ui.statistics2.StatisticsAdapter
 import java.text.NumberFormat
 
-class StepStatisticsAdapter(app: Application) : StatisticsAdapter {
+class StepStatisticsAdapter(app: Context) : StatisticsAdapter {
 
     private val dao = Instance.getInstance(app).db.stepDao()
     private val prefs = Instance.getInstance(app).userPreferences

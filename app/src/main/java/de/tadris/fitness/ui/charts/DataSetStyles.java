@@ -50,7 +50,7 @@ public class DataSetStyles {
     }
 
     public static BarDataSet applyDefaultBarStyle(Context ctx, BarDataSet barDataSet) {
-        barDataSet.setColor(ContextCompat.getColor(ctx, R.color.colorAccent));
+        barDataSet.setColor(ContextCompat.getColor(ctx, R.color.colorPrimary));
         return barDataSet;
     }
 }

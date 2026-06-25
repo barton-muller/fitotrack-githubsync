@@ -47,10 +47,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -78,74 +76,57 @@ import java.util.Locale
 
 private const val DAY_MS = 24 * 60 * 60 * 1000L
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
     adapter: StatisticsAdapter,
-    title: String,
-    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val app = LocalContext.current.applicationContext as Application
-    val vm: StatisticsViewModel = viewModel(factory = StatisticsViewModel.Factory(app, adapter))
+    val vm: StatisticsViewModel = viewModel(
+        key = adapter::class.java.name,
+        factory = StatisticsViewModel.Factory(app, adapter),
+    )
     val selectedPeriod by vm.selectedPeriod.collectAsStateWithLifecycle()
     val timeFrameOffset by vm.timeFrameOffset.collectAsStateWithLifecycle()
     val referenceTimestamp by vm.referenceTimestamp.collectAsStateWithLifecycle()
     val chartData by vm.chartData.collectAsStateWithLifecycle()
     val progressData by vm.progressData.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                        )
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            PeriodChipRow(
-                selected = selectedPeriod,
-                onSelect = { vm.setPeriod(it) },
-            )
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        PeriodChipRow(
+            selected = selectedPeriod,
+            onSelect = { vm.setPeriod(it) },
+        )
 
-            TimeFrameNavigationRow(
-                period = selectedPeriod,
-                referenceTimestamp = referenceTimestamp,
-                canShiftForward = timeFrameOffset < 0,
-                onShift = { vm.shiftOffset(it) },
-                onSetDate = { vm.setReferenceDate(it) },
-            )
+        TimeFrameNavigationRow(
+            period = selectedPeriod,
+            referenceTimestamp = referenceTimestamp,
+            canShiftForward = timeFrameOffset < 0,
+            onShift = { vm.shiftOffset(it) },
+            onSetDate = { vm.setReferenceDate(it) },
+        )
 
-            StatisticsProgressCard(
-                data = progressData,
-                period = selectedPeriod,
+        StatisticsProgressCard(
+            data = progressData,
+            period = selectedPeriod,
+            formatter = adapter::format,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        key(chartData.entries) {
+            BarChart(
+                data = chartData,
+                animate = true,
                 formatter = adapter::format,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp),
             )
-
-            key(chartData.entries) {
-                BarChart(
-                    data = chartData,
-                    animate = true,
-                    formatter = adapter::format,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp),
-                )
-            }
         }
     }
 }
