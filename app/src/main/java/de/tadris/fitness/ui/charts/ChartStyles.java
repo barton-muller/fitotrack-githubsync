@@ -224,7 +224,7 @@ public class ChartStyles {
         chart.getAxisLeft().setAxisMinimum(0);
     }
 
-    public static void barChartNoData(BarChart chart, FitoTrackActivity ctx) {
+    public static void barChartNoData(BarChart chart, Context ctx) {
         chart.setDrawMarkers(false);
         chart.setData(new BarData()); // Needed in case there is nothing to clear...
         chart.clearValues();
