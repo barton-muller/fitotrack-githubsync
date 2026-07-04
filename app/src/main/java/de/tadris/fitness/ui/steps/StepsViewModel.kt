@@ -55,6 +55,14 @@ class StepsViewModel(app: Application) : AndroidViewModel(app) {
         _autoStartRecordingEnabled.value = enabled
     }
 
+    private val _stepActivityThreshold = MutableStateFlow(prefs.stepActivityThreshold)
+    val stepActivityThreshold: StateFlow<String> = _stepActivityThreshold
+
+    fun setStepActivityThreshold(threshold: String) {
+        prefs.stepActivityThreshold = threshold
+        _stepActivityThreshold.value = threshold
+    }
+
     fun stopTracking() {
         prefs.stepTrackingEnabled = false
         getApplication<Application>().stopService(

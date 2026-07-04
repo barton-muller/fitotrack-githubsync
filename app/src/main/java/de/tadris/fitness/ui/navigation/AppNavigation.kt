@@ -38,7 +38,7 @@ import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
 import de.tadris.fitness.ui.dashboard.DashboardScreen
 import de.tadris.fitness.ui.steps.ActiveMinuteStatsScreen
-import de.tadris.fitness.ui.steps.StepsScreen
+import de.tadris.fitness.ui.steps.StepsSettingsScreen
 import de.tadris.fitness.ui.statistics.WorkoutStatisticsScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
@@ -184,7 +184,7 @@ fun AppNavigation(
             )
         }
         composable<Route.StepsOverview> {
-            StepsScreen(
+            StepsSettingsScreen(
                 onBack = { navController.popBackStack() },
             )
         }

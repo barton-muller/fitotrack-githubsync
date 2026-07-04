@@ -158,6 +158,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var dailyStepGoal by IntSharedPreference("dailyStepGoal", 10_000)
 
+    var stepActivityThreshold by StringSharedPreference(STEP_ACTIVITY_THRESHOLD, "medium")
+
     val lastVersionCode: Int
         get() = preferences.getInt("lastVersion", BuildConfig.VERSION_CODE)
 
@@ -198,6 +200,7 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
     companion object {
         private const val FIRST_DAY_OF_WEEK_VARIABLE = "firstDayOfWeek"
         const val STEP_LENGTH: String = "stepLength"
+        const val STEP_ACTIVITY_THRESHOLD: String = "stepActivityThreshold"
         const val STATISTICS_AGGREGATION_SPAN: String = "statisticsAggregationSpan"
         const val STATISTICS_SELECTED_TYPES: String = "statisticsSelectedTypes"
         const val VOICE_ANNOUNCEMENTS_INTERVAL_TIME: String = "spokenUpdateTimePeriod"

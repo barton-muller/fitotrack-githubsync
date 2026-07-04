@@ -22,12 +22,28 @@ package de.tadris.fitness.steps
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import de.tadris.fitness.Instance
 import de.tadris.fitness.data.WorkoutDao
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
 import de.tadris.fitness.recording.event.RecordingStateChangeEvent
 import de.tadris.fitness.util.PermissionUtils
+import de.tadris.fitness.util.WorkoutLogger
+
+enum class StepActivityThreshold(
+    val stepsPerMinuteThreshold: Int,
+    val requiredActiveMinutes: Int,
+) {
+    LOW(stepsPerMinuteThreshold = 60, requiredActiveMinutes = 3),
+    MEDIUM(stepsPerMinuteThreshold = 80, requiredActiveMinutes = 4),
+    HIGH(stepsPerMinuteThreshold = 100, requiredActiveMinutes = 5);
+
+    companion object {
+        fun fromPreferenceValue(value: String): StepActivityThreshold =
+            entries.find { it.name.equals(value, ignoreCase = true) } ?: MEDIUM
+    }
+}
 
 class StepActivityRecognizer(
     private val context: Context,
@@ -35,27 +51,45 @@ class StepActivityRecognizer(
 ) {
 
     companion object {
-        private const val STEPS_PER_MINUTE_THRESHOLD = 80
-        private const val REQUIRED_ACTIVE_MINUTES = 4
+        private const val TAG = "StepActivityRecognizer"
         private const val COOLDOWN_AFTER_STOP_MS = 10 * 60 * 1000L
     }
 
     private var consecutiveActiveMinutes = 0
 
-    fun onMinuteReceived(stepsInMinute: Int) {
-        consecutiveActiveMinutes =
-            if (stepsInMinute > STEPS_PER_MINUTE_THRESHOLD) consecutiveActiveMinutes + 1 else 0
+    private val threshold: StepActivityThreshold
+        get() = StepActivityThreshold.fromPreferenceValue(
+            Instance.getInstance(context).userPreferences.stepActivityThreshold
+        )
 
-        if (consecutiveActiveMinutes >= REQUIRED_ACTIVE_MINUTES) {
+    fun onMinuteReceived(stepsInMinute: Int) {
+        val threshold = threshold
+        consecutiveActiveMinutes =
+            if (stepsInMinute > threshold.stepsPerMinuteThreshold) consecutiveActiveMinutes + 1 else 0
+
+        if (consecutiveActiveMinutes >= threshold.requiredActiveMinutes) {
             maybeStartRecording()
         }
     }
 
     private fun maybeStartRecording() {
-        if (isRecordingRunning()) return
-        if (!isCooldownElapsed()) return
-        if (!hasLocationPermission()) return
+        if (isRecordingRunning()) {
+            WorkoutLogger.log(TAG, "Not auto-starting: a workout is already running")
+            return
+        }
+        if (!isCooldownElapsed()) {
+            WorkoutLogger.log(TAG, "Not auto-starting: cooldown after last workout not elapsed")
+            return
+        }
+        if (!hasLocationPermission()) {
+            WorkoutLogger.log(TAG, "Not auto-starting: location permission missing")
+            return
+        }
 
+        WorkoutLogger.log(
+            TAG,
+            "Starting automatic workout (threshold=$threshold, consecutiveActiveMinutes=$consecutiveActiveMinutes)"
+        )
         startRecording()
     }
 

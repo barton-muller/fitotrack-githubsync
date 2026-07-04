@@ -207,6 +207,10 @@
     <string name="stepTrackingStop">Stop</string>
     <string name="autoStartRecordingTitle">Auto-start workouts</string>
     <string name="autoStartRecordingDescription">Automatically start a workout when elevated step activity is detected. Increases battery usage.</string>
+    <string name="stepActivityThreshold">Activity threshold for auto start</string>
+    <string name="stepActivityThresholdLow">Low</string>
+    <string name="stepActivityThresholdMedium">Medium</string>
+    <string name="stepActivityThresholdHigh">High</string>
     <string name="autoStartLocationPermissionExplanation">FitoTrack needs location permission to automatically start and record workouts. Please grant it in the app settings.</string>
     <string name="autoStartBackgroundLocationPermissionExplanation">FitoTrack needs background location permission ("Allow all the time") to automatically start and record workouts while the app is not open. Please enable it in the location settings.</string>
     <string name="stepTrackingPromptTitle">Step tracking</string>

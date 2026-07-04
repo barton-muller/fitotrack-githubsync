@@ -49,8 +49,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.core.content.ContextCompat
@@ -59,17 +59,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.R
 import de.tadris.fitness.steps.StepTrackingService
 import de.tadris.fitness.ui.settings.ClickableSettingsItem
+import de.tadris.fitness.ui.settings.ListPreferenceItem
 import de.tadris.fitness.ui.settings.SwitchSettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StepsScreen(
+fun StepsSettingsScreen(
     onBack: () -> Unit = {},
 ) {
     val vm: StepsViewModel = viewModel()
     val serviceRunning by vm.serviceRunning.collectAsStateWithLifecycle()
     val dailyStepGoal by vm.dailyStepGoal.collectAsStateWithLifecycle()
     val autoStartRecordingEnabled by vm.autoStartRecordingEnabled.collectAsStateWithLifecycle()
+    val stepActivityThreshold by vm.stepActivityThreshold.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val stepSensorSupported = remember(context) {
         (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
@@ -291,6 +293,18 @@ fun StepsScreen(
                         if (checked) enableAutoStart() else vm.setAutoStartRecordingEnabled(false)
                     },
                 )
+            }
+
+            if (autoStartRecordingEnabled) {
+                item {
+                    ListPreferenceItem(
+                        title = stringResource(R.string.stepActivityThreshold),
+                        entries = stringArrayResource(R.array.step_activity_threshold_entries),
+                        entryValues = stringArrayResource(R.array.step_activity_threshold_values),
+                        selectedValue = stepActivityThreshold,
+                        onValueChange = { value -> vm.setStepActivityThreshold(value) },
+                    )
+                }
             }
 
             item {
