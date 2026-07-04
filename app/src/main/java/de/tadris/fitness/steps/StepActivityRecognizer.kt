@@ -40,17 +40,13 @@ class StepActivityRecognizer(
         private const val COOLDOWN_AFTER_STOP_MS = 10 * 60 * 1000L
     }
 
-    private val recentMinutes = ArrayDeque<Int>(REQUIRED_ACTIVE_MINUTES)
+    private var consecutiveActiveMinutes = 0
 
     fun onMinuteReceived(stepsInMinute: Int) {
-        recentMinutes.addLast(stepsInMinute)
-        if (recentMinutes.size > REQUIRED_ACTIVE_MINUTES) {
-            recentMinutes.removeFirst()
-        }
+        consecutiveActiveMinutes =
+            if (stepsInMinute > STEPS_PER_MINUTE_THRESHOLD) consecutiveActiveMinutes + 1 else 0
 
-        if (recentMinutes.size == REQUIRED_ACTIVE_MINUTES
-            && recentMinutes.all { it > STEPS_PER_MINUTE_THRESHOLD }
-        ) {
+        if (consecutiveActiveMinutes >= REQUIRED_ACTIVE_MINUTES) {
             maybeStartRecording()
         }
     }
