@@ -48,7 +48,6 @@ abstract class AbstractWorkoutSaver(
                 // insert pause here
                 pauses.add(WorkoutPause(
                     workoutId = workout.id,
-                    id = workout.id + pauses.size,
                     startDate = lastTimestamp,
                     endDate = sample.timestamp,
                     userInitiated = false,

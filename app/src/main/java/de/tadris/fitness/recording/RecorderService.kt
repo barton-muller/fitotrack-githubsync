@@ -44,6 +44,7 @@ import de.tadris.fitness.recording.component.GpsSampleComponent
 import de.tadris.fitness.recording.component.GpsStateComponent
 import de.tadris.fitness.recording.component.HeartRateComponent
 import de.tadris.fitness.recording.component.HeartRateSampleComponent
+import de.tadris.fitness.recording.component.PebbleIntegrationComponent
 import de.tadris.fitness.recording.component.PressureComponent
 import de.tadris.fitness.recording.component.RecorderServiceComponent
 import de.tadris.fitness.recording.component.RepetitionSampleComponent
@@ -123,9 +124,17 @@ class RecorderService : Service() {
         log(TAG, "Device: " + Build.PRODUCT + " / " + Build.DEVICE + " / " + Build.MODEL)
     }
 
+    private var initialized = false
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         log(TAG, "onStartCommand")
         super.onStartCommand(intent, flags, startId)
+
+        if (initialized) {
+            log(TAG, "onStartCommand called again on existing instance, ignoring setup")
+            return START_STICKY
+        }
+        initialized = true
 
         stateHolder = RecordingStateHolder()
 
@@ -198,6 +207,7 @@ class RecorderService : Service() {
         startComponent(AutoPauseComponent())
         startComponent(AutoStopComponent())
         startComponent(TemporaryAggregationComponent())
+        startComponent(PebbleIntegrationComponent())
         if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             startComponent(AutoStartComponent())
             startComponent(GpsComponent())

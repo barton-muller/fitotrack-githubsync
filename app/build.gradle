@@ -39,8 +39,8 @@ android {
         minSdkVersion 26
         compileSdk 37
         targetSdkVersion 37
-        versionCode 1604
-        versionName "16.0"
+        versionCode 1620
+        versionName "16.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -141,6 +141,9 @@ dependencies {
     implementation 'no.nordicsemi.android:ble-common:2.2.4'
 
     implementation 'org.greenrobot:eventbus:3.3.1'
+
+    // Pebble Smartwatch
+    implementation 'io.rebble.pebblekit2:client:1.1.0'
 
     // Android Room Database
     def room_version = '2.8.4'
