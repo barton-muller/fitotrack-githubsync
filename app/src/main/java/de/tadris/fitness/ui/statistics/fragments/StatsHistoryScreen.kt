@@ -32,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.CombinedChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.CandleData
@@ -52,7 +51,7 @@ import de.tadris.fitness.ui.charts.DataSetStyles
 import de.tadris.fitness.ui.components.SectionHeader
 import de.tadris.fitness.ui.statistics.DetailStatsActivity
 import de.tadris.fitness.ui.statistics.components.CombinedChartComponent
-import de.tadris.fitness.ui.statistics.workout_type_picker.WorkoutTypeSelection
+import de.tadris.fitness.ui.statistics.components.WorkoutTypeSelector
 
 @Composable
 fun StatsHistoryScreen() {
@@ -144,15 +143,11 @@ fun StatsHistoryScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        AndroidView(
-            factory = { ctx ->
-                WorkoutTypeSelection(ctx, null).apply {
-                    addOnWorkoutTypeSelectListener { _ ->
-                        selectedTypes = getSelectedWorkoutTypes()
-                        preferences.setStatisticsSelectedTypes(ArrayList(selectedTypes))
-                    }
-                    setSelectedWorkoutTypes(selectedTypes)
-                }
+        WorkoutTypeSelector(
+            selectedTypes = selectedTypes,
+            onTypesSelected = { types ->
+                selectedTypes = types
+                preferences.setStatisticsSelectedTypes(ArrayList(selectedTypes))
             },
             modifier = Modifier.fillMaxWidth()
         )
