@@ -48,7 +48,6 @@ import de.tadris.fitness.stats.StatsProvider
 import de.tadris.fitness.stats.WorkoutProperty
 import de.tadris.fitness.stats.aggregation.AggregationSpan
 import de.tadris.fitness.ui.FitoTrackActivity
-import de.tadris.fitness.ui.charts.ChartStyles
 import de.tadris.fitness.ui.charts.DataSetStyles
 import de.tadris.fitness.ui.components.SectionHeader
 import de.tadris.fitness.ui.statistics.DetailStatsActivity
