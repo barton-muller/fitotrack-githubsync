@@ -17,32 +17,23 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.ui.statistics.fragments;
+package de.tadris.fitness.ui.statistics
 
-import android.content.Context;
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import de.tadris.fitness.ui.FitoTrackActivity
+import de.tadris.fitness.ui.theme.FitoTrackTheme
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+class StatisticsActivity : FitoTrackActivity() {
 
-import de.tadris.fitness.ui.FitoTrackActivity;
-
-public abstract class StatsFragment extends Fragment {
-    protected FitoTrackActivity context;
-
-    protected StatsFragment() {
-    }
-
-    protected StatsFragment(int layoutID) {
-        super(layoutID);
-    }
-
-    @Override
-    public void onAttach(@NonNull Context ctx) {
-        super.onAttach(ctx);
-        if (ctx instanceof FitoTrackActivity) {
-            context = (FitoTrackActivity) ctx;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
+        
+        setContent {
+            FitoTrackTheme {
+                StatisticsScreen(onBack = { finish() })
+            }
         }
     }
-
-    public abstract String getTitle(Context context);
 }

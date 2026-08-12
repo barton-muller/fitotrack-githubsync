@@ -40,19 +40,6 @@ import androidx.compose.ui.unit.sp
 import de.tadris.fitness.ui.theme.FitoTrackTheme
 
 @Composable
-internal fun SectionHeader(title: String) {
-    Column(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        HorizontalDivider(Modifier.padding(top = 4.dp))
-    }
-}
-
-@Composable
 internal fun KeyValueRow(
     label1: String,
     value1: String,
@@ -86,16 +73,6 @@ private fun RowScope.KeyValueText(label: String, value: String) {
             fontSize = 24.sp,
             fontWeight = FontWeight.Medium,
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SectionHeaderPreview() {
-    FitoTrackTheme {
-        Surface {
-            SectionHeader(title = "Time")
-        }
     }
 }
 

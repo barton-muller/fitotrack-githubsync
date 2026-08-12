@@ -75,6 +75,7 @@ import de.tadris.fitness.R
 import de.tadris.fitness.data.Workout
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.data.preferences.UserMeasurements
+import de.tadris.fitness.ui.components.SectionHeader
 import de.tadris.fitness.ui.map.WorkoutMap
 import de.tadris.fitness.ui.sections.SectionListModel
 import de.tadris.fitness.ui.sections.SectionListPresenter
