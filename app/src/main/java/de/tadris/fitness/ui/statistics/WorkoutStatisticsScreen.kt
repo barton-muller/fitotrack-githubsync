@@ -51,7 +51,6 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.ui.FitoTrackActivity
 import de.tadris.fitness.ui.statistics.fragments.StatsHistoryFragment
 import de.tadris.fitness.ui.statistics.fragments.StatsOverviewFragment
 import de.tadris.fitness.ui.statistics2.StatisticsScreen
@@ -62,8 +61,8 @@ import de.tadris.fitness.ui.steps.StepStatisticsAdapter
 fun WorkoutStatisticsScreen(onBack: () -> Unit) {
     val activity = LocalActivity.current ?: return
 
-    val overviewFragment = remember { StatsOverviewFragment(activity) }
-    val historyFragment = remember { StatsHistoryFragment(activity) }
+    val overviewFragment = remember { StatsOverviewFragment() }
+    val historyFragment = remember { StatsHistoryFragment() }
     val stepAdapter = remember { StepStatisticsAdapter(activity) }
 
     val stepDao = remember { Instance.getInstance(activity).db.stepDao() }

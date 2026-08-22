@@ -133,10 +133,6 @@
         <item quantity="one">Pedal stroke</item>
         <item quantity="other">Pedal strokes</item>
     </plurals>
-    <plurals name="workoutRepetition">
-        <item quantity="one">Repetition</item>
-        <item quantity="other">Repetitions</item>
-    </plurals>
     <string name="workoutTypeRopeSkipping">Rope Skipping</string>
     <string name="workoutTypeTrampolineJumping">Trampoline Jumping</string>
     <plurals name="workoutJump">
