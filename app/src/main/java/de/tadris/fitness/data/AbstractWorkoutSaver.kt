@@ -23,6 +23,7 @@ import android.content.Context
 import de.tadris.fitness.Instance
 import de.tadris.fitness.data.calorie.CalorieCalculator
 import de.tadris.fitness.recording.component.AutoPauseComponent
+import kotlin.math.abs
 
 abstract class AbstractWorkoutSaver(
     protected val context: Context,
@@ -33,6 +34,7 @@ abstract class AbstractWorkoutSaver(
     var routeSamples = data.samples
     var hrSamples = data.heartRateSamples
     var pauses = data.pauses
+    var events = data.events
     var repetitionSamples = data.repetitionSamples
 
     abstract fun save()
@@ -44,7 +46,7 @@ abstract class AbstractWorkoutSaver(
 
         var lastTimestamp = routeSamples.first().timestamp
         for(sample in routeSamples){
-            if(sample.timestamp - lastTimestamp > minPauseTime){
+            if(abs(sample.timestamp - lastTimestamp) > minPauseTime){
                 // insert pause here
                 pauses.add(WorkoutPause(
                     workoutId = workout.id,
@@ -71,6 +73,9 @@ abstract class AbstractWorkoutSaver(
 
         routeSamples = routeSamples.map { it.copy(relativeTime = getRelativeTime(it.timestamp)) }
         hrSamples = hrSamples.map { it.copy(relativeTime = getRelativeTime(it.timestamp)) }
+        events = events.map { it.copy(relativeTime = getRelativeTime(it.timestamp)) }
+        repetitionSamples =
+            repetitionSamples.map { it.copy(relativeTime = getRelativeTime(it.timestamp)) }
     }
 
     protected fun calculateSampleSpeed(){
@@ -124,7 +129,8 @@ abstract class AbstractWorkoutSaver(
         Instance.getInstance(context).db.workoutDao().updateWorkoutData(getCurrentWorkoutData())
     }
 
-    protected fun getCurrentWorkoutData() = WorkoutData(workout, routeSamples, pauses, emptyList(), repetitionSamples, hrSamples)
+    protected fun getCurrentWorkoutData() =
+        WorkoutData(workout, routeSamples, pauses, events, repetitionSamples, hrSamples)
 
 
 

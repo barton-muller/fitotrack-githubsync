@@ -31,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Set;
 
+import de.tadris.fitness.R;
+
 @Entity(tableName = "workout_type")
 public class WorkoutType implements Serializable {
 
@@ -123,6 +125,13 @@ public class WorkoutType implements Serializable {
     @JsonIgnore
     public String getPreferenceMode() {
         return hasCapability(WorkoutCapability.GPS) ? WorkoutCapability.GPS.getId() : WorkoutCapability.PREFERENCE_MODE_NON_GPS;
+    }
+
+    @Ignore
+    @JsonIgnore
+    @PluralsRes
+    public int getRepeatingExerciseNameOrDefault() {
+        return repeatingExerciseName > 0 ? repeatingExerciseName : R.plurals.workoutRepetition;
     }
 
     @NonNull

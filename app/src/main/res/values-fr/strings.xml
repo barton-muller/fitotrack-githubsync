@@ -397,7 +397,6 @@
     <string name="runningMigrations">Exécution des migrations</string>
     <string name="editWorkoutStartEnd">Modifier début/fin</string>
     <string name="unitHeartBeatsPerMinute">bpm</string>
-    <string name="preferenceUseAverageForCurrentSpeed">Utilisez la vitesse moyenne sur une certaine période au lieu du dernier enregistrement de vitesse unique pour le calcul de la vitesse actuelle.</string>
     <string name="preferenceCurrentSpeedAverageTimeTitle">Vitesse moyenne</string>
     <string name="preferenceCurrentSpeedAverageTimeSummary">Remplacer la vitesse actuelle par une moyenne</string>
     <string name="preferenceCurrentSpeedTime">Durée pour le calcul de la moyenne</string>
@@ -557,4 +556,10 @@
     <string name="recording_status_gps_weak">Signal GPS faible …</string>
     <string name="recording_status_gps_searching">Recherche du signal GPS…</string>
     <string name="recording_waiting_gps_start_anyway">Signal GPS non acquis - Démarrer quand même ?</string>
+    <string name="recording_elapsed">Durée</string>
+    <string name="recording_pause">Pause</string>
+    <string name="recording_resume">Reprendre</string>
+    <string name="recording_hold_to_stop">Appuyer longuement pour arrêter l\'l\'entraînement</string>
+    <string name="recording_intervals">Intervalles</string>
+    <string name="recording_status_recording">Enregistrement</string>
 </resources>

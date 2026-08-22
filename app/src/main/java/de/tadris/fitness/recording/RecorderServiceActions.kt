@@ -96,6 +96,7 @@ class RecorderServiceActions(private val service: RecorderService) {
         stop(e.reason)
     }
 
+    @Synchronized
     fun start(reason: StartReason) {
         log(TAG, "Called start, reason: ${reason.logMessage} state: $state")
         if (state == RecordingState.IDLE) {
@@ -127,6 +128,7 @@ class RecorderServiceActions(private val service: RecorderService) {
     /**
      * Resume a started recording. Will not resume a [RecordingState.STOPPED] recording.
      */
+    @Synchronized
     fun resume() {
         log(TAG, "Called resume")
         if (state.isPause()) {
@@ -140,6 +142,7 @@ class RecorderServiceActions(private val service: RecorderService) {
     /**
      * Pause a running recording.
      */
+    @Synchronized
     fun pause(isAutomatic: Boolean) {
         if (state == RecordingState.RUNNING || (!isAutomatic && state == RecordingState.AUTO_PAUSE)) {
             log(TAG, "Pause, isAutomatic=$isAutomatic")
@@ -154,6 +157,7 @@ class RecorderServiceActions(private val service: RecorderService) {
     /**
      * Stop recording, don't stop the service.
      */
+    @Synchronized
     fun stop(reason: StopReason) {
         log(TAG, "Called stop, reason: ${reason.logMessage} state: $state")
         
@@ -168,9 +172,11 @@ class RecorderServiceActions(private val service: RecorderService) {
         }
 
         log(TAG, "Stopping and finalizing workout...")
+        if (state.isPause()) {
+            insertPause() // Append the pause that was in progress when stopping
+        }
         state = RecordingState.STOPPED
-        insertPause() // Append last active time
-        
+
         service.instance.db.workoutDao().editWorkout(service.stateHolder.workoutId) {
             it.copy(end = System.currentTimeMillis())
         }

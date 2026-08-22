@@ -476,7 +476,6 @@
     <string name="preferenceCurrentSpeedTime">Průměrné časové rozpětí rychlosti</string>
     <string name="workoutAvgDurationLong">Průměrná doba</string>
     <string name="workoutDurationSum">Celková doba</string>
-    <string name="preferenceUseAverageForCurrentSpeed">Pro výpočet aktuální rychlosti použijte průměrnou rychlost za určitou dobu namísto posledního záznamu rychlosti.</string>
     <string name="unitHeartRateSensorBattery">%</string>
     <string name="unitHertzLong">Hertz</string>
     <string name="moveStartOfWorkout">Uříznutí startu</string>
@@ -573,4 +572,5 @@
     <string name="localNetworkPermissionMessage">Pokud zadaná adresa URL odkazuje na místní počítač ve vaší síti, bude FitoTrack potřebovat oprávnění od systému Android k přístupu k němu. Pokud je adresa veřejně dostupná na internetu, můžete toto ignorovat.</string>
     <string name="localNetworkPermissionDeniedMessage">Přístup k místní síti byl trvale zamítnut. Pro jeho udělení otevřete nastavení aplikace.</string>
     <string name="openSettings">Otevřít nastavení</string>
+    <string name="pref_use_system_colors">Dynamické barvy (Material You)</string>
 </resources>
