@@ -296,10 +296,11 @@ abstract class RecordingViewModel(application: Application) : AndroidViewModel(a
         finish()
     }
 
-    fun onBtDeviceSelected(device: android.bluetooth.BluetoothDevice) {
-        BluetoothDevicePreferences(getApplication()).setAddress(
+    fun onBtDeviceSelected(address: String, name: String?) {
+        BluetoothDevicePreferences(getApplication()).setLastUsedDevice(
             BluetoothDevicePreferences.DEVICE_HEART_RATE,
-            device.address
+            address,
+            name
         )
         EventBus.getDefault().post(ReconnectBluetoothDeviceEvent)
         _showChooseBluetoothDevice.value = false

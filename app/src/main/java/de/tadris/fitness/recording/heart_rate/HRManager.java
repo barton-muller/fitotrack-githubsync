@@ -28,8 +28,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -92,7 +90,11 @@ public class HRManager extends BleManager {
     }
 
     public String getBluetoothAddress() {
-        return preferences.getAddress(BluetoothDevicePreferences.DEVICE_HEART_RATE);
+        BluetoothDevicePreferences.LastUsedDevice lastUsed = preferences.getLastUsedDevice(BluetoothDevicePreferences.DEVICE_HEART_RATE);
+        if (lastUsed == null) {
+            return "";
+        }
+        return lastUsed.getAddress();
     }
 
     public void stop() {

@@ -338,7 +338,23 @@
         <item quantity="one">Imported one workout</item>
         <item quantity="other">Imported %d workouts</item>
     </plurals>
+    <string name="bluetoothDevices">Bluetooth devices</string>
     <string name="selectBluetoothDevice">Select Bluetooth device</string>
+    <string name="lastUsedBluetoothDevice">Last used Bluetooth device</string>
+    <string name="connectedBluetoothDevice">Connected Bluetooth device</string>
+    <string name="pairedBluetoothDevices">Paired Bluetooth devices</string>
+    <string name="otherBluetoothDevices">Other Bluetooth devices</string>
+    <string name="showUnnamedBluetoothDevices">Show unnamed Bluetooth devices?</string>
+    <string name="bluetoothStrengthStrong">Strong bluetooth signal</string>
+    <string name="bluetoothStrengthModerate">Moderate bluetooth signal</string>
+    <string name="bluetoothStrengthWeak">Weak bluetooth signal</string>
+    <string name="bluetoothStrengthNone">No bluetooth signal</string>
+    <string name="bluetoothAutoconnect">Device will connect once available</string>
+    <string name="bluetoothTooManyConnections">Device will connect once available</string>
+    <string name="bluetoothErrorTooManyScans">Bluetooth scanning started too many times. Please wait 30 seconds, and try again.</string>
+    <string name="bluetoothErrorHardwareExhausted">Bluetooth resources are exhausted. Please wait 30 seconds, and try again.</string>
+    <string name="bluetoothErrorUnsupported">Bluetooth is unsupported on this device.</string>
+    <string name="bluetoothErrorOther">Unable to scan for Bluetooth devices. Please try turning Bluetooth off and back on.</string>
     <string name="connectHeartRateDevice">Connect heart rate device</string>
     <string name="showIntervals">Show intervals</string>
     <string name="nothingSelected">Nothing selected</string>
