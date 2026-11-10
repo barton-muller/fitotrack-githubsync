@@ -57,6 +57,7 @@ import de.tadris.fitness.R
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.autostart.AutoStartMode
 import de.tadris.fitness.util.NotificationHelper
+import de.tadris.fitness.util.PermissionUtils
 
 @Composable
 fun GpsRecordingRoute(
@@ -185,12 +186,8 @@ fun GpsRecordingRoute(
     LaunchedEffect(showChooseBluetoothDevice) {
         bluetoothReady = false
         if (!showChooseBluetoothDevice) return@LaunchedEffect
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
-        ) {
-            btPermissionLauncher.launch(
-                arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
-            )
+        if (!PermissionUtils.checkBluetoothScanPermissions(context)) {
+            btPermissionLauncher.launch(PermissionUtils.bluetoothScanPermissions)
             vm.dismissChooseBluetoothDevice()
             return@LaunchedEffect
         }

@@ -415,6 +415,8 @@
     <string name="bluetoothErrorHardwareExhausted">Bluetooth resources are exhausted. Please wait 30 seconds, and try again.</string>
     <string name="bluetoothErrorUnsupported">Bluetooth is unsupported on this device.</string>
     <string name="bluetoothErrorOther">Unable to scan for Bluetooth devices. Please try turning Bluetooth off and back on.</string>
+    <string name="bluetoothErrorNoPermission">FitoTrack needs permission to scan for nearby Bluetooth devices.</string>
+    <string name="bluetoothErrorDisabled">Bluetooth is turned off. Please turn it on and try again.</string>
     <string name="connectHeartRateDevice">Connect heart rate device</string>
     <string name="showIntervals">Show intervals</string>
     <string name="nothingSelected">Nothing selected</string>

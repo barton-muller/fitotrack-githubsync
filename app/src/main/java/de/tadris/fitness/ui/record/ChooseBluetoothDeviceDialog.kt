@@ -136,12 +136,14 @@ fun ChooseBluetoothDeviceDialog(
     )
 }
 
-private fun getErrorMessage(error: BluetoothDeviceScanner.BluetoothError): Int {
+private fun getErrorMessage(error: BluetoothError): Int {
     return when(error) {
         BluetoothError.TOO_MANY_SCANS -> R.string.bluetoothErrorTooManyScans
         BluetoothError.NO_RESOURCES -> R.string.bluetoothErrorHardwareExhausted
         BluetoothError.UNSUPPORTED -> R.string.bluetoothErrorUnsupported
         BluetoothError.OTHER_ERROR -> R.string.bluetoothErrorOther
+        BluetoothError.NO_PERMISSION -> R.string.bluetoothErrorNoPermission
+        BluetoothError.BLUETOOTH_DISABLED -> R.string.bluetoothErrorDisabled
     }
 }
 

@@ -1,6 +1,5 @@
 package de.tadris.fitness.ui.record
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -11,7 +10,6 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import de.tadris.fitness.util.PermissionUtils
 import de.tadris.fitness.util.WorkoutLogger
@@ -28,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 @SuppressLint("MissingPermission")
 class BluetoothDeviceScanner(context: Context, private val coroutineScope: CoroutineScope) {
 
+    private val appContext: Context = context.applicationContext
     private val deviceMap = ConcurrentHashMap<String, ScannedDevice>()
     private val _devices = MutableStateFlow<List<ScannedDevice>>(emptyList())
 
@@ -35,9 +34,8 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
 
     private val _scanFailed = MutableStateFlow<BluetoothError?>(null)
     val scanFailed: StateFlow<BluetoothError?> = _scanFailed.asStateFlow()
-    private val adapter: BluetoothAdapter =
-        context.getSystemService(BluetoothManager::class.java).adapter
-        ?: throw BluetoothNotAvailableException()
+    private val adapter: BluetoothAdapter? =
+        appContext.getSystemService(BluetoothManager::class.java)?.adapter
     private var scanner: BluetoothLeScanner? = null
 
     private var updateMapJob: Job? = null
@@ -57,24 +55,6 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
         MED(-85),
         LOW(Integer.MIN_VALUE),
         NONE(null)
-    }
-
-    init {
-        if (!adapter.isEnabled) {
-            throw BluetoothNotAvailableException()
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!PermissionUtils.checkPermission(context, Manifest.permission.BLUETOOTH_CONNECT) ||
-                !PermissionUtils.checkPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-            ) {
-                throw SecurityException("Bluetooth permission must be granted to instantiate BluetoothDeviceScanner")
-            }
-        } else if (!PermissionUtils.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)){
-            //pre S, fine location is needed for BT scanning
-            throw SecurityException("Location permission must be granted to instantiate BluetoothDeviceScanner")
-        }
-        scanner = adapter.bluetoothLeScanner
     }
 
     private fun ScanResult.toScannedDevice(
@@ -106,15 +86,23 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
         stopScan() // restart scan, if called while scan is already running
         _scanFailed.value = null
 
-        if (scanner != null) {
-            scanner!!.startScan(
-                ArrayList<ScanFilter?>(),
-                ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build(),
-                callback
-            )
+        if (!PermissionUtils.checkBluetoothScanPermissions(appContext)) {
+            _scanFailed.value = BluetoothError.NO_PERMISSION
+            return
         }
+        val scanner = adapter?.takeIf { it.isEnabled }?.bluetoothLeScanner
+        if (scanner == null) {
+            _scanFailed.value = BluetoothError.BLUETOOTH_DISABLED
+            return
+        }
+        this.scanner = scanner
+        scanner.startScan(
+            ArrayList<ScanFilter?>(),
+            ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build(),
+            callback
+        )
         updateMapJob = coroutineScope.launch {
             while (true) {
                 delay(BT_REFRESH_TIME_MS)
@@ -127,9 +115,13 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
     }
 
     fun stopScan() {
-        if (scanner != null) {
-            scanner!!.stopScan(callback)
+        try {
+            scanner?.stopScan(callback)
+        } catch (e: IllegalStateException) {
+            // thrown on some Android versions if Bluetooth was turned off in the meantime
+            Log.d("DeviceScanner", "Failed to stop scan", e)
         }
+        scanner = null
         updateMapJob?.cancel()
         updateMapJob = null
     }
@@ -224,10 +216,10 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
         TOO_MANY_SCANS(ScanCallback.SCAN_FAILED_SCANNING_TOO_FREQUENTLY),
         UNSUPPORTED(ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED),
         NO_RESOURCES(ScanCallback.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES),
-        OTHER_ERROR(-1);
+        OTHER_ERROR(-1),
+        NO_PERMISSION(-2),
+        BLUETOOTH_DISABLED(-3);
     }
-
-    class BluetoothNotAvailableException : Exception()
 
     companion object {
         private const val BT_ABSENT_TIMEOUT_MS = 10000L

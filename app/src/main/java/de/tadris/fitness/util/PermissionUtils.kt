@@ -44,4 +44,20 @@ object PermissionUtils {
     fun checkPermission(context: Context, permission: String) =
         ActivityCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
+    /**
+     * Permissions needed to scan for Bluetooth LE devices. From Android 12 on these are the
+     * "nearby devices" permissions, before that BLE scanning requires fine location.
+     */
+    @JvmStatic
+    val bluetoothScanPermissions: Array<String>
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
+        } else {
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+    @JvmStatic
+    fun checkBluetoothScanPermissions(context: Context) =
+        bluetoothScanPermissions.all { checkPermission(context, it) }
+
 }
