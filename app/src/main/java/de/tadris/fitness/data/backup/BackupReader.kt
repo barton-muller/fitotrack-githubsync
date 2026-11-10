@@ -149,7 +149,7 @@ class BackupReader(
                         processedWorkouts++
                     }
                     isStepFile(entry.name) -> {
-                        listener.onStatusChanged(20, context.getString(R.string.tabSteps))
+                        listener.onStatusChanged(80, context.getString(R.string.tabSteps))
                         restoreSteps(stream)
                     }
                 }
