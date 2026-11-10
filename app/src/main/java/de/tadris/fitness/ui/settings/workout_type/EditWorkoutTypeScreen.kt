@@ -20,6 +20,10 @@
 package de.tadris.fitness.ui.settings.workout_type
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,7 +39,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,8 +91,7 @@ fun EditWorkoutTypeScreen(
     var met by remember { mutableStateOf("0") }
     var iconName by remember { mutableStateOf(WorkoutIcon.RUNNING.name) }
     var typeColor by remember { mutableStateOf(primaryColor) }
-    var hasGps by remember { mutableStateOf(true) }
-    var hasRepetitions by remember { mutableStateOf(false) }
+    var capability by remember { mutableStateOf(WorkoutCapability.GPS) }
 
     var idError by remember { mutableStateOf<String?>(null) }
     var titleError by remember { mutableStateOf<String?>(null) }
@@ -114,8 +116,11 @@ fun EditWorkoutTypeScreen(
                     met = type.MET.toString()
                     iconName = type.icon
                     typeColor = Color(type.color)
-                    hasGps = type.hasCapability(WorkoutCapability.GPS)
-                    hasRepetitions = type.hasCapability(WorkoutCapability.REPETITIONS)
+                    capability = if (type.hasCapability(WorkoutCapability.GPS)) {
+                        WorkoutCapability.GPS
+                    } else {
+                        type.repetitionCapability ?: WorkoutCapability.GPS
+                    }
                 }
             }
         } else {
@@ -161,10 +166,6 @@ fun EditWorkoutTypeScreen(
             metError = context.getString(R.string.errorEnterValidNumber)
             return null
         }
-        val caps = buildSet {
-            if (hasGps) add(WorkoutCapability.GPS)
-            if (hasRepetitions) add(WorkoutCapability.REPETITIONS)
-        }
         return WorkoutType(
             trimmedId,
             trimmedTitle,
@@ -172,7 +173,7 @@ fun EditWorkoutTypeScreen(
             typeColor.toArgb(),
             iconName,
             parsedMet,
-            WorkoutCapability.toStorageString(caps),
+            WorkoutCapability.toStorageString(setOf(capability)),
         )
     }
 
@@ -312,20 +313,27 @@ fun EditWorkoutTypeScreen(
                 },
                 modifier = Modifier.clickable { showIconPicker = true },
             )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.workoutCapabilityGps)) },
-                trailingContent = {
-                    Checkbox(checked = hasGps, onCheckedChange = { hasGps = it })
-                },
-                modifier = Modifier.clickable { hasGps = !hasGps },
+            Text(
+                text = stringResource(R.string.workoutCapabilityTitle),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp),
             )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.workoutCapabilityRepetitions)) },
-                trailingContent = {
-                    Checkbox(checked = hasRepetitions, onCheckedChange = { hasRepetitions = it })
-                },
-                modifier = Modifier.clickable { hasRepetitions = !hasRepetitions },
-            )
+            Column(Modifier.selectableGroup()) {
+                WorkoutCapability.entries.forEach { option ->
+                    ListItem(
+                        headlineContent = { Text(stringResource(option.titleRes)) },
+                        leadingContent = {
+                            RadioButton(selected = capability == option, onClick = null)
+                        },
+                        modifier = Modifier.selectable(
+                            selected = capability == option,
+                            onClick = { capability = option },
+                            role = Role.RadioButton,
+                        ),
+                    )
+                }
+            }
         }
     }
 }

@@ -82,7 +82,7 @@ fun GpsRecordingRoute(
     val showOnLockScreen = remember { Instance.getInstance(context).userPreferences.showOnLockScreen }
     RecordingWindowEffects(showOnLockScreen)
 
-    val needsActivityRecognition = workoutType?.hasCapability(WorkoutCapability.REPETITIONS) == true &&
+    val needsActivityRecognition = workoutType?.repetitionCapability == WorkoutCapability.STEPS &&
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
     // Activity recognition permission (for step tracking on Android Q+)

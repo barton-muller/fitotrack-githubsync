@@ -44,13 +44,14 @@ abstract class ExerciseRecognizer {
     companion object {
 
         fun findByWorkoutType(type: WorkoutType): ExerciseRecognizer? {
-            if (!type.hasCapability(WorkoutCapability.REPETITIONS)) return null
-            return when (type.id) {
-                WorkoutTypeManager.WORKOUT_TYPE_ID_ROPE_SKIPPING -> JumpRecognizer(maxJumpDuration = 1250)
-                WorkoutTypeManager.WORKOUT_TYPE_ID_TRAMPOLINE_JUMPING -> JumpRecognizer(maxJumpDuration = 2500)
-                WorkoutTypeManager.WORKOUT_TYPE_ID_PUSH_UPS -> ProximityRecognizer()
-                WorkoutTypeManager.WORKOUT_TYPE_ID_PULL_UPS -> PullupRecognizer()
-                else -> StepRecognizer()
+            return when (type.repetitionCapability) {
+                WorkoutCapability.STEPS -> StepRecognizer()
+                WorkoutCapability.JUMPS -> JumpRecognizer(
+                    maxJumpDuration = if (type.id == WorkoutTypeManager.WORKOUT_TYPE_ID_ROPE_SKIPPING) 1250 else 2500
+                )
+                WorkoutCapability.PUSH_UPS -> ProximityRecognizer()
+                WorkoutCapability.PULL_UPS -> PullupRecognizer()
+                WorkoutCapability.GPS, null -> null
             }
         }
 

@@ -315,10 +315,7 @@ private fun ShowWorkoutContent(
                     distanceUnitUtils.getPace(workout.averagePaceActive)
                 )
                 if(data.hasRepetitions){
-                    val repetitionLabel = if (type.repeatingExerciseName > 0)
-                        LocalResources.current.getQuantityString(type.repeatingExerciseName, workout.repetitions)
-                    else
-                        LocalResources.current.getQuantityString(R.plurals.workoutRepetition, workout.repetitions)
+                    val repetitionLabel = LocalResources.current.getQuantityString(type.repeatingExerciseNameOrDefault, workout.repetitions)
                     KeyValueRow(repetitionLabel, workout.repetitions.toString())
                 }
             } else {

@@ -473,7 +473,7 @@ private fun ThisWeekCard(
                         val metric = if (totalDistance == 0 && totalReps > 0) {
                             "$totalReps ${
                                 resources.getQuantityString(
-                                    workoutType.repeatingExerciseName,
+                                    workoutType.repeatingExerciseNameOrDefault,
                                     totalReps
                                 )
                             }"

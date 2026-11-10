@@ -453,8 +453,12 @@
     <string name="deleteWorkoutType">Delete Workout Type</string>
     <string name="deleteWorkoutTypeConfirmation">Do you really want to delete this workout type?</string>
     <string name="workoutTypeEditIcon">Icon</string>
+    <string name="workoutCapabilityTitle">Tracking</string>
     <string name="workoutCapabilityGps">GPS tracking</string>
-    <string name="workoutCapabilityRepetitions">Repetition counting</string>
+    <string name="workoutCapabilitySteps">Count steps</string>
+    <string name="workoutCapabilityJumps">Count jumps</string>
+    <string name="workoutCapabilityPushUps">Count push-ups</string>
+    <string name="workoutCapabilityPullUps">Count pull-ups</string>
     <string name="editWorkoutType">Edit workout type</string>
     <string name="addWorkoutType">Add workout type</string>
     <string name="pref_map_directory">Offline Map Directory</string>

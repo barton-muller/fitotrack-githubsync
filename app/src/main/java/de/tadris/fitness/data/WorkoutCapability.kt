@@ -19,9 +19,24 @@
 
 package de.tadris.fitness.data
 
-enum class WorkoutCapability(val id: String) {
-    GPS("gps"),
-    REPETITIONS("repetitions");
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
+import de.tadris.fitness.R
+
+enum class WorkoutCapability(
+    val id: String,
+    @StringRes val titleRes: Int,
+    val repetitionTypeId: Int? = null,
+    @PluralsRes val repetitionName: Int = 0,
+) {
+    GPS("gps", R.string.workoutCapabilityGps),
+    STEPS("steps", R.string.workoutCapabilitySteps, RepetitionSample.REPETITION_TYPE_STEP, R.plurals.workoutStep),
+    JUMPS("jumps", R.string.workoutCapabilityJumps, RepetitionSample.REPETITION_TYPE_JUMP, R.plurals.workoutJump),
+    PUSH_UPS("push_ups", R.string.workoutCapabilityPushUps, RepetitionSample.REPETITION_TYPE_PUSH_UP, R.plurals.workoutPushUp),
+    PULL_UPS("pull_ups", R.string.workoutCapabilityPullUps, RepetitionSample.REPETITION_TYPE_PULL_UP, R.plurals.workoutPullUp);
+
+    val isRepetitionCounting: Boolean
+        get() = repetitionTypeId != null
 
     companion object {
         /**

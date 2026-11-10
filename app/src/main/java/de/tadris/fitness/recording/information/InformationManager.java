@@ -51,7 +51,7 @@ public class InformationManager {
             information.add(new AveragePace(context));
             information.add(new Ascent(context));
         }
-        if (workoutType.hasCapability(WorkoutCapability.REPETITIONS)) {
+        if (workoutType.hasRepetitionCounting()) {
             information.add(new Repetitions(context));
             information.add(new CurrentIntensity(context));
             information.add(new CurrentFrequency(context));

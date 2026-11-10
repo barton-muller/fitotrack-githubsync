@@ -20,6 +20,7 @@
 package de.tadris.fitness.data;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -74,7 +75,7 @@ public class WorkoutType implements Serializable {
     public int MET;
 
     /**
-     * Comma-separated list of {@link WorkoutCapability} IDs (e.g. "gps,repetitions").
+     * Comma-separated list of {@link WorkoutCapability} IDs (e.g. "gps,steps").
      *
      * @see WorkoutCapability
      */
@@ -117,6 +118,25 @@ public class WorkoutType implements Serializable {
     }
 
     /**
+     * Returns the repetition counting capability (e.g. steps or jumps) of this type, or null if it doesn't count repetitions.
+     */
+    @Ignore
+    @JsonIgnore
+    @Nullable
+    public WorkoutCapability getRepetitionCapability() {
+        for (WorkoutCapability capability : WorkoutCapability.parseSet(capabilities)) {
+            if (capability.isRepetitionCounting()) return capability;
+        }
+        return null;
+    }
+
+    @Ignore
+    @JsonIgnore
+    public boolean hasRepetitionCounting() {
+        return getRepetitionCapability() != null;
+    }
+
+    /**
      * Returns the preference mode key for this workout type.
      * GPS-capable workouts use "gps", others use "indoor".
      * These keys are used in SharedPreferences and must remain stable.
@@ -131,7 +151,9 @@ public class WorkoutType implements Serializable {
     @JsonIgnore
     @PluralsRes
     public int getRepeatingExerciseNameOrDefault() {
-        return repeatingExerciseName > 0 ? repeatingExerciseName : R.plurals.workoutRepetition;
+        if (repeatingExerciseName > 0) return repeatingExerciseName;
+        WorkoutCapability repetitionCapability = getRepetitionCapability();
+        return repetitionCapability != null ? repetitionCapability.getRepetitionName() : R.plurals.workoutRepetition;
     }
 
     @NonNull

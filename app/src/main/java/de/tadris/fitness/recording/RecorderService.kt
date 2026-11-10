@@ -219,7 +219,7 @@ class RecorderService : Service() {
                 startComponent(AutoStopBackgroundRecordingsComponent())
             }
         }
-        if (workoutType.hasCapability(WorkoutCapability.REPETITIONS)) {
+        if (workoutType.hasRepetitionCounting()) {
             startComponent(ExerciseRecognitionComponent())
             startComponent(RepetitionSampleComponent())
         }

@@ -332,8 +332,12 @@
     <string name="resumeWorkoutConfirmation">Dieses Workout fortsetzen? Es wird ab dem Zeitpunkt, an dem das Workout gestoppt wurde, eine Pause hinzugefügt.</string>
     <string name="editWorkoutType">Workout-Typ bearbeiten</string>
     <string name="workoutTypeEditIcon">Symbol</string>
+    <string name="workoutCapabilityTitle">Aufzeichnung</string>
     <string name="workoutCapabilityGps">GPS-Aufzeichnung</string>
-    <string name="workoutCapabilityRepetitions">Wiederholungen zählen</string>
+    <string name="workoutCapabilitySteps">Schritte zählen</string>
+    <string name="workoutCapabilityJumps">Sprünge zählen</string>
+    <string name="workoutCapabilityPushUps">Liegestütze zählen</string>
+    <string name="workoutCapabilityPullUps">Klimmzüge zählen</string>
     <string name="deleteWorkoutTypeConfirmation">Möchtest du den Workout-Typ wirklich löschen\?</string>
     <string name="deleteWorkoutType">Workout-Typ löschen</string>
     <string name="actionSave">Speichern</string>
