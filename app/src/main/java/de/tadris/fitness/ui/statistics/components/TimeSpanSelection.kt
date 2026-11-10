@@ -60,6 +60,10 @@ import de.tadris.fitness.Instance
 import de.tadris.fitness.data.preferences.UserPreferences
 import de.tadris.fitness.stats.aggregation.AggregationSpan
 import de.tadris.fitness.ui.statistics.DateFormatter
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -77,8 +81,10 @@ fun TimeSpanSelection(
         mutableStateOf(preferences.statisticsAggregationSpan ?: AggregationSpan.MONTH) 
     }
     
-    val calendar = remember { GregorianCalendar() }
-    var selectedDateMillis by remember { mutableLongStateOf(calendar.timeInMillis) }
+    // Local midnight of the selected day
+    var selectedDateMillis by remember {
+        mutableLongStateOf(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli())
+    }
     
     val dateFormatter = remember(selectedAggregationSpan) { DateFormatter(selectedAggregationSpan) }
     
@@ -89,6 +95,11 @@ fun TimeSpanSelection(
         val cal = GregorianCalendar().apply {
             timeInMillis = time
             firstDayOfWeek = instance.userPreferences.firstDayOfWeek
+            // Spans start at midnight
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
         
         val normalizedTime = when (span) {
@@ -121,15 +132,21 @@ fun TimeSpanSelection(
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDateMillis
+            // The material DatePicker works with UTC midnight timestamps
+            initialSelectedDateMillis = Instant.ofEpochMilli(selectedDateMillis)
+                .atZone(ZoneId.systemDefault()).toLocalDate()
+                .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        selectedDateMillis = it
-                        notifyChange(selectedAggregationSpan, it)
+                    datePickerState.selectedDateMillis?.let { utcMillis ->
+                        val localMidnight = Instant.ofEpochMilli(utcMillis)
+                            .atZone(ZoneOffset.UTC).toLocalDate()
+                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                        selectedDateMillis = localMidnight
+                        notifyChange(selectedAggregationSpan, localMidnight)
                     }
                     showDatePicker = false
                 }) {

@@ -32,7 +32,6 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.renderer.CombinedChartRenderer
 import de.tadris.fitness.stats.aggregation.AggregationSpan
-import de.tadris.fitness.ui.FitoTrackActivity
 import de.tadris.fitness.ui.charts.ChartStyles
 
 @Composable
@@ -59,7 +58,7 @@ fun HorizontalBarChartComponent(
                 ChartStyles.horizontalBarChartIconLabel(chart, barData, chart.context)
             } else {
                 chart.clear()
-                ChartStyles.barChartNoData(chart, chart.context as FitoTrackActivity)
+                ChartStyles.barChartNoData(chart, chart.context)
             }
             chart.invalidate()
         }
@@ -71,8 +70,10 @@ fun CombinedChartComponent(
     combinedData: CombinedData?,
     aggregationSpan: AggregationSpan,
     modifier: Modifier = Modifier,
+    yLabel: String? = null,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    onChartInit: (CombinedChart) -> Unit = {}
+    onChartInit: (CombinedChart) -> Unit = {},
+    onDataApplied: (CombinedChart) -> Unit = {},
 ) {
     val textColorInt = textColor.toArgb()
     AndroidView(
@@ -95,12 +96,18 @@ fun CombinedChartComponent(
 
             if (combinedData != null) {
                 combinedData.setValueTextColor(textColorInt)
+                // Set before updating the data so the value marker picks up the unit
+                if (yLabel != null) {
+                    ChartStyles.setYAxisLabel(chart, yLabel, chart.context)
+                    chart.legend.textColor = textColorInt
+                }
                 ChartStyles.updateStatsHistoryCombinedChartToSpan(
                     chart,
                     combinedData,
                     aggregationSpan,
                     chart.context as Activity
                 )
+                onDataApplied(chart)
             }
             chart.invalidate()
         }

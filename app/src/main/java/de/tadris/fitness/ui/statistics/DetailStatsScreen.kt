@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.statistics
 
+import android.view.MotionEvent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,12 +33,15 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.CandleData
 import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.listener.ChartTouchListener
+import com.github.mikephil.charting.listener.OnChartGestureListener
 import de.tadris.fitness.R
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.stats.NoDataException
 import de.tadris.fitness.stats.StatsProvider
 import de.tadris.fitness.stats.WorkoutProperty
 import de.tadris.fitness.stats.aggregation.AggregationSpan
+import de.tadris.fitness.ui.charts.ChartStyles
 import de.tadris.fitness.ui.charts.DataSetStyles
 import de.tadris.fitness.ui.statistics.components.CombinedChartComponent
 
@@ -57,6 +61,7 @@ fun DetailStatsScreen(
     val statsProvider = remember { StatsProvider(context) }
     var aggregationSpan by remember { mutableStateOf(initialAggregationSpan) }
     var combinedData by remember { mutableStateOf<CombinedData?>(null) }
+    val initialViewportApplied = remember { booleanArrayOf(false) }
     
     val updateChart = {
         combinedData = try {
@@ -106,9 +111,32 @@ fun DetailStatsScreen(
                 combinedData = combinedData,
                 aggregationSpan = aggregationSpan,
                 modifier = Modifier.fillMaxSize(),
+                yLabel = yLabel,
                 onChartInit = { chart ->
-                    chart.zoom(initialXScale, 1f, 0f, 0f)
-                    chart.moveViewToX(initialXTrans)
+                    ChartStyles.animateChart(chart)
+                    chart.onChartGestureListener = object : OnChartGestureListener {
+                        // Re-aggregate the data according to the visible time range
+                        private fun aggregate() {
+                            val newSpan = ChartStyles.statsAggregationSpan(chart)
+                            if (newSpan != aggregationSpan) aggregationSpan = newSpan
+                        }
+                        override fun onChartGestureStart(me: MotionEvent?, g: ChartTouchListener.ChartGesture?) {}
+                        override fun onChartGestureEnd(me: MotionEvent?, g: ChartTouchListener.ChartGesture?) {}
+                        override fun onChartLongPressed(me: MotionEvent?) {}
+                        override fun onChartDoubleTapped(me: MotionEvent?) = aggregate()
+                        override fun onChartSingleTapped(me: MotionEvent?) {}
+                        override fun onChartFling(me1: MotionEvent?, me2: MotionEvent?, vX: Float, vY: Float) {}
+                        override fun onChartScale(me: MotionEvent?, sX: Float, sY: Float) = aggregate()
+                        override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {}
+                    }
+                },
+                onDataApplied = { chart ->
+                    // Restore the viewport of the history chart once the data is there
+                    if (!initialViewportApplied[0]) {
+                        initialViewportApplied[0] = true
+                        chart.zoom(initialXScale, 1f, 0f, 0f)
+                        chart.moveViewToX(initialXTrans)
+                    }
                 }
             )
         }
