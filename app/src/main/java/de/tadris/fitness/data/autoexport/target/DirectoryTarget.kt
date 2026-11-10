@@ -32,6 +32,8 @@ class DirectoryTarget(private val directoryUri: String) : ExportTarget {
 
     override val titleRes get() = R.string.exportTargetDirectory
 
+    override val summary get() = directoryUri
+
     override fun exportFile(context: Context, file: ExportedFile) {
         val input = context.contentResolver.openInputStream(Uri.fromFile(file.file))
             ?: throw IOException("Source file not found")

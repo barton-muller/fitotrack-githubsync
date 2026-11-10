@@ -629,6 +629,7 @@
     <string name="takeBackups14">Every second week</string>
     <string name="selectExportTarget">Select export target</string>
     <string name="configureHttpPostRequest">Configure HTTP POST request</string>
+    <string name="bearerTokenOptional">Bearer token (optional)</string>
     <string name="httpUrl">URL</string>
     <string name="enterValidUrl">Enter a valid HTTP URL</string>
     <string name="massExportGpxTitle">Export all workouts as GPX</string>

@@ -26,15 +26,22 @@ import androidx.work.NetworkType
 import de.tadris.fitness.R
 import de.tadris.fitness.data.autoexport.source.ExportSource
 import org.apache.commons.io.IOUtils
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-class HTTPPostTarget(private val url: String) : ExportTarget {
+class HTTPPostTarget(
+    val url: String,
+    val bearerToken: String? = null,
+) : ExportTarget {
 
     override val id get() = ExportTarget.TARGET_TYPE_HTTP_POST
 
     override val titleRes get() = R.string.exportTargetHttpPost
+
+    override val summary get() = url
 
     override val constraints
         get() = Constraints.Builder()
@@ -50,6 +57,9 @@ class HTTPPostTarget(private val url: String) : ExportTarget {
         file.meta.forEach {
             client.setRequestProperty(it.key, it.value)
         }
+        if (!bearerToken.isNullOrBlank()) {
+            client.setRequestProperty("Authorization", "Bearer $bearerToken")
+        }
         client.doOutput = true
         val output = client.outputStream
         IOUtils.copy(input, output)
@@ -57,7 +67,42 @@ class HTTPPostTarget(private val url: String) : ExportTarget {
         output.flush()
         output.close()
 
-        client.content // Load response
-        client.disconnect()
+        try {
+            val responseCode = client.responseCode
+            if (responseCode >= 400) {
+                throw IOException("HTTP POST failed with response code $responseCode")
+            }
+            client.content // Load response
+        } finally {
+            client.disconnect()
+        }
+    }
+
+    companion object {
+        private const val KEY_URL = "url"
+        private const val KEY_BEARER_TOKEN = "bearerToken"
+
+        @JvmStatic
+        fun fromData(data: String): HTTPPostTarget {
+            if (!data.trimStart().startsWith("{")) return HTTPPostTarget(data)
+            return try {
+                val json = JSONObject(data)
+                HTTPPostTarget(
+                    json.getString(KEY_URL),
+                    json.optString(KEY_BEARER_TOKEN).ifBlank { null },
+                )
+            } catch (e: JSONException) {
+                HTTPPostTarget(data)
+            }
+        }
+
+        @JvmStatic
+        fun toData(url: String, bearerToken: String?): String {
+            if (bearerToken.isNullOrBlank()) return url
+            return JSONObject()
+                .put(KEY_URL, url)
+                .put(KEY_BEARER_TOKEN, bearerToken)
+                .toString()
+        }
     }
 }

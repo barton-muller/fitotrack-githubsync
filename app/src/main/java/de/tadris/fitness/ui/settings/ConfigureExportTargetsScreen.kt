@@ -69,6 +69,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -79,6 +80,7 @@ import de.tadris.fitness.data.ExportTargetConfiguration
 import de.tadris.fitness.data.autoexport.AutoExportPlanner
 import de.tadris.fitness.data.autoexport.source.ExportSource
 import de.tadris.fitness.data.autoexport.target.ExportTarget
+import de.tadris.fitness.data.autoexport.target.HTTPPostTarget
 import de.tadris.fitness.util.isUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -202,7 +204,7 @@ fun ConfigureExportTargetsScreen(sourceId: String, onBack: () -> Unit) {
                                     else config.type
                                 )
                             },
-                            supportingContent = { Text(config.data) },
+                            supportingContent = { Text(targetImpl?.summary ?: config.data) },
                             trailingContent = {
                                 IconButton(onClick = { pendingDelete = config }) {
                                     Icon(
@@ -236,9 +238,9 @@ fun ConfigureExportTargetsScreen(sourceId: String, onBack: () -> Unit) {
     if (showHttpDialog) {
         HttpPostDialog(
             onDismiss = { showHttpDialog = false },
-            onConfirm = { url ->
+            onConfirm = { url, token ->
                 showHttpDialog = false
-                insert(ExportTarget.TARGET_TYPE_HTTP_POST, url)
+                insert(ExportTarget.TARGET_TYPE_HTTP_POST, HTTPPostTarget.toData(url, token))
                 if (Build.VERSION.SDK_INT >= 37 &&
                     ContextCompat.checkSelfPermission(
                         context,
@@ -344,31 +346,43 @@ private fun SelectTargetTypeDialog(
 @Composable
 private fun HttpPostDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (url: String, bearerToken: String?) -> Unit,
 ) {
     var url by remember { mutableStateOf("") }
+    var token by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.configureHttpPostRequest)) },
         text = {
-            OutlinedTextField(
-                value = url,
-                onValueChange = { url = it; error = false },
-                label = { Text("URL") },
-                isError = error,
-                supportingText = if (error) {
-                    { Text(stringResource(R.string.enterValidUrl)) }
-                } else null,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Column {
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it; error = false },
+                    label = { Text("URL") },
+                    isError = error,
+                    supportingText = if (error) {
+                        { Text(stringResource(R.string.enterValidUrl)) }
+                    } else null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = token,
+                    onValueChange = { token = it },
+                    label = { Text(stringResource(R.string.bearerTokenOptional)) },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = {
-                if (url.isUrl()) onConfirm(url) else error = true
+                if (url.isUrl()) onConfirm(url, token.trim().ifEmpty { null }) else error = true
             }) { Text(stringResource(R.string.okay)) }
         },
         dismissButton = {

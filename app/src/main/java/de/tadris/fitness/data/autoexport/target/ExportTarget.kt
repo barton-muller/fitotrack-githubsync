@@ -33,6 +33,8 @@ interface ExportTarget {
     @get:StringRes
     val titleRes: Int
 
+    val summary: String
+
     val constraints: Constraints
         get() = Constraints.Builder().build()
 
@@ -40,7 +42,7 @@ interface ExportTarget {
         @JvmStatic
         fun getExportTargetImplementation(type: String, data: String) = when (type) {
             TARGET_TYPE_DIRECTORY -> DirectoryTarget(data)
-            TARGET_TYPE_HTTP_POST -> HTTPPostTarget(data)
+            TARGET_TYPE_HTTP_POST -> HTTPPostTarget.fromData(data)
             else -> null
         }
 
