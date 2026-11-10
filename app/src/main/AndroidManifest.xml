@@ -140,15 +140,6 @@
                     android:scheme="auth" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.statistics.StatisticsActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.statistics.DetailStatsActivity"
-            android:exported="true"
-            android:screenOrientation="landscape" />
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
