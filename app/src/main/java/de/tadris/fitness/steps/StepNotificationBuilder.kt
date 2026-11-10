@@ -21,7 +21,9 @@ package de.tadris.fitness.steps
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import de.tadris.fitness.R
 import de.tadris.fitness.util.NotificationHelper
 
@@ -50,6 +52,14 @@ class StepNotificationBuilder(
             .setContentText(text)
             .setSmallIcon(R.drawable.notification)
             .setChannelId(NotificationHelper.CHANNEL_STEP_TRACKING)
+            .setContentIntent(buildContentIntent())
             .build()
+    }
+
+    private fun buildContentIntent(): PendingIntent? {
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            ?: return null
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 }
