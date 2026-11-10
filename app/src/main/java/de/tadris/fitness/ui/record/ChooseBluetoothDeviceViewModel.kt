@@ -173,7 +173,7 @@ class ChooseBluetoothDeviceViewModel(application: Application) : AndroidViewMode
     }
 
     companion object {
-        private const val UI_UPDATE_TIME_MS = 2000L
+        private const val UI_UPDATE_TIME_MS = 5000L
         private const val STOP_GRACE_PERIOD_MS = 2000L
     }
 
