@@ -144,13 +144,15 @@ public class WorkoutType implements Serializable {
 
     /**
      * Returns the preference mode key for this workout type.
-     * GPS-capable workouts use "gps", others use "indoor".
+     * GPS-capable workouts use "gps", time-only workouts use "time_only", others use "indoor".
      * These keys are used in SharedPreferences and must remain stable.
      */
     @Ignore
     @JsonIgnore
     public String getPreferenceMode() {
-        return hasCapability(WorkoutCapability.GPS) ? WorkoutCapability.GPS.getId() : WorkoutCapability.PREFERENCE_MODE_NON_GPS;
+        if (hasCapability(WorkoutCapability.GPS)) return WorkoutCapability.GPS.getId();
+        if (isTimeOnly()) return WorkoutCapability.PREFERENCE_MODE_TIME_ONLY;
+        return WorkoutCapability.PREFERENCE_MODE_NON_GPS;
     }
 
     @Ignore

@@ -45,6 +45,11 @@ enum class WorkoutCapability(
          */
         const val PREFERENCE_MODE_NON_GPS = "indoor"
 
+        /**
+         * Preference mode key used for time-only workouts (no capabilities at all).
+         */
+        const val PREFERENCE_MODE_TIME_ONLY = "time_only"
+
         @JvmStatic
         fun fromId(id: String): WorkoutCapability? = entries.find { it.id == id }
 

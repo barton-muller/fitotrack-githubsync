@@ -33,6 +33,7 @@ class RecordingScreenInformationPreferences(private val prefs: SharedPreferences
         val defaultValue = when(mode) {
             WorkoutCapability.PREFERENCE_MODE_NON_GPS -> this.getDefaultIndoorActivityId(slot)
             WorkoutCapability.GPS.id -> this.getDefaultGpsActivityId(slot)
+            WorkoutCapability.PREFERENCE_MODE_TIME_ONLY -> this.getDefaultTimeOnlyActivityId(slot)
             else -> throw UnknownModeException()
         }
 
@@ -55,6 +56,19 @@ class RecordingScreenInformationPreferences(private val prefs: SharedPreferences
             // Should never happen, but even if it would, there is no point in throwing an exception
             // over this
             else -> "pause_duration"
+        }
+    }
+
+    // TODO: At some point, replace strings with an Enum
+    private fun getDefaultTimeOnlyActivityId(slot: Int) : String {
+        return when(slot) {
+            0 -> "currentTime"
+            1 -> "energy_burned"
+            2 -> "pause_duration"
+            3 -> "current_heart_rate"
+            // Should never happen, but even if it would, there is no point in throwing an exception
+            // over this
+            else -> "current_heart_rate"
         }
     }
 

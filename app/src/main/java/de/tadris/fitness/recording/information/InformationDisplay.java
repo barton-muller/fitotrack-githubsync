@@ -45,7 +45,7 @@ public class InformationDisplay {
             informationId = preferences.recordingScreenInformationPreferences.getIdOfDisplayedInformation(workoutType.getPreferenceMode(), slot);
         } catch (RecordingScreenInformationPreferences.UnknownModeException e) {
             e.printStackTrace();
-            // Should never happen as long as getPreferenceMode() returns "gps" or "indoor"
+            // Should never happen as long as getPreferenceMode() returns "gps", "indoor" or "time_only"
             return new DisplaySlot(slot, "ERR", "ERR");
         }
         RecordingInformation information = manager.getInformationById(informationId);
