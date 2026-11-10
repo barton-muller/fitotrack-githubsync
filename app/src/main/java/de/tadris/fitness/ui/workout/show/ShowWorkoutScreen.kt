@@ -438,7 +438,8 @@ private fun ShowWorkoutContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(MaterialTheme.spacing.mapHeight / 2),
-                    onClick = { onShowDiagram(DiagramType.HEART_RATE) }
+                    interactive = !data.hasRouteData, // show bpm instead of a map if we have no route data
+                    onClick = if (data.hasRouteData) { { onShowDiagram(DiagramType.HEART_RATE) } } else null
                 )
             }
 
