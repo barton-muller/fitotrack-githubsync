@@ -20,6 +20,7 @@
 package de.tadris.fitness.recording
 
 import de.tadris.fitness.data.CalculatedValues
+import de.tadris.fitness.data.RepetitionSample
 import de.tadris.fitness.data.WorkoutData
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.util.totalDistance
@@ -32,7 +33,7 @@ class WorkoutTypeClassifier(
 
     companion object {
         private const val WALKING_RUNNING_THRESHOLD = 7.0 / 3.6   // m/s (7 km/h)
-        private const val RUNNING_CYCLING_THRESHOLD = 18.0 / 3.6  // m/s (18 km/h)
+        private const val RUNNING_MIN_CADENCE = 120.0              // steps/min
         private const val HIKING_ELEVATION_PER_KM = 25.0           // m/km
         private const val HIKING_MIN_DISTANCE = 1000.0             // m
     }
@@ -43,12 +44,29 @@ class WorkoutTypeClassifier(
 
         val avgSpeed = if (activeDurationMs > 0) distance / (activeDurationMs / 1000.0) else 0.0
 
-        return when {
-            avgSpeed >= RUNNING_CYCLING_THRESHOLD -> WorkoutTypeManager.WORKOUT_TYPE_ID_CYCLING
-            avgSpeed >= WALKING_RUNNING_THRESHOLD -> WorkoutTypeManager.WORKOUT_TYPE_ID_RUNNING
-            else -> classifyWalkingOrHiking()
+        return if (avgSpeed < WALKING_RUNNING_THRESHOLD) {
+            classifyWalkingOrHiking()
+        } else {
+            classifyRunningOrCycling()
         }
     }
+
+    private fun classifyRunningOrCycling(): String {
+        val activeMinutes = activeDurationMs / 60_000.0
+        val steps = data.repetitionSamples
+            .filter { it.repetitionTypeId == RepetitionSample.REPETITION_TYPE_STEP }
+            .filterNot { isInPause(it.timestamp) }
+            .sumOf { it.repetitions }
+        val cadence = if (activeMinutes > 0) steps / activeMinutes else 0.0
+        return if (cadence >= RUNNING_MIN_CADENCE) {
+            WorkoutTypeManager.WORKOUT_TYPE_ID_RUNNING
+        } else {
+            WorkoutTypeManager.WORKOUT_TYPE_ID_CYCLING
+        }
+    }
+
+    private fun isInPause(timestamp: Long) =
+        data.pauses.any { timestamp >= it.startDate && timestamp < it.endDate }
 
     private fun classifyWalkingOrHiking(): String {
         if (distance < HIKING_MIN_DISTANCE) return WorkoutTypeManager.WORKOUT_TYPE_ID_WALKING
