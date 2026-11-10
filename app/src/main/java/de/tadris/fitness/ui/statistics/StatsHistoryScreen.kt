@@ -67,7 +67,6 @@ private class InitialViewport(val zoom: Float, val leftX: Float)
 @Composable
 fun StatsHistoryScreen() {
     val context = LocalContext.current
-    val activity = LocalActivity.current!!
     val statsProvider = remember { StatsProvider(context) }
     val preferences = remember { UserPreferences(context) }
 
@@ -111,7 +110,7 @@ fun StatsHistoryScreen() {
         )
     }
 
-    val setupChart = { chart: CombinedChart, onLongClick: () -> Unit ->
+    val setupChart = { chart: CombinedChart ->
         chart.isDoubleTapToZoomEnabled = false
         ChartStyles.fixViewPortOffsets(chart, 120f)
         ChartStyles.animateChart(chart)
@@ -119,7 +118,6 @@ fun StatsHistoryScreen() {
             arrayListOf(
                 synchronizer.addChart(chart),
                 HistoryChartGestureListener(
-                    onLongClick = onLongClick,
                     onScale = {
                         // Re-aggregate the data according to the visible time range
                         val newSpan = ChartStyles.statsAggregationSpan(chart)
@@ -160,9 +158,6 @@ fun StatsHistoryScreen() {
             aggregationSpan = aggregationSpan,
             setupChart = setupChart,
             onDataApplied = applyInitialViewport,
-            onLongClick = { chart ->
-                navigateToDetail(activity, speedProperty, false, selectedTypes, aggregationSpan, chart)
-            }
         )
 
         HistoryChartSection(
@@ -172,9 +167,6 @@ fun StatsHistoryScreen() {
             aggregationSpan = aggregationSpan,
             setupChart = setupChart,
             onDataApplied = applyInitialViewport,
-            onLongClick = { chart ->
-                navigateToDetail(activity, WorkoutProperty.LENGTH, distanceSwapped, selectedTypes, aggregationSpan, chart)
-            }
         )
 
         HistoryChartSection(
@@ -184,9 +176,6 @@ fun StatsHistoryScreen() {
             aggregationSpan = aggregationSpan,
             setupChart = setupChart,
             onDataApplied = applyInitialViewport,
-            onLongClick = { chart ->
-                navigateToDetail(activity, WorkoutProperty.DURATION, durationSwapped, selectedTypes, aggregationSpan, chart)
-            }
         )
 
         // Explore Section
@@ -235,12 +224,7 @@ fun StatsHistoryScreen() {
                 aggregationSpan = aggregationSpan,
                 modifier = Modifier.fillMaxWidth().height(250.dp),
                 onChartInit = { chart ->
-                    setupChart(chart) {
-                        navigateToDetail(
-                            activity, exploreProperty, exploreSummed && exploreProperty.summable(),
-                            selectedTypes, aggregationSpan, chart
-                        )
-                    }
+                    setupChart(chart)
                 },
                 onDataApplied = applyInitialViewport,
             )
@@ -301,16 +285,10 @@ private fun loadChartData(
 }
 
 private class HistoryChartGestureListener(
-    private val onLongClick: () -> Unit,
     private val onScale: () -> Unit,
 ) : OnChartGestureListener {
     override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
-    override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {
-        // Handled here instead of onChartLongPressed to avoid triggering on zoom / pan
-        if (lastPerformedGesture == ChartTouchListener.ChartGesture.LONG_PRESS) {
-            onLongClick()
-        }
-    }
+    override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
     override fun onChartLongPressed(me: MotionEvent?) {}
     override fun onChartDoubleTapped(me: MotionEvent?) {}
     override fun onChartSingleTapped(me: MotionEvent?) {}
@@ -319,40 +297,15 @@ private class HistoryChartGestureListener(
     override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {}
 }
 
-private fun navigateToDetail(
-    activity: Activity,
-    property: WorkoutProperty,
-    summed: Boolean,
-    types: List<WorkoutType>,
-    aggregationSpan: AggregationSpan,
-    chart: CombinedChart
-) {
-    val intent = Intent(activity, DetailStatsActivity::class.java).apply {
-        putExtra("property", property)
-        putExtra("summed", summed)
-        putExtra("types", ArrayList(types))
-        putExtra("aggregationSpan", aggregationSpan)
-        // Viewport zoom, not View.getScaleX()
-        putExtra("xScale", chart.viewPortHandler.scaleX)
-        putExtra("xTrans", chart.lowestVisibleX)
-        val label = if (chart.data != null && chart.legend.entries.isNotEmpty()) chart.legend.entries[0].label else ""
-        putExtra("ylabel", label)
-    }
-    activity.startActivity(intent)
-}
-
 @Composable
 private fun HistoryChartSection(
     title: String,
     onToggle: () -> Unit,
     data: HistoryChartData?,
     aggregationSpan: AggregationSpan,
-    setupChart: (CombinedChart, () -> Unit) -> Unit,
+    setupChart: (CombinedChart) -> Unit,
     onDataApplied: (CombinedChart) -> Unit,
-    onLongClick: (CombinedChart) -> Unit
 ) {
-    // The chart is set up only once, so the gesture listener must always see the latest callback
-    val currentOnLongClick by rememberUpdatedState(onLongClick)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeader(
             title = title,
@@ -371,7 +324,7 @@ private fun HistoryChartSection(
             yLabel = data?.yLabel,
             aggregationSpan = aggregationSpan,
             modifier = Modifier.fillMaxWidth().height(250.dp),
-            onChartInit = { chart -> setupChart(chart) { currentOnLongClick(chart) } },
+            onChartInit = { chart -> setupChart(chart) },
             onDataApplied = onDataApplied,
         )
     }
