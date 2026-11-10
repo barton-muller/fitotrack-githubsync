@@ -25,14 +25,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.stats.aggregation.WorkoutTypeFilter
+import de.tadris.fitness.ui.components.WorkoutTypePickerDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import de.tadris.fitness.util.Icon as WorkoutIcon
 
 @Composable
@@ -43,8 +48,17 @@ fun WorkoutTypeSelector(
 ) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-    
     val allLabel = stringResource(R.string.workoutTypeAll)
+
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val pickerTypes by produceState<List<WorkoutType>?>(null) {
+        value = withContext(Dispatchers.IO) {
+            val workoutDao = Instance.getInstance(context).db.workoutDao()
+            val allOption = WorkoutType(WorkoutTypeFilter.ID_ALL, allLabel, 0, primaryColor, "list", 0, "")
+            listOf(allOption) + WorkoutTypeManager.getInstance().getAllTypesSorted(context)
+                .filter { workoutDao.getLastWorkoutByType(it.id) != null }
+        }
+    }
     val displayType = remember(selectedTypes, allLabel) {
         if (selectedTypes.size == 1) {
             selectedTypes.first()
@@ -95,9 +109,12 @@ fun WorkoutTypeSelector(
     }
 
     if (showDialog) {
-        StatsWorkoutTypePickerDialog(
+        val types = pickerTypes ?: return
+        WorkoutTypePickerDialog(
+            types = types,
             onDismiss = { showDialog = false },
             onSelect = { selectedType ->
+                showDialog = false
                 val newTypes = if (selectedType.id == WorkoutTypeFilter.ID_ALL) {
                     WorkoutTypeManager.getInstance().getAllTypes(context)
                 } else {
