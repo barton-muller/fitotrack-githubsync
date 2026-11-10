@@ -21,6 +21,7 @@ package de.tadris.fitness.ui.record
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -141,25 +142,33 @@ fun GpsRecordingRoute(
     ) { _ -> /* user can re-tap Bluetooth after granting */ }
 
     val showChooseBluetoothDevice by vm.showChooseBluetoothDevice.collectAsState()
+    var bluetoothReady by remember { mutableStateOf(false) }
     LaunchedEffect(showChooseBluetoothDevice) {
+        bluetoothReady = false
         if (!showChooseBluetoothDevice) return@LaunchedEffect
-        val activity = context as? Activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
         ) {
             btPermissionLauncher.launch(
                 arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
             )
-        } else {
-            try {
-                activity?.let {
-                    ChooseBluetoothDeviceDialog(it) { device -> vm.onBtDeviceSelected(device) }.show()
-                }
-            } catch (_: ChooseBluetoothDeviceDialog.BluetoothNotAvailableException) {
-                activity?.startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-            }
+            vm.dismissChooseBluetoothDevice()
+            return@LaunchedEffect
         }
-        vm.dismissChooseBluetoothDevice()
+        val adapter = context.getSystemService(BluetoothManager::class.java)?.adapter
+        if (adapter == null || !adapter.isEnabled) {
+            (context as? Activity)?.startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            vm.dismissChooseBluetoothDevice()
+            return@LaunchedEffect
+        }
+        bluetoothReady = true
+    }
+
+    if (showChooseBluetoothDevice && bluetoothReady) {
+        ChooseBluetoothDeviceDialog(
+            onSelect = { row -> vm.onBtDeviceSelected(row.address, row.name) },
+            onDismiss = { vm.dismissChooseBluetoothDevice() },
+        )
     }
 
     // Info slot selection dialog
