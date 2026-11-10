@@ -185,6 +185,7 @@
     <string name="intervalSet">Intervallsatz</string>
     <string name="intervalSets">Intervallsätze</string>
     <string name="currentSpeed">Aktuelle Geschwindigkeit</string>
+    <string name="currentPace">Aktuelles Tempo</string>
     <string name="hintAddWorkout">Klicke auf das Plus-Symbol, um ein Workout aufzuzeichnen oder einzugeben</string>
     <string name="enterDescription">Gebe eine Beschreibung ein</string>
     <string name="avgSpeedInMotion">⌀-Geschw. (Bewegung)</string>

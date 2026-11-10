@@ -71,6 +71,12 @@ data class AggregatedRecordingValuesEvent(
             if (averageSpeedMotion < 0.001) 0.0
             else (1 / averageSpeedMotion) * 1000 / 60
 
+    // min/km
+    val currentPace
+        get() =
+            if (currentSpeed < 0.001) 0.0
+            else (1 / currentSpeed) * 1000 / 60
+
     val recordedSomething get() = sampleCount >= 2
 
 }

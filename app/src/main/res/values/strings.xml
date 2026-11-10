@@ -283,6 +283,7 @@
     <string name="intervalSet">Interval Set</string>
     <string name="intervalSets">Interval Sets</string>
     <string name="currentSpeed">Current Speed</string>
+    <string name="currentPace">Current Pace</string>
     <string name="hintAddWorkout">Click on the plus icon to record or enter a workout</string>
     <string name="enterDescription">Enter a description</string>
     <string name="avgSpeedInMotion">Avg. Speed (in Motion)</string>
