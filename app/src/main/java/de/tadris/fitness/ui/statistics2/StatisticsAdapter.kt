@@ -17,30 +17,12 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.tadris.fitness.data;
+package de.tadris.fitness.ui.statistics2
 
-import android.app.Activity;
-import de.tadris.fitness.ui.MainActivity;
+data class CountSample(val windowStart: Long, val count: Int)
 
-public enum RecordingType {
-
-    INDOOR("indoor", MainActivity.class),
-    GPS("gps", MainActivity.class);
-
-    public final String id;
-    public final Class<? extends Activity> recorderActivityClass;
-
-    RecordingType(String id, Class<? extends Activity> recorderActivityClass) {
-        this.id = id;
-        this.recorderActivityClass = recorderActivityClass;
-    }
-
-    public static RecordingType findById(String id) {
-        for (RecordingType type : values()) {
-            if (type.id.equals(id)) {
-                return type;
-            }
-        }
-        return GPS;
-    }
+interface StatisticsAdapter {
+    fun getCountsInRange(start: Long, end: Long): List<CountSample>
+    val dailyGoal: Int
+    fun format(count: Int): String
 }

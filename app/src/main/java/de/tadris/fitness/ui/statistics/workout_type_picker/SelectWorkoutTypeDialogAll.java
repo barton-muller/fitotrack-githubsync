@@ -22,7 +22,6 @@ package de.tadris.fitness.ui.statistics.workout_type_picker;
 import java.util.Arrays;
 
 import de.tadris.fitness.R;
-import de.tadris.fitness.data.RecordingType;
 import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.stats.StatsDataProvider;
 import de.tadris.fitness.stats.WorkoutProperty;
@@ -41,7 +40,7 @@ public class SelectWorkoutTypeDialogAll extends SelectWorkoutTypeDialog {
 
         this.options.add(0, new WorkoutType(WorkoutTypeFilter.ID_ALL,
                 context.getString(R.string.workoutTypeAll), 0,
-                context.getThemePrimaryColor(), "list", 0, RecordingType.GPS.id));
+                context.getThemePrimaryColor(), "list", 0, ""));
     }
 
 }

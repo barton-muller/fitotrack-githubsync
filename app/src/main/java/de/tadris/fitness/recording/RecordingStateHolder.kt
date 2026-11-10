@@ -22,7 +22,6 @@ package de.tadris.fitness.recording
 import android.content.Context
 import android.util.Log
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.Workout
 import de.tadris.fitness.data.WorkoutData
 import de.tadris.fitness.data.WorkoutType
@@ -36,7 +35,6 @@ class RecordingStateHolder {
     }
 
     lateinit var workoutType: WorkoutType
-    var recordingType: RecordingType = RecordingType.GPS
     var workoutId: Long = -1
     var state = RecordingState.IDLE
         set(value) {
@@ -70,14 +68,13 @@ class RecordingStateHolder {
 
     fun initFresh(context: Context, workoutType: WorkoutType) {
         this.workoutType = workoutType
-        recordingType = RecordingType.findById(workoutType.recordingType)
         createFreshWorkout(workoutType).also {
             workoutId = it.id
             Instance.getInstance(context).db.workoutDao().insertWorkout(it)
         }
         Log.d(
             "RecordingStateHolder",
-            "Init fresh with type=$workoutType recordingType=$recordingType ID=$workoutId"
+            "Init fresh with type=$workoutType ID=$workoutId"
         )
     }
 
@@ -89,23 +86,31 @@ class RecordingStateHolder {
             ).also { Instance.getInstance(context).db.workoutDao().insertWorkout(it) }
 
         workoutType = existingWorkout.getWorkoutType(context)
-        recordingType = RecordingType.findById(workoutType.recordingType)
         workoutId = existingWorkout.id
         Log.d(
             "RecordingStateHolder",
-            "Init existing with type=$workoutType recordingType=$recordingType ID=${existingWorkout.id}"
+            "Init existing with type=$workoutType ID=${existingWorkout.id}"
         )
 
         recoverStateVariables(context, existingWorkout)
     }
 
     private fun recoverStateVariables(context: Context, workout: Workout) {
-        state = RecordingState.RUNNING
+        state = RecordingState.AUTO_PAUSE
 
-        // Estimate pause and active time from recorded samples
         val data = WorkoutData.fromWorkout(context, workout)
         pauseDuration = data.pauses.sumOf { it.duration }
-        activeDuration = System.currentTimeMillis() - workout.start - pauseDuration
+
+        val lastRelativeTime = listOf(
+            data.samples.maxOfOrNull { it.relativeTime },
+            data.heartRateSamples.maxOfOrNull { it.relativeTime },
+            data.repetitionSamples.maxOfOrNull { it.relativeTime },
+            data.events.maxOfOrNull { it.relativeTime },
+        ).mapNotNull { it }.maxOrNull()
+
+        activeDuration = lastRelativeTime
+                // No samples recorded yet: estimate from wall clock and recorded pauses
+            ?: (System.currentTimeMillis() - workout.start - pauseDuration).coerceAtLeast(0)
         lastStateChange = System.currentTimeMillis()
     }
 

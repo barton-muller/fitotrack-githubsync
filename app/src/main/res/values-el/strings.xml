@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright (c) 2026 Jannis Scheibe <jannis@tadris.de>
   ~
@@ -17,9 +16,7 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
-<resources>
+  --><resources>
     <string name="length_in_minutes">Διάρκεια (λεπτά):</string>
     <string name="add_interval">Προσθήκη Διαλείμματος</string>
     <string name="cannotStart">Αποτυχία έναρξης</string>
@@ -341,9 +338,7 @@
     <string name="announcementSuppressDuringCall">Σίγαση κατά τη διάρκεια κλήσεων</string>
     <string name="workoutImported">Επιτυχής εισαγωγή προπόνησης</string>
     <string name="replaceOrMergeMessage">Αντικατάσταση ή συγχώνευση της βάσης δεδομένων με αρχείο αντιγράφου ασφαλείας;</string>
-    <string name="workoutStatsHelpText">Αυτό το μενού δείχνει το ιστορικό στατιστικών για τις προπονήσεις σας. Για να το χρησιμοποιήσετε πρέπει πρώτα να προσδιορίσετε το είδος της προπόνησης. Μετά επιλέξτε τις πληροφορίες που θέλετε να μάθετε καθώς και το χρονικό διάστημα.
-\n
-\nΠ.χ. αν επιλέξετε \"Εβδομάδα\" ως το χρονικό διάστημα, όλες οι προπονήσεις κάθε εβδομάδας θα συγχωνευτούν σε μία στατιστική υπολογίζοντας είτε το μέσο όρο είτε το σύνολο κάθε εβδομάδας.</string>
+    <string name="workoutStatsHelpText">Αυτό το μενού δείχνει το ιστορικό στατιστικών για τις προπονήσεις σας. Για να το χρησιμοποιήσετε πρέπει πρώτα να προσδιορίσετε το είδος της προπόνησης. Μετά επιλέξτε τις πληροφορίες που θέλετε να μάθετε καθώς και το χρονικό διάστημα. \n \nΠ.χ. αν επιλέξετε \"Εβδομάδα\" ως το χρονικό διάστημα, όλες οι προπονήσεις κάθε εβδομάδας θα συγχωνευτούν σε μία στατιστική υπολογίζοντας είτε το μέσο όρο είτε το σύνολο κάθε εβδομάδας.</string>
     <string name="singleWorkout">Προπόνηση</string>
     <string name="dayInMonth">Ημέρα του Μήνα</string>
     <string name="calendarWeekYear">Εβδομάδα / Έτος</string>

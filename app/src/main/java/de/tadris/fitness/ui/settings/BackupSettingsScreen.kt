@@ -83,6 +83,7 @@ fun BackupSettingsScreen(
     var showReplaceConfirmDialog by remember { mutableStateOf(false) }
 
     var progressActive by remember { mutableStateOf(false) }
+    var progressTitle by remember { mutableStateOf("") }
     var progressValue by remember { mutableFloatStateOf(0f) }
     var progressAction by remember { mutableStateOf("") }
 
@@ -94,6 +95,7 @@ fun BackupSettingsScreen(
 
     fun startExportTask(task: (listener: BackupWriter.ExportStatusListener) -> File) {
         progressActive = true
+        progressTitle = context.getString(R.string.backup)
         progressValue = 0f
         progressAction = ""
         Thread {
@@ -123,6 +125,7 @@ fun BackupSettingsScreen(
 
     fun startImportTask(uri: Uri, replace: Boolean) {
         progressActive = true
+        progressTitle = context.getString(R.string.restore)
         progressValue = 0f
         progressAction = ""
         Thread {
@@ -307,7 +310,7 @@ fun BackupSettingsScreen(
     if (progressActive) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text(stringResource(R.string.backup)) },
+            title = { Text(progressTitle) },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     LinearProgressIndicator(

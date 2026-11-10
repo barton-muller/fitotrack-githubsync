@@ -25,7 +25,7 @@ import android.preference.PreferenceManager
 import androidx.collection.ArraySet
 import androidx.core.content.edit
 import de.tadris.fitness.BuildConfig
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.stats.aggregation.AggregationSpan
@@ -62,7 +62,7 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
     @Deprecated("")
     fun getIdOfDisplayedInformation(mode: String?, slot: Int): String {
         var defValue = ""
-        if (RecordingType.INDOOR.id == mode) {
+        if (WorkoutCapability.PREFERENCE_MODE_NON_GPS == mode) {
             when (slot) {
                 0 -> defValue = "avg_frequency"
                 1 -> defValue = "energy_burned"
@@ -122,6 +122,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var autoTimeout by IntSharedPreference("autoTimeoutPeriod", 20)
 
+    var lastAutoStartDelayS by IntSharedPreference("lastAutoStartDelaySeconds", 20)
+
     var useAutoPause by BooleanSharedPreference("autoPause", true)
 
     var useAverageForCurrentSpeed
@@ -149,6 +151,16 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
     var upperTargetSpeedLimit by FloatSharedPreference("upperTargetSpeedLimit", 3f)
 
     var stepLength by FloatSharedPreference(STEP_LENGTH, 0.79f)
+
+    var stepTrackingEnabled by BooleanSharedPreference("stepTrackingEnabled", false)
+
+    var autoStartRecordingEnabled by BooleanSharedPreference("autoStartRecordingEnabled", false)
+
+    var stepTrackingPromptDismissed by BooleanSharedPreference("stepTrackingPromptDismissed", false)
+
+    var dailyStepGoal by IntSharedPreference("dailyStepGoal", 10_000)
+
+    var stepActivityThreshold by StringSharedPreference(STEP_ACTIVITY_THRESHOLD, "medium")
 
     val lastVersionCode: Int
         get() = preferences.getInt("lastVersion", BuildConfig.VERSION_CODE)
@@ -190,6 +202,7 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
     companion object {
         private const val FIRST_DAY_OF_WEEK_VARIABLE = "firstDayOfWeek"
         const val STEP_LENGTH: String = "stepLength"
+        const val STEP_ACTIVITY_THRESHOLD: String = "stepActivityThreshold"
         const val STATISTICS_AGGREGATION_SPAN: String = "statisticsAggregationSpan"
         const val STATISTICS_SELECTED_TYPES: String = "statisticsSelectedTypes"
         const val VOICE_ANNOUNCEMENTS_INTERVAL_TIME: String = "spokenUpdateTimePeriod"

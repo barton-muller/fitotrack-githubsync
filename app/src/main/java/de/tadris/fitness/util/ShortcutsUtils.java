@@ -33,7 +33,7 @@ import androidx.core.graphics.drawable.IconCompat;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.tadris.fitness.data.RecordingType;
+import de.tadris.fitness.ui.MainActivity;
 import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.data.WorkoutTypeManager;
 import de.tadris.fitness.ui.charts.BitmapHelper;
@@ -55,7 +55,7 @@ public class ShortcutsUtils {
             WorkoutType activity = workoutTypes.get(rank);
 
             Intent intent = new Intent(context,
-                     RecordingType.findById(activity.id).recorderActivityClass)
+                     MainActivity.class)
                         .setAction(RecordingConstants.LAUNCH_ACTION)
                         .putExtra(RecordingConstants.WORKOUT_TYPE_EXTRA, activity.id);
 

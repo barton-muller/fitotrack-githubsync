@@ -27,24 +27,37 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.ui.statistics.fragments.StatsHistoryScreen
 import de.tadris.fitness.ui.statistics.fragments.StatsOverviewScreen
+import de.tadris.fitness.ui.steps.StepStatisticsAdapter
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(onBack: () -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val activity = LocalActivity.current ?: return
+    val stepAdapter = remember { StepStatisticsAdapter(activity) }
+    val stepDao = remember { Instance.getInstance(activity).db.stepDao() }
+    val hasSteps by stepDao.hasAnyStepsFlow().collectAsStateWithLifecycle(initialValue = true)
+
+    val pages = buildList {
+        if (hasSteps) add(StatisticsPage.STEPS)
+        add(StatisticsPage.OVERVIEW)
+        add(StatisticsPage.HISTORY)
+    }
+    val pagerState = rememberPagerState(pageCount = { pages.size })
     val coroutineScope = rememberCoroutineScope()
-    val titles = listOf(
-        stringResource(R.string.stats_overview_title),
-        stringResource(R.string.stats_history_title)
-    )
+    val titles = pages.map { stringResource(it.titleRes) }
 
     Scaffold(
         topBar = {
@@ -85,11 +98,22 @@ fun StatisticsScreen(onBack: () -> Unit) {
                 state = pagerState,
                 modifier = Modifier.weight(1f)
             ) { page ->
-                when (page) {
-                    0 -> StatsOverviewScreen()
-                    1 -> StatsHistoryScreen()
+                when (pages.getOrNull(page)) {
+                    StatisticsPage.STEPS -> de.tadris.fitness.ui.statistics2.StatisticsScreen(
+                        adapter = stepAdapter,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                    StatisticsPage.OVERVIEW -> StatsOverviewScreen()
+                    StatisticsPage.HISTORY -> StatsHistoryScreen()
+                    null -> {}
                 }
             }
         }
     }
+}
+
+private enum class StatisticsPage(val titleRes: Int) {
+    STEPS(R.string.tabSteps),
+    OVERVIEW(R.string.stats_overview_title),
+    HISTORY(R.string.stats_history_title),
 }

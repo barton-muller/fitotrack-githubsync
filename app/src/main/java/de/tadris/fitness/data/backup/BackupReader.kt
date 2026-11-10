@@ -22,12 +22,14 @@ package de.tadris.fitness.data.backup
 import android.content.Context
 import android.net.Uri
 import com.fasterxml.jackson.core.StreamReadFeature
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.data.AppDatabase
+import de.tadris.fitness.data.StepSample
 import de.tadris.fitness.data.WorkoutData
 import de.tadris.fitness.data.backup.model.DataContainer
 import java.io.IOException
@@ -146,6 +148,10 @@ class BackupReader(
                         restoreWorkout(stream)
                         processedWorkouts++
                     }
+                    isStepFile(entry.name) -> {
+                        listener.onStatusChanged(20, context.getString(R.string.tabSteps))
+                        restoreSteps(stream)
+                    }
                 }
             }
         }
@@ -174,6 +180,8 @@ class BackupReader(
 
     private fun isWorkoutFile(name: String) = name.startsWith("workout_") && name.endsWith(".json")
 
+    private fun isStepFile(name: String) = name.startsWith("steps_") && name.endsWith(".json")
+
     @Throws(IOException::class)
     private fun restoreExtraData(zipStream: ZipInputStream) {
         val dataContainer = mapper.readValue(zipStream, DataContainer::class.java)
@@ -198,6 +206,12 @@ class BackupReader(
                 database.workoutTypeDao().insert(type)
             }
         }
+    }
+
+    @Throws(IOException::class)
+    private fun restoreSteps(zipStream: ZipInputStream) {
+        val samples = mapper.readValue(zipStream, object : TypeReference<List<StepSample>>() {})
+        database.stepDao().insertStepSamples(samples)
     }
 
     @Throws(IOException::class)

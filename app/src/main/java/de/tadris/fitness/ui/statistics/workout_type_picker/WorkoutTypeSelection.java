@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.tadris.fitness.R;
-import de.tadris.fitness.data.RecordingType;
 import de.tadris.fitness.data.WorkoutType;
 import de.tadris.fitness.data.WorkoutTypeManager;
 import de.tadris.fitness.stats.aggregation.WorkoutTypeFilter;
@@ -62,7 +61,7 @@ public class WorkoutTypeSelection extends LinearLayout {
         // The init
         typeAll = new WorkoutType(WorkoutTypeFilter.ID_ALL,
                 getContext().getString(R.string.workoutTypeAll), 0,
-                Color.WHITE, "list", 0, RecordingType.GPS.id);
+                Color.WHITE, "list", 0, "");
         setSelectedWorkoutTypes(createWorkoutTypeList(context,typeAll));
     }
 

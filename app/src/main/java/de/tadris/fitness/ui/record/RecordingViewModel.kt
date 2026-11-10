@@ -30,7 +30,6 @@ import androidx.lifecycle.AndroidViewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.data.IntervalSet
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.RecordingState
@@ -142,10 +141,7 @@ abstract class RecordingViewModel(application: Application) : AndroidViewModel(a
 
         this.workoutType = workoutType
         _currentWorkoutType.value = workoutType
-        this.informationDisplay = InformationDisplay(
-            RecordingType.findById(workoutType.recordingType),
-            getApplication()
-        )
+        this.informationDisplay = InformationDisplay(workoutType, getApplication())
 
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this)
@@ -281,8 +277,7 @@ abstract class RecordingViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun onInfoSlotSelected(slot: Int, information: RecordingInformation) {
-        val mode = RecordingType.findById(workoutType.recordingType).id
-        instance.userPreferences.setIdOfDisplayedInformation(mode, slot, information.id)
+        instance.userPreferences.setIdOfDisplayedInformation(workoutType.preferenceMode, slot, information.id)
         refreshInfoSlots(AggregatedRecordingValuesEvent.getCurrent())
         _selectInfoDialogSlot.value = null
     }

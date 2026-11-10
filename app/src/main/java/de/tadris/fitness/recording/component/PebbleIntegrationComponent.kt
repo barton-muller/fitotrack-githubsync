@@ -129,7 +129,7 @@ class PebbleIntegrationComponent : RecorderServiceComponent {
             KEY_CURRENT_INTENSITY to PebbleDictionaryItem.Int32((event.currentIntensity * 100).toInt()),
             KEY_REPETITIONS to PebbleDictionaryItem.Int32(event.repetitions),
             KEY_SAMPLE_COUNT to PebbleDictionaryItem.UInt32(event.sampleCount.toUInt()),
-            KEY_RECORDING_TYPE to PebbleDictionaryItem.Int32(event.recordingType.ordinal)
+            // TODO KEY_RECORDING_TYPE to PebbleDictionaryItem.Int32(event.recordingType.ordinal)
         )
 
         scope.launch {

@@ -28,7 +28,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(version = 19, entities = {
+@Database(version = 22, entities = {
         Workout.class,
         RouteSample.class,
         WorkoutPause.class,
@@ -39,6 +39,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
         IntervalSet.class,
         WorkoutType.class,
         ExportTargetConfiguration.class,
+        StepSample.class,
 }, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -51,6 +52,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract IntervalDao intervalDao();
 
     public abstract ExportTargetDao exportTargetDao();
+
+    public abstract StepDao stepDao();
 
     public long getLastWorkoutTimeByType(String type) {
         Workout workout = workoutDao().getLastWorkoutByType(type);
@@ -73,6 +76,7 @@ public abstract class AppDatabase extends RoomDatabase {
             db.execSQL("DELETE FROM interval_set");
             db.execSQL("DELETE FROM workout_type");
             db.execSQL("DELETE FROM workout");
+            db.execSQL("DELETE FROM step_sample");
         });
     }
 
@@ -640,6 +644,44 @@ public abstract class AppDatabase extends RoomDatabase {
                         } finally {
                             db.endTransaction();
                         }
+                    }
+                }, new Migration(19, 20) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase db) {
+                        try {
+                            db.beginTransaction();
+
+                            db.execSQL("CREATE TABLE step_sample (" +
+                                    "windowStart INTEGER NOT NULL PRIMARY KEY," +
+                                    "steps INTEGER NOT NULL)");
+
+                            db.setTransactionSuccessful();
+                        } finally {
+                            db.endTransaction();
+                        }
+                    }
+                }, new Migration(20, 21) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase db) {
+                        db.execSQL("ALTER TABLE step_sample ADD COLUMN activeMinutes INTEGER NOT NULL DEFAULT 0");
+                    }
+                }, new Migration(21, 22) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase db) {
+                        db.execSQL("ALTER TABLE workout_type RENAME TO workout_type_old");
+                        db.execSQL("CREATE TABLE workout_type (" +
+                                "id TEXT NOT NULL PRIMARY KEY," +
+                                "title TEXT," +
+                                "min_distance INTEGER NOT NULL," +
+                                "color INTEGER NOT NULL," +
+                                "icon TEXT," +
+                                "met INTEGER NOT NULL," +
+                                "capabilities TEXT NOT NULL)");
+                        db.execSQL("INSERT INTO workout_type (id, title, min_distance, color, icon, met, capabilities) " +
+                                "SELECT id, title, min_distance, color, icon, met, " +
+                                "CASE WHEN type = 'indoor' THEN 'repetitions' ELSE 'gps' END " +
+                                "FROM workout_type_old");
+                        db.execSQL("DROP TABLE workout_type_old");
                     }
                 })
                 .allowMainThreadQueries()

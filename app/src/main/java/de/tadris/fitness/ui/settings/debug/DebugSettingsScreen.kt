@@ -58,6 +58,7 @@ private data class DbStats(
     val heartRateSamples: Long,
     val workoutEvents: Long,
     val workoutPauses: Long,
+    val stepSamples: Long,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +75,7 @@ fun DebugSettingsScreen(
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = instance.db.workoutDao()
+            val stepDao = instance.db.stepDao()
             dbStats = DbStats(
                 workouts = dao.countWorkouts(),
                 routeSamples = dao.countRouteSamples(),
@@ -81,6 +83,7 @@ fun DebugSettingsScreen(
                 heartRateSamples = dao.countHeartRateSamples(),
                 workoutEvents = dao.countWorkoutEvents(),
                 workoutPauses = dao.countWorkoutPauses(),
+                stepSamples = stepDao.countStepSamples(),
             )
         }
     }
@@ -123,7 +126,8 @@ fun DebugSettingsScreen(
                     supporting = if (stats == null) "Loading…" else
                         "Workouts: ${stats.workouts} · Route samples: ${stats.routeSamples} · " +
                         "Repetition samples: ${stats.repetitionSamples} · HR samples: ${stats.heartRateSamples} · " +
-                        "Events: ${stats.workoutEvents} · Pauses: ${stats.workoutPauses}",
+                        "Events: ${stats.workoutEvents} · Pauses: ${stats.workoutPauses} · " +
+                        "Step samples: ${stats.stepSamples}",
                     onClick = {},
                 )
             }

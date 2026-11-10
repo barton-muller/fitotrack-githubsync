@@ -472,7 +472,6 @@
     <string name="manageAutoTimeoutSummary">وقفه را برای توقف اتوماتیک تمرینات تنظیم کنید</string>
     <string name="pref_auto_timeout_title">بازه زمانی پایان اتوماتیک</string>
     <string name="day">روز</string>
-    <string name="preferenceUseAverageForCurrentSpeed">استفاده از سرعت میانگین در یک زمان مشخص به جای آخرین سرعت ثبت شده برای محاسبه سرعت فعلی.</string>
     <string name="unitHeartRateSensorBattery">٪</string>
     <string name="unitHertzLong">هرتز</string>
     <string name="currentTime">زمان فعلی</string>
@@ -508,9 +507,7 @@
     <string name="speedLastMinute">میانگین سرعت (یک دقیقه پیش)</string>
     <string name="speedLastMinuteSpoken">سرعت در یک دقیقه‌ی گذشته</string>
     <string name="editWorkout">ویرایش تمرین</string>
-    <string name="workoutStatsHelpText">این صفحه آمار تاریخی تمرینات را نشان می دهد. برای استفاده از آن ابتدا باید نوع تمرین را با کلیک بر روی آن مشخص کنید. سپس اطلاعاتی را که می خواهید بدانید و بازه زمانی آن را تنظیم کنید.
-\n
-\nبه عنوان مثال، اگر \"هفته\" را به عنوان بازه زمانی انتخاب کنید، تمام تمرینات هر هفته در یک نقطه داده با محاسبه میانگین یا مجموع هر هفته ادغام می شوند.</string>
+    <string name="workoutStatsHelpText">این صفحه آمار تاریخی تمرینات را نشان می دهد. برای استفاده از آن ابتدا باید نوع تمرین را با کلیک بر روی آن مشخص کنید. سپس اطلاعاتی را که می خواهید بدانید و بازه زمانی آن را تنظیم کنید. \n \nبه عنوان مثال، اگر \"هفته\" را به عنوان بازه زمانی انتخاب کنید، تمام تمرینات هر هفته در یک نقطه داده با محاسبه میانگین یا مجموع هر هفته ادغام می شوند.</string>
     <string name="replace">چایگزین</string>
     <string name="cannotFindWorkout">تمرین پیدا نشد</string>
     <string name="merge">ادغام</string>

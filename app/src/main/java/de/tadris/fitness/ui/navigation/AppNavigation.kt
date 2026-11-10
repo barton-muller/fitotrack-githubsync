@@ -19,7 +19,6 @@
 
 package de.tadris.fitness.ui.navigation
 
-import android.content.Intent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
@@ -31,10 +30,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
-import de.tadris.fitness.data.WorkoutPause
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
-import de.tadris.fitness.recording.RecordingStateHolder
 import de.tadris.fitness.ui.ImportHandler
 import de.tadris.fitness.ui.ImportViewModel
 import de.tadris.fitness.ui.dashboard.DashboardScreen
@@ -44,6 +41,7 @@ import de.tadris.fitness.ui.settings.AboutScreen
 import de.tadris.fitness.ui.settings.BackupSettingsScreen
 import de.tadris.fitness.ui.settings.ConfigureExportTargetsScreen
 import de.tadris.fitness.ui.settings.InterfaceSettingsScreen
+import de.tadris.fitness.ui.settings.ProfileSettingsScreen
 import de.tadris.fitness.ui.settings.RecordingSettingsScreen
 import de.tadris.fitness.ui.settings.SettingsScreen
 import de.tadris.fitness.ui.settings.VoiceAnnouncementsSettingsScreen
@@ -52,7 +50,9 @@ import de.tadris.fitness.ui.settings.interval.EditIntervalSetScreen
 import de.tadris.fitness.ui.settings.interval.ManageIntervalSetsScreen
 import de.tadris.fitness.ui.settings.workout_type.EditWorkoutTypeScreen
 import de.tadris.fitness.ui.settings.workout_type.ManageWorkoutTypesScreen
-import de.tadris.fitness.ui.statistics.StatisticsActivity
+import de.tadris.fitness.ui.statistics.StatisticsScreen
+import de.tadris.fitness.ui.steps.ActiveMinuteStatsScreen
+import de.tadris.fitness.ui.steps.StepsSettingsScreen
 import de.tadris.fitness.ui.workout.ShareWorkoutScreen
 import de.tadris.fitness.ui.workout.enter.EnterWorkoutScreen
 import de.tadris.fitness.ui.workout.show.DiagramType
@@ -87,6 +87,9 @@ sealed interface Route {
 
     @Serializable
     data object Settings : Route
+
+    @Serializable
+    data object ProfileSettings : Route
 
     @Serializable
     data object InterfaceSettings : Route
@@ -127,6 +130,15 @@ sealed interface Route {
 
     @Serializable
     data class RecordIndoorWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
+
+    @Serializable
+    data object ActiveMinuteStats : Route
+
+    @Serializable
+    data object StepsOverview : Route
+
+    @Serializable
+    data object WorkoutStatistics : Route
 }
 
 @Composable
@@ -163,13 +175,22 @@ fun AppNavigation(
                 onRecordLast = onRecordLast,
                 onEnterWorkout = { navController.navigate(Route.EnterWorkout()) },
                 onImport = { importVm.requestImport() },
-                onSettings = {
-                    navController.navigate(Route.Settings)
-                },
-                onStatistics = {
-                    context.startActivity(Intent(context, StatisticsActivity::class.java))
-                },
+                onSettings = { navController.navigate(Route.Settings) },
+                onStatistics = { navController.navigate(Route.WorkoutStatistics) },
+                onStepDetails = { navController.navigate(Route.StepsOverview) },
+                onActiveMinuteStats = { navController.navigate(Route.ActiveMinuteStats) },
             )
+        }
+        composable<Route.StepsOverview> {
+            StepsSettingsScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<Route.WorkoutStatistics> {
+            StatisticsScreen(onBack = { navController.popBackStack() })
+        }
+        composable<Route.ActiveMinuteStats> {
+            ActiveMinuteStatsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.ShowWorkoutFullscreenMap> { backStackEntry ->
             ShowWorkoutFullscreenMapScreen(
@@ -219,6 +240,12 @@ fun AppNavigation(
                 onNavigateToRecordingSettings = {
                     navController.navigate(Route.RecordingSettings)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Route.ProfileSettings)
+                },
+                onNavigateToStepTracking = {
+                    navController.navigate(Route.StepsOverview)
+                },
                 onNavigateToBackupSettings = {
                     navController.navigate(Route.BackupSettings)
                 },
@@ -232,6 +259,9 @@ fun AppNavigation(
                     navController.navigate(Route.About)
                 },
             )
+        }
+        composable<Route.ProfileSettings> {
+            ProfileSettingsScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.About> {
             AboutScreen(
@@ -344,19 +374,9 @@ fun AppNavigation(
                     navController.navigate(Route.ShareWorkout(workoutId))
                 },
                 onResumeWorkout = { workout ->
-                    val dao = Instance.getInstance(context).db.workoutDao()
-                    dao.insertPause(
-                        WorkoutPause(
-                            workout.id,
-                            0,
-                            workout.end,
-                            System.currentTimeMillis(),
-                            true
-                        )
-                    )
-                    dao.updateWorkout(workout.copy(end = RecordingStateHolder.RUNNING_WORKOUT_END_TIME))
+                    Instance.getInstance(context).db.workoutDao().resumeWorkout(workout.id)
                     val workoutType = workout.getWorkoutType(context)
-                    val route = if (RecordingType.findById(workoutType.recordingType) == RecordingType.GPS) {
+                    val route = if (workoutType.hasCapability(WorkoutCapability.GPS)) {
                         Route.RecordGpsWorkout(workoutType.id, false)
                     } else {
                         Route.RecordIndoorWorkout(workoutType.id, false)

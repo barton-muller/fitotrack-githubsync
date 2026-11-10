@@ -22,6 +22,7 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.YAxis
@@ -63,7 +65,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.DefaultValueFormatter
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.util.NotificationHelper
 import de.tadris.fitness.util.unit.UnitUtils
@@ -122,17 +123,32 @@ fun IndoorRecordingRoute(
         )
     }
 
-    // Bluetooth device chooser
+    // Bluetooth permission + device chooser
+    val btPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ -> /* user can re-tap Bluetooth after granting */ }
+
     val showChooseBluetoothDevice by vm.showChooseBluetoothDevice.collectAsState()
     LaunchedEffect(showChooseBluetoothDevice) {
         if (!showChooseBluetoothDevice) return@LaunchedEffect
         val activity = context as? Activity
-        try {
-            activity?.let {
-                ChooseBluetoothDeviceDialog(it) { device -> vm.onBtDeviceSelected(device) }.show()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            btPermissionLauncher.launch(
+                arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
+            )
+        } else {
+            try {
+                activity?.let {
+                    ChooseBluetoothDeviceDialog(it) { device -> vm.onBtDeviceSelected(device) }.show()
+                }
+            } catch (_: ChooseBluetoothDeviceDialog.BluetoothNotAvailableException) {
+                activity?.startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             }
-        } catch (_: ChooseBluetoothDeviceDialog.BluetoothNotAvailableException) {
-            activity?.startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
         }
         vm.dismissChooseBluetoothDevice()
     }
@@ -142,8 +158,7 @@ fun IndoorRecordingRoute(
     LaunchedEffect(selectInfoSlot) {
         val slot = selectInfoSlot ?: return@LaunchedEffect
         val activity = context as? Activity ?: return@LaunchedEffect
-        val recordingType = RecordingType.findById(workoutType.recordingType)
-        SelectWorkoutInformationDialog(activity, recordingType, slot) { s, info ->
+        SelectWorkoutInformationDialog(activity, workoutType, slot) { s, info ->
             vm.onInfoSlotSelected(s, info)
         }.show()
         vm.dismissSelectInfoDialog()
@@ -175,7 +190,7 @@ fun IndoorRecordingScreen(
     val intensityLabel = stringResource(R.string.workoutIntensity)
 
     val repetitionsLabel = workoutType?.let {
-        LocalResources.current.getQuantityString(it.repeatingExerciseName, repetitions)
+        LocalResources.current.getQuantityString(it.repeatingExerciseNameOrDefault, repetitions)
     }.orEmpty()
 
     RecordingScaffold(

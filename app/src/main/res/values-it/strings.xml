@@ -205,9 +205,7 @@
     <string name="light_theme">Chiaro</string>
     <string name="dark_theme">Scuro</string>
     <string name="system_default">Default di sistema</string>
-    <string name="workoutStatsHelpText">Questa schermata mostra le statistiche storiche degli allenamenti. Per utilizzarlo devi prima specificare il tipo di allenamento cliccandoci sopra, quindi imposta le informazioni che desideri conoscere e l\'intervallo di tempo.
-\n
-\nPer esempio, se si seleziona «Settimana» come intervallo di tempo, tutti gli allenamenti di ogni settimana verranno uniti in un punto dati calcolando la media o la somma di ogni settimana.</string>
+    <string name="workoutStatsHelpText">Questa schermata mostra le statistiche storiche degli allenamenti. Per utilizzarlo devi prima specificare il tipo di allenamento cliccandoci sopra, quindi imposta le informazioni che desideri conoscere e l\'intervallo di tempo. \n \nPer esempio, se si seleziona «Settimana» come intervallo di tempo, tutti gli allenamenti di ogni settimana verranno uniti in un punto dati calcolando la media o la somma di ogni settimana.</string>
     <string name="no_workouts_recorded">Nessun allenamento registrato</string>
     <string name="announcementSuppressDuringCall">Sopprimere durante la chiamata</string>
     <string name="replaceOrMergeMessage">Sostituire o unire il database con un file di backup\?</string>
@@ -287,7 +285,7 @@
     <string name="resumeWorkout">Riprendere L\'Allenamento</string>
     <string name="heartRateNotAvailable">La frequenza cardiaca non è attualmente disponibile.</string>
     <string name="announcementWorkoutActions">Azioni di allenamento (pausa, riprendere, ecc.)</string>
-    <string name="resumeWorkoutConfirmation">Riprendere questo allenamento\? Verrà aggiunta una pausa dal momento in cui l\'allenamento è stato interrotto.</string>
+    <string name="resumeWorkoutConfirmation">Riprendere questo allenamento? Verrà aggiunta una pausa dal momento in cui l\'allenamento è stato interrotto.</string>
     <string name="prefShowOnLockScreenSummary">Mostra le informazioni sull\'allenamento anche se il dispositivo è bloccato.</string>
     <string name="prefShowOnLockScreenTitle">Visibile sulla schermata di blocco</string>
     <string name="notimeout">Nessun Timeout</string>
@@ -311,14 +309,13 @@
     <string name="workoutTypeAll">Tutto</string>
     <string name="actionImportMultiple">Importazione multipla</string>
     <string name="actionImport">Importa</string>
-    <string name="importWorkoutMultipleQuestion">Vuoi importare un solo file GPX o una serie di file\?</string>
+    <string name="importWorkoutMultipleQuestion">Vuoi importare un solo file GPX o una serie di file?</string>
     <string name="recordingActivityPermissionMessage">FitoTrack ha bisogno dell\'autorizzazione per monitorare la tua attività fisica per registrare gli allenamenti al chiuso.</string>
     <string name="recordingPermissionNotGrantedMessage">FitoTrack necessita il permesso di accedere alla tua posizione per tracciare i tuoi movimenti durante l\'allenamento. FitoTrack accede alla tua posizione per registrare i tuoi allenamenti anche quando la applicazione è eseguita in sfondo o lo schermo è spento. I dati di geolocalizzazione rimangono sul telefono se non acconsenti esplicitamente a condividerli.</string>
     <string name="editWorkoutStartEnd">Modifica inizio/fine</string>
     <string name="unitHertzLong">Hertz</string>
     <string name="unitHeartBeatsPerMinute">bpm</string>
     <string name="preferenceFirstDayOfWeek">Inizio della settimana</string>
-    <string name="preferenceUseAverageForCurrentSpeed">Utilizzare la velocità media in un determinato periodo di tempo invece dell\'ultimo record di velocità singolo per il calcolo della velocità corrente.</string>
     <string name="preferenceCurrentSpeedAverageTimeTitle">Velocità media ponderata</string>
     <string name="preferenceCurrentSpeedAverageTimeSummary">Sostituisci la velocità attuale con una media</string>
     <string name="preferenceCurrentSpeedTime">Velocità media nell\'arco di tempo</string>
@@ -542,4 +539,37 @@
     <string name="askForCommentSummary">Chiedi di inserire un commento quando la registrazione termina</string>
     <string name="removeOAuthToken">Rimuovi l\'accesso OAuth</string>
     <string name="removedOAuthToken">Autorizzazione OAuth rimossa</string>
+    <string name="addWorkoutType">Aggiungi tipologia allenamento</string>
+    <string name="autoStartDelaySeconds">Ritardo in secondi</string>
+    <string name="zoom_in">Zoom +</string>
+    <string name="zoom_out">Zoom -</string>
+    <string name="pref_use_system_colors">Colorazione dinamica (Material You)</string>
+    <string name="language">Lingua</string>
+    <string name="saveChangesQuestion">Salvare cambiamenti?</string>
+    <string name="saveChangesQuestionMessage">Vuoi davvero salvare i cambiamenti?</string>
+    <string name="restorePreparing">Preparazione</string>
+    <string name="actionBack">Indietro</string>
+    <string name="more"/>
+    <string name="recording_elapsed">Durata</string>
+    <string name="recording_pause">Pausa</string>
+    <string name="recording_resume">Riprendi</string>
+    <string name="recording_hold_to_stop">Tieni premuto per interrompere l\'allenamento</string>
+    <string name="recording_pair_sensor">Accoppia sensore</string>
+    <string name="recording_intervals">Intervalli</string>
+    <string name="recording_status_recording">Registrazione</string>
+    <string name="recording_status_paused_auto">In pausa · automatico</string>
+    <string name="recording_status_paused_manual">In pausa · manuale</string>
+    <string name="recording_status_stopped">Fermato</string>
+    <string name="recording_status_ready">Pronto a partire</string>
+    <string name="recording_status_gps_weak">GPS debole…</string>
+    <string name="recording_status_gps_searching">Ricerca GPS…</string>
+    <string name="ignore">Ignora</string>
+    <string name="localNetworkPermissionTitle">Accesso rete locale</string>
+    <string name="localNetworkPermissionMessage">Se l\'indirizzo inserito punta a un computer locale nella tua rete, FitoTrack necessita dei permessi da Android per accedervi. Se l\'indirizzo punta invece ad un sito internet pubblico, si può ignorare questo messaggio.</string>
+    <string name="localNetworkPermissionDeniedMessage">Accesso alla rete locale permanentemente disabilitato. Per abilitarlo, apri le impostazioni dell\'applicazione.</string>
+    <string name="openSettings">Apri impostazioni</string>
+    <string name="recording_waiting_gps_start_anyway">In attesa del GPS — cominciare comunque?</string>
+    <string name="recording_gps_accurate">GPS · preciso</string>
+    <string name="recording_gps_weak">%d sat · debole</string>
+    <string name="recording_gps_searching">%d sat · ricerca</string>
 </resources>

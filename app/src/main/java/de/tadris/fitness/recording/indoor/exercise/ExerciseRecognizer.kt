@@ -19,14 +19,15 @@
 
 package de.tadris.fitness.recording.indoor.exercise
 
+import de.tadris.fitness.data.WorkoutCapability
+import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.component.FitoTrackSensorOption
 import org.greenrobot.eventbus.EventBus
 
 /**
- * Subclasses recognize repetitions in an indoor exercise. These can be steps, sit-ups, push-ups, etc.
+ * Subclasses recognize repetitions in an exercise. These can be steps, sit-ups, push-ups, etc.
  * When a repetition is recognized they must broadcast a RepetitionRecognizedEvent to the EventBus.
- * The event will then further processed by the IndoorWorkoutRecorder
  */
 abstract class ExerciseRecognizer {
 
@@ -42,17 +43,14 @@ abstract class ExerciseRecognizer {
 
     companion object {
 
-        fun findByType(typeId: String): ExerciseRecognizer? {
-            return when (typeId) {
-                WorkoutTypeManager.WORKOUT_TYPE_ID_TREADMILL -> StepRecognizer()
+        fun findByWorkoutType(type: WorkoutType): ExerciseRecognizer? {
+            if (!type.hasCapability(WorkoutCapability.REPETITIONS)) return null
+            return when (type.id) {
                 WorkoutTypeManager.WORKOUT_TYPE_ID_ROPE_SKIPPING -> JumpRecognizer(maxJumpDuration = 1250)
-                WorkoutTypeManager.WORKOUT_TYPE_ID_TRAMPOLINE_JUMPING -> JumpRecognizer(
-                    maxJumpDuration = 2500
-                )
-
+                WorkoutTypeManager.WORKOUT_TYPE_ID_TRAMPOLINE_JUMPING -> JumpRecognizer(maxJumpDuration = 2500)
                 WorkoutTypeManager.WORKOUT_TYPE_ID_PUSH_UPS -> ProximityRecognizer()
                 WorkoutTypeManager.WORKOUT_TYPE_ID_PULL_UPS -> PullupRecognizer()
-                else -> null
+                else -> StepRecognizer()
             }
         }
 

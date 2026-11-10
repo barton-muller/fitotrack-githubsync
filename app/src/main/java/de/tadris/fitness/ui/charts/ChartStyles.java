@@ -21,6 +21,7 @@ package de.tadris.fitness.ui.charts;
 
 import static de.tadris.fitness.ui.charts.BitmapHelper.drawableToBitmap;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
@@ -160,7 +161,7 @@ public class ChartStyles {
     }
 
     // Be careful to use this function outside StatsHistoryFragment
-    public static void updateStatsHistoryCombinedChartToSpan(CombinedChart chart, CombinedData combinedData, AggregationSpan aggregationSpan, FitoTrackActivity ctx) {
+    public static void updateStatsHistoryCombinedChartToSpan(CombinedChart chart, CombinedData combinedData, AggregationSpan aggregationSpan, Activity ctx) {
         ChartStyles.setTextAppearance(combinedData, ctx);
         if (combinedData.getBarData() != null) {
             float barWidth = Math.max(aggregationSpan.spanInterval, AggregationSpan.DAY.spanInterval);
@@ -183,7 +184,7 @@ public class ChartStyles {
         chart.invalidate();
     }
 
-    public static void updateTimeAxisToZoom(FitoTrackActivity ctx, Chart chart, AxisBase axis, AggregationSpan aggregationSpan) {
+    public static void updateTimeAxisToZoom(Activity ctx, Chart chart, AxisBase axis, AggregationSpan aggregationSpan) {
         axis.setValueFormatter(new FractionedDateFormatter(ctx, aggregationSpan));
         axis.setGranularity((float) aggregationSpan.spanInterval);
         if (axis instanceof XAxis) {
@@ -193,14 +194,14 @@ public class ChartStyles {
         }
     }
 
-    public static void setTextAppearance(ChartData data, FitoTrackActivity context) {
+    public static void setTextAppearance(ChartData data, Context context) {
         data.setValueTextSize(10);
-        data.setValueTextColor(context.getThemeTextColor());
+        data.setValueTextColor(ThemeExtensionsKt.getThemeTextColor(context));
     }
 
 
     public static void barChartIconLabel(BarChart chart, BarData data, Context ctx) {
-        setTextAppearance(data, (FitoTrackActivity) ctx);
+        setTextAppearance(data, ctx);
 
         ArrayList<Bitmap> imageList = new ArrayList<>();
         for (int i = 0; i < data.getDataSets().get(0).getEntryCount(); i++) {
@@ -223,7 +224,7 @@ public class ChartStyles {
         chart.getAxisLeft().setAxisMinimum(0);
     }
 
-    public static void barChartNoData(BarChart chart, FitoTrackActivity ctx) {
+    public static void barChartNoData(BarChart chart, Context ctx) {
         chart.setDrawMarkers(false);
         chart.setData(new BarData()); // Needed in case there is nothing to clear...
         chart.clearValues();
@@ -232,7 +233,7 @@ public class ChartStyles {
     }
 
     public static void horizontalBarChartIconLabel(HorizontalBarChart chart, BarData data, Context ctx) {
-        setTextAppearance(data, (FitoTrackActivity) ctx);
+        setTextAppearance(data, ctx);
 
         ArrayList<Bitmap> imageList = new ArrayList<>();
         for (int i = 0; i < data.getDataSets().get(0).getEntryCount(); i++) {

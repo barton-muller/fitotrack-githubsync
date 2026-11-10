@@ -285,7 +285,7 @@
     <string name="resumeWorkout">Training hervatten</string>
     <string name="heartRateNotAvailable">Hartslag is momenteel niet beschikbaar.</string>
     <string name="announcementWorkoutActions">Trainingsacties (pauzeren, hervatten, enz.)</string>
-    <string name="resumeWorkoutConfirmation">Deze training hervatten\? Er wordt een pauze toegevoegd vanaf het moment dat de training werd gestopt.</string>
+    <string name="resumeWorkoutConfirmation">Deze training hervatten? Er wordt een pauze toegevoegd vanaf het moment dat de training werd gestopt.</string>
     <string name="prefShowOnLockScreenSummary">Trainingsinfo weergeven, zelfs als het apparaat is vergrendeld.</string>
     <string name="prefShowOnLockScreenTitle">Zichtbaar op vergrendelscherm</string>
     <string name="notimeout">Geen Time-Out</string>
@@ -375,7 +375,6 @@
     <string name="editWorkoutStartEnd">Start/Einde bewerken</string>
     <string name="unitHeartBeatsPerMinute">bpm</string>
     <string name="preferenceFirstDayOfWeek">Begin van de week</string>
-    <string name="preferenceUseAverageForCurrentSpeed">Gebruik de gemiddelde snelheid over een bepaalde tijd in plaats van het laatste enkele snelheidsrecord voor de berekening van de huidige snelheid.</string>
     <string name="preferenceCurrentSpeedAverageTimeTitle">Gemiddelde snelheid</string>
     <string name="preferenceCurrentSpeedAverageTimeSummary">Huidige snelheid vervangen door een gemiddelde</string>
     <string name="preferenceCurrentSpeedTime">Tijdspanne voor gemiddelde snelheid</string>

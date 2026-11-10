@@ -103,6 +103,7 @@ fun ListPreferenceItem(
     entryValues: Array<String>,
     selectedValue: String,
     onValueChange: (String) -> Unit,
+    itemSupportingContent: (@Composable (index: Int) -> Unit)? = null,
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -138,17 +139,21 @@ fun ListPreferenceItem(
                                     role = Role.RadioButton,
                                 )
                                 .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment = if (itemSupportingContent != null) Alignment.Top else Alignment.CenterVertically,
                         ) {
                             RadioButton(
                                 selected = entryValues[index] == selectedValue,
                                 onClick = null,
                             )
-                            Text(
-                                text = entry,
-                                modifier = Modifier.padding(start = 16.dp),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
+                            Column(modifier = Modifier.padding(start = 16.dp)) {
+                                Text(
+                                    text = entry,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                if (itemSupportingContent != null) {
+                                    itemSupportingContent(index)
+                                }
+                            }
                         }
                     }
                 }

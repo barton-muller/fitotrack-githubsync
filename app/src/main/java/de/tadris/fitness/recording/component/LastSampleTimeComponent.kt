@@ -19,7 +19,7 @@
 
 package de.tadris.fitness.recording.component
 
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.recording.RecorderService
 import de.tadris.fitness.recording.event.RepetitionSampleEvent
 import de.tadris.fitness.recording.event.RouteSampleEvent
@@ -48,7 +48,7 @@ abstract class LastSampleTimeComponent : RecorderServiceComponent {
 
     @Subscribe
     fun onNewRepetitionSample(e: RepetitionSampleEvent){
-        if(service.stateHolder.recordingType == RecordingType.INDOOR){
+        if (!service.stateHolder.workoutType.hasCapability(WorkoutCapability.GPS)) {
             lastSampleTime = System.currentTimeMillis()
         }
     }

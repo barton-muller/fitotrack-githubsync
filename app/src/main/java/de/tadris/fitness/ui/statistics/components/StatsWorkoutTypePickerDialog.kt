@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.tadris.fitness.R
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.stats.aggregation.WorkoutTypeFilter
@@ -69,7 +68,7 @@ fun StatsWorkoutTypePickerDialog(
                     Color.White.hashCode(), // Default color for "All"
                     "list",
                     0,
-                    RecordingType.GPS.id
+                    ""
                 )
                 types = listOf(allOption) + filteredTypes
                 isLoading = false

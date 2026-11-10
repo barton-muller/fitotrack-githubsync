@@ -21,7 +21,6 @@ package de.tadris.fitness.ui.dashboard
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -71,7 +71,7 @@ internal fun WorkoutListItem(
     val dateText = instance.userDateTimeUtils.formatDateTime(Date(workout.start))
     val distanceText = if (workout.distance == 0.0 && workout.repetitions > 0) {
         val reps = workout.repetitions
-        "$reps ${LocalResources.current.getQuantityString(workoutType.repeatingExerciseName, reps)}"
+        "$reps ${LocalResources.current.getQuantityString(workoutType.getRepeatingExerciseNameOrDefault(), reps)}"
     } else {
         instance.distanceUnitUtils.getDistance(workout.distance.toInt())
     }
