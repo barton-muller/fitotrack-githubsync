@@ -409,6 +409,7 @@
     <string name="bluetoothStrengthModerate">Moderate bluetooth signal</string>
     <string name="bluetoothStrengthWeak">Weak bluetooth signal</string>
     <string name="bluetoothStrengthNone">No bluetooth signal</string>
+    <string name="bluetoothNoSignal">No signal</string>
     <string name="bluetoothAutoconnect">Device will connect once available</string>
     <string name="bluetoothTooManyConnections">Device will connect once available</string>
     <string name="bluetoothErrorTooManyScans">Bluetooth scanning started too many times. Please wait 30 seconds, and try again.</string>

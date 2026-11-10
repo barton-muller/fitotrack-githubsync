@@ -170,12 +170,16 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun DeviceRow(deviceRow: ChooseBluetoothDeviceViewModel.BluetoothDeviceRow, onClick: () -> Unit) {
+    val noSignal = deviceRow.strength == SignalStrength.NONE && !deviceRow.connected
     val contentColor =
-        if (deviceRow.strength == SignalStrength.NONE && !deviceRow.connected) MaterialTheme.colorScheme.outline
+        if (noSignal) MaterialTheme.colorScheme.outline
         else MaterialTheme.colorScheme.onSurface
 
     ListItem(
         headlineContent = { Text(deviceRow.displayName, color = contentColor) },
+        supportingContent = if (noSignal) {
+            { Text(stringResource(R.string.bluetoothNoSignal), color = contentColor) }
+        } else null,
         trailingContent = { SignalStrengthIcon(deviceRow) },
         modifier = Modifier.clickable(onClick = onClick),
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)

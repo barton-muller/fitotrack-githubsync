@@ -60,19 +60,33 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
     private fun ScanResult.toScannedDevice(
         rssi: Int? = null,
         lastSeen: Long? = null,
+    ): ScannedDevice = device.toScannedDevice(scanRecord?.deviceName, rssi, lastSeen)
+
+    private fun BluetoothDevice.toScannedDevice(
+        fallbackName: String? = null,
+        rssi: Int? = null,
+        lastSeen: Long? = null,
     ): ScannedDevice {
-        var name: String? = device.name ?: scanRecord?.deviceName
-        if (name == "null") {
-            name = null
-        }
+        val name = (name ?: fallbackName)?.takeIf { it != "null" }
         return ScannedDevice(
-            device.address,
+            address,
             name,
             rssi,
             getSignalStrength(rssi),
-            device.bondState == BluetoothDevice.BOND_BONDED,
+            bondState == BluetoothDevice.BOND_BONDED,
             lastSeen
         )
+    }
+
+    private fun addBondedDevices(adapter: BluetoothAdapter) {
+        val bonded = try {
+            adapter.bondedDevices.orEmpty()
+        } catch (e: SecurityException) {
+            Log.d("DeviceScanner", "Cannot read bonded devices", e)
+            return
+        }
+        bonded.filter { it.type != BluetoothDevice.DEVICE_TYPE_CLASSIC }
+            .forEach { updateDeviceIfNeeded(it.toScannedDevice()) }
     }
 
     private fun getSignalStrength(rssi: Int?): SignalStrength = when {
@@ -96,6 +110,7 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
             return
         }
         this.scanner = scanner
+        addBondedDevices(adapter)
         scanner.startScan(
             ArrayList<ScanFilter?>(),
             ScanSettings.Builder()
@@ -132,18 +147,21 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
         val removalCutoff = now - BT_REMOVAL_TIMEOUT_MS
         var changed = false
         for ((address, existingDevice) in deviceMap) {
-            if (existingDevice.lastSeen != null && existingDevice.lastSeen < removalCutoff) {
-                deviceMap.remove(address)
+            if (existingDevice.lastSeen == null) {
+                // paired device without a live signal, stays in the list
+                continue
+            }
+            if (existingDevice.lastSeen < removalCutoff) {
+                if (existingDevice.bonded) {
+                    // fall back to a "no signal" entry instead of dropping a paired device
+                    deviceMap[address] = existingDevice.copy(lastSeen = null)
+                } else {
+                    deviceMap.remove(address)
+                }
                 changed = true
-            } else if (existingDevice.lastSeen != null && existingDevice.lastSeen < absentCutoff) {
-                deviceMap[address] = ScannedDevice(
-                    existingDevice.address,
-                    existingDevice.name,
-                    rssi = null,
-                    strength = SignalStrength.NONE,
-                    existingDevice.bonded,
-                    existingDevice.lastSeen
-                )
+            } else if (existingDevice.lastSeen < absentCutoff &&
+                existingDevice.strength != SignalStrength.NONE) {
+                deviceMap[address] = existingDevice.copy(rssi = null, strength = SignalStrength.NONE)
                 changed = true
             }
         }
