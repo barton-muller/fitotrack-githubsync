@@ -90,6 +90,7 @@
     <string name="workoutAscent">Aufstieg</string>
     <string name="workoutDescent">Abstieg</string>
     <string name="mapStyle">Kartenstil</string>
+    <string name="mapTheme">Kartenthema</string>
     <string name="actionUploadToOSM">Auf OSM hochladen</string>
     <string name="authenticationFailed">Authentifizierung fehlgeschlagen.</string>
     <string name="cut">Die ersten/letzten 300 m abschneiden</string>

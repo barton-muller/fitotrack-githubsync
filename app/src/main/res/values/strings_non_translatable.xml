@@ -43,6 +43,11 @@
         <item>@string/humanitarian_clean_map_but_sometimes_not_available</item>
         <item>@string/offline_local_map_file_with_local_render_theme</item>
     </string-array>
+    <string-array name="pref_map_theme">
+        <item>@string/auto</item>
+        <item>@string/light_theme</item>
+        <item>@string/dark_theme</item>
+    </string-array>
     <string-array name="pref_track_style_usage">
         <item>@string/always_track_style</item>
         <item>@string/in_the_diagram_screen_track_style</item>

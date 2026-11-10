@@ -78,6 +78,7 @@ fun InterfaceSettingsScreen(onBack: () -> Unit) {
 
     // --- Map preferences ---
     var mapStyle by remember { mutableStateOf(prefs.mapStyle) }
+    var mapTheme by remember { mutableStateOf(prefs.mapTheme) }
     var trackStyleMode by remember { mutableStateOf(prefs.trackStyleMode) }
     var trackStyle by remember { mutableStateOf(prefs.trackStyle) }
     var offlineMapDir by remember { mutableStateOf(prefs.offlineMapDirectoryName ?: "") }
@@ -163,6 +164,19 @@ fun InterfaceSettingsScreen(onBack: () -> Unit) {
                     onValueChange = { value ->
                         mapStyle = value
                         prefs.mapStyle = value
+                    },
+                )
+            }
+
+            item {
+                ListPreferenceItem(
+                    title = stringResource(R.string.mapTheme),
+                    entries = stringArrayResource(R.array.pref_map_theme),
+                    entryValues = stringArrayResource(R.array.pref_map_theme_values),
+                    selectedValue = mapTheme,
+                    onValueChange = { value ->
+                        mapTheme = value
+                        prefs.mapTheme = value
                     },
                 )
             }

@@ -47,8 +47,12 @@ class MapManager(private val activity: Activity) {
 
     private val userPreferences = Instance.getInstance(activity).userPreferences
     private val contentResolver = activity.contentResolver
-    private val darkModeEnabled = activity.resources.configuration.uiMode and
-            Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    private val darkModeEnabled = when (userPreferences.mapTheme) {
+        "dark" -> true
+        "auto" -> activity.resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        else -> false
+    }
 
     private lateinit var mapView: MapView
     private lateinit var tileCache: TileCache

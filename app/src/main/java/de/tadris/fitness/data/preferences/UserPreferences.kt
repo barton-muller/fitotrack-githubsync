@@ -53,6 +53,8 @@ class UserPreferences(private val context: Context) : PreferenceProvider {
 
     var mapStyle by StringSharedPreference("mapStyle", "osm.mapnik")
 
+    var mapTheme by StringSharedPreference("mapTheme", "light")
+
     var trackStyle by StringSharedPreference("trackStyle", "purple_rain")
 
     var trackStyleMode by StringSharedPreference("trackStyleUsage", STYLE_USAGE_DIAGRAM)

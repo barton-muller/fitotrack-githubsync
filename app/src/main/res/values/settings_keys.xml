@@ -38,6 +38,11 @@
         <item>osm.humanitarian</item>
         <item>offline</item>
     </string-array>
+    <string-array name="pref_map_theme_values">
+        <item>auto</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
 
     <string-array name="pref_track_style_usage_values">
         <item>always</item>

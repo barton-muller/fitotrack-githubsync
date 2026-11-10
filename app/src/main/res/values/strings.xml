@@ -240,6 +240,7 @@
     <string name="importBackupSummary">Restore a backup</string>
     <string name="gps">GPS</string>
     <string name="mapStyle">Map Style</string>
+    <string name="mapTheme">Map Theme</string>
     <string name="trackStyle">Track Style</string>
     <string name="prefTrackStyleUsageTitle">Use track coloring automatically</string>
     <string name="waiting_gps">Waiting for GPS</string>
