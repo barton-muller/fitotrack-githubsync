@@ -43,13 +43,14 @@ fun WorkoutTypePickerDialog(
     types: List<WorkoutType>,
     onDismiss: () -> Unit,
     onSelect: (WorkoutType) -> Unit,
-    onAddType: () -> Unit,
+    /** Shows an "add type" entry at the top if set */
+    onAddType: (() -> Unit)? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         text = {
             LazyColumn {
-                item {
+                if (onAddType != null) item {
                     ListItem(
                         leadingContent = {
                             Icon(

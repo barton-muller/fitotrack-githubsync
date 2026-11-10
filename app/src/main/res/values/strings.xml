@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright (c) 2026 Jannis Scheibe <jannis@tadris.de>
   ~
@@ -17,9 +16,7 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  --><resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">FitoTrack</string>
     <string name="stop">Stop</string>
     <string name="delete">Delete</string>
@@ -58,7 +55,7 @@
     <string name="pref_voice_announcements_summary">Configure voice prompts that inform you during the workout</string>
     <string name="pref_announcements_config_title">Announcement Trigger</string>
     <string name="pref_announcements_config_summary">Choose the time and distance between voice announcements</string>
-    <string name="pref_announcements_content">Content of the announcements</string>
+    <string name="pref_announcements_content">Announcement content</string>
     <string name="workoutRecordingTypeGps">GPS Workouts</string>
     <string name="workoutRecordingTypeIndoor">Indoor Workouts</string>
     <string name="gpsLost">GPS signal lost</string>
@@ -85,6 +82,9 @@
     <string name="workoutAvgFrequencyLong">Average Frequency</string>
     <string name="workoutCurrentFrequency">Current Frequency</string>
     <string name="workoutMaxFrequency">Max Frequency</string>
+    <string name="workoutCadence">Cadence</string>
+    <string name="workoutAvgCadenceShort">Avg. Cadence</string>
+    <string name="workoutMaxCadence">Max Cadence</string>
     <string name="workoutIntensity">Intensity</string>
     <string name="workoutAvgIntensityShort">Avg. Intensity</string>
     <string name="workoutMaxIntensity">Max Intensity</string>
@@ -120,10 +120,15 @@
     <string name="workoutTypeRowing">Rowing</string>
     <string name="workoutTypeSwimming">Swimming</string>
     <string name="workoutTypeOther">Other</string>
+    <string name="workoutTypeAuto">Auto</string>
     <string name="workoutTypeTreadmill">Treadmill</string>
     <plurals name="workoutStep">
         <item quantity="one">Step</item>
         <item quantity="other">Steps</item>
+    </plurals>
+    <plurals name="workoutPedalStroke">
+        <item quantity="one">Pedal stroke</item>
+        <item quantity="other">Pedal strokes</item>
     </plurals>
     <string name="workoutTypeRopeSkipping">Rope Skipping</string>
     <string name="workoutTypeTrampolineJumping">Trampoline Jumping</string>
@@ -169,6 +174,59 @@
     <string name="trackerWaitingMessage">Waiting to start workout</string>
     <string name="trackingInfo">Tracking Info</string>
     <string name="trackingInfoDescription">Info about the tracker running</string>
+    <string name="stepTrackingChannelName">Step Tracking</string>
+    <string name="stepTrackingChannelDescription">Shown while step tracking is active</string>
+    <string name="stepTrackingNotificationTitle">Step tracking active</string>
+    <string name="stepTrackingNotificationText">FitoTrack is counting your steps</string>
+    <plurals name="stepTrackingNotificationSteps">
+        <item quantity="one">%d step today</item>
+        <item quantity="other">%d steps today</item>
+    </plurals>
+    <string name="tabHome">Home</string>
+    <string name="tabWorkouts">Workouts</string>
+    <string name="tabSteps">Steps</string>
+    <string name="stepSettings">Step Settings</string>
+    <string name="tabSettings">Settings</string>
+    <string name="homeStepsToday">Steps · today</string>
+    <string name="homeThisWeekSteps">This week · steps</string>
+    <string name="homeLast7DaysSteps">Last 7 days · steps</string>
+    <string name="homeThisWeek">Workouts · this week</string>
+    <string name="homeLast7DaysWorkouts">Workouts · last 7 days</string>
+    <string name="homeLatestWorkout">Latest workout</string>
+    <string name="homeSeeAll">See all</string>
+    <string name="homeActiveLabel">Active</string>
+    <string name="homeDistanceLabel">Distance</string>
+    <string name="stepTrackingTitle">Step tracking</string>
+    <string name="stepTrackingRunning">Step tracking active</string>
+    <string name="stepTrackingDescription">Enable step tracking to automatically count your daily steps in the background.</string>
+    <string name="stepTrackingNotSupported">Step tracking is not supported on this device.</string>
+    <string name="stepTrackingStart">Start</string>
+    <string name="stepTrackingStop">Stop</string>
+    <string name="autoStartRecordingTitle">Auto-start workouts</string>
+    <string name="autoStartRecordingDescription">Automatically start a workout when elevated step activity is detected. Increases battery usage.</string>
+    <string name="stepActivityThreshold">Activity threshold for auto start</string>
+    <string name="stepActivityThresholdLow">Low</string>
+    <string name="stepActivityThresholdMedium">Medium</string>
+    <string name="stepActivityThresholdHigh">High</string>
+    <string name="autoStartLocationPermissionExplanation">FitoTrack needs location permission to automatically start and record workouts. Please grant it in the app settings.</string>
+    <string name="autoStartBackgroundLocationPermissionExplanation">FitoTrack needs background location permission ("Allow all the time") to automatically start and record workouts while the app is not open. Please enable it in the location settings.</string>
+    <string name="stepTrackingPromptTitle">Step tracking</string>
+    <string name="stepTrackingPromptMessage">Track your daily steps automatically in the background.</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="stepGoalProgress">/ %d steps</string>
+    <string name="dailyStepGoal">Daily step goal</string>
+    <string name="todaySteps">Today\'s steps</string>
+    <string name="stepStatistics">Step Statistics</string>
+    <string name="activeMinuteStatistics">Active Minute Statistics</string>
+    <string name="stepProgressAvgPerDay">Avg. / day</string>
+    <string name="stepProgressTotal">Total</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="weekNumberLabel">Week %d</string>
+    <string name="selectYear">Select Year</string>
+    <string name="permissionRequiredTitle">Permission required</string>
+    <string name="stepPermissionExplanation">FitoTrack needs the activity recognition permission to count your steps. Please grant it in the app settings.</string>
+
     <string name="cancel">Cancel</string>
     <string name="exportAsGpxFile">Export as GPX File</string>
     <string name="pref_weight">Your Weight</string>
@@ -229,6 +287,8 @@
     <string name="avgSpeedInMotion">Avg. Speed (in Motion)</string>
     <string name="avgSpeedTotalShort">Avg. Speed (Total)</string>
     <string name="avgSpeedTotalLong">Average Speed in total</string>
+    <string name="preferencesProfileTitle">Profile</string>
+    <string name="preferencesProfileSummary">Your personal measurements</string>
     <string name="preferencesUserInterfaceTitle">User Interface</string>
     <string name="preferencesUserInterfaceSummary">Personalize the app</string>
     <string name="preferencesRecordingTitle">Recording</string>
@@ -313,7 +373,7 @@
     <string name="aboutSourceCode">View source code</string>
     <string name="aboutUnlistedContributors">Thanks to all the unlisted contributors that helped to translate and extend FitoTrack!</string>
     <string name="aboutHelpTranslating">Help translating</string>
-    <string name="aboutPrivacyPolicy">Privacy Policy</string>
+    <string name="aboutPrivacyPolicy">Privacy policy</string>
     <string name="editDisplayedInformation">Edit displayed information</string>
     <string name="editDisplayedInformationHint">Before the workout starts, you can edit the displayed values by clicking on one of the four fields</string>
     <string name="noWorkoutStarted">No Workout Started</string>
@@ -390,6 +450,8 @@
     <string name="deleteWorkoutType">Delete Workout Type</string>
     <string name="deleteWorkoutTypeConfirmation">Do you really want to delete this workout type?</string>
     <string name="workoutTypeEditIcon">Icon</string>
+    <string name="workoutCapabilityGps">GPS tracking</string>
+    <string name="workoutCapabilityRepetitions">Repetition counting</string>
     <string name="editWorkoutType">Edit workout type</string>
     <string name="addWorkoutType">Add workout type</string>
     <string name="pref_map_directory">Offline Map Directory</string>
@@ -398,6 +460,7 @@
     <string name="pref_render_theme_style_info">No menu available for selected theme.</string>
     <string name="downloadMapsTitle">Download Maps</string>
     <string name="downloadMapsSpecifyDirectory">Please specify a directory for offline maps first</string>
+    <string name="offlineMapRequiresOfflineStyle">Set map style to offline to configure the offline map</string>
     <string name="overwriteMapConfirmation">Overwrite the existing \\\"%s\\\" map file\?</string>
     <string name="actionDownloadMap">Download map</string>
     <string name="downloadMapConfirmation">Download the \\\"%s\\\" map file\?</string>
@@ -482,7 +545,7 @@
     <string name="auto">Auto</string>
     <string name="noColoring">No coloring</string>
     <string name="pref_announcements_pace_control_summary">Warn when below or above a specified speed</string>
-    <string name="pref_announcements_pace_control_title">Pace-warnings</string>
+    <string name="pref_announcements_pace_control_title">Pace warnings</string>
     <string name="invalidNumberFormat">Invalid number format.</string>
     <string name="fileNotFound">File not found</string>
     <string name="stats_explore_title">Explore</string>
@@ -493,7 +556,7 @@
     <string name="monthYear">Month / Year</string>
     <string name="workoutAvgDistance">Average Distance</string>
     <string name="workoutDistanceSum">Distance sum</string>
-<string name="zoomWithVolumeButtonsSummary">Use volume up and down buttons to zoom in and out</string>
+    <string name="zoomWithVolumeButtonsSummary">Use volume up and down buttons to zoom in and out</string>
     <string name="zoomWithVolumeButtonsTitle">Zoom with volume buttons</string>
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
@@ -585,7 +648,6 @@
     <string name="restorePreparing">Preparing</string>
     <string name="actionBack">Back</string>
     <string name="more">More</string>
-
     <string name="recording_elapsed">Duration</string>
     <string name="recording_pause">Pause</string>
     <string name="recording_resume">Resume</string>

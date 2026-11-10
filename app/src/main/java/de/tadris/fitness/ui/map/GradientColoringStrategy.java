@@ -51,7 +51,7 @@ public class GradientColoringStrategy implements ColoringStrategy {
      * @param doBlend Wheter to blend from one value to the other or not
      * @return a new instance of ColoringStrategy
      */
-    public static ColoringStrategy fromPattern(String pattern, boolean doBlend) {
+    public static GradientColoringStrategy fromPattern(String pattern, boolean doBlend) {
         String[] colorStrings = pattern.split(" ");
         assert colorStrings.length > 1; // We expect at least two colors because we "blend" between colors ..
         int[] colors = new int[colorStrings.length];

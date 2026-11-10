@@ -61,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -75,6 +76,7 @@ import de.tadris.fitness.R
 import de.tadris.fitness.data.Workout
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.data.preferences.UserMeasurements
+import de.tadris.fitness.ui.components.SectionHeader
 import de.tadris.fitness.ui.map.WorkoutMap
 import de.tadris.fitness.ui.sections.SectionListModel
 import de.tadris.fitness.ui.sections.SectionListPresenter
@@ -169,6 +171,7 @@ private fun ShowWorkoutContent(
 ) {
     val context = LocalContext.current
     val workout = state.workout
+    val type = workout.getWorkoutType(context)
     val data = state.data
     val calculatedValues = state.calculatedValues
 
@@ -193,7 +196,7 @@ private fun ShowWorkoutContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(workout.getWorkoutType(context).title) },
+                title = { Text(type.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -304,13 +307,20 @@ private fun ShowWorkoutContent(
             )
 
             // Distance / Repetitions
-            if (data.repetitionSamples.isEmpty()) {
+            if (data.hasRouteData || !data.hasRepetitions) {
                 KeyValueRow(
                     stringResource(R.string.workoutDistance),
                     distanceUnitUtils.getDistance(workout.distance.toInt()),
                     stringResource(R.string.workoutPace),
                     distanceUnitUtils.getPace(workout.averagePaceActive)
                 )
+                if(data.hasRepetitions){
+                    val repetitionLabel = if (type.repeatingExerciseName > 0)
+                        LocalResources.current.getQuantityString(type.repeatingExerciseName, workout.repetitions)
+                    else
+                        LocalResources.current.getQuantityString(R.plurals.workoutRepetition, workout.repetitions)
+                    KeyValueRow(repetitionLabel, workout.repetitions.toString())
+                }
             } else {
                 KeyValueRow(
                     stringResource(R.string.workoutRepetitions),
@@ -375,17 +385,17 @@ private fun ShowWorkoutContent(
                 )
             }
 
-            // Frequency
+            // Cadence
             if (data.hasRepetitions) {
-                SectionHeader(stringResource(R.string.workoutFrequency))
+                SectionHeader(stringResource(R.string.workoutCadence))
                 if (data.repetitionSamples.isNotEmpty()) {
                     KeyValueRow(
-                        stringResource(R.string.workoutAvgFrequencyShort),
+                        stringResource(R.string.workoutAvgCadenceShort),
                         UnitUtils.round(
                             workout.averageFrequency,
                             2
                         ) + " " + UnitUtils.unitHertzShort,
-                        stringResource(R.string.workoutMaxFrequency),
+                        stringResource(R.string.workoutMaxCadence),
                         UnitUtils.round(
                             calculatedValues.maxFrequency,
                             2
@@ -401,7 +411,7 @@ private fun ShowWorkoutContent(
                     )
                 } else {
                     KeyValueRow(
-                        stringResource(R.string.workoutAvgFrequencyShort),
+                        stringResource(R.string.workoutAvgCadenceShort),
                         UnitUtils.round(
                             workout.averageFrequency,
                             2
@@ -428,7 +438,8 @@ private fun ShowWorkoutContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(MaterialTheme.spacing.mapHeight / 2),
-                    onClick = { onShowDiagram(DiagramType.HEART_RATE) }
+                    interactive = !data.hasRouteData, // show bpm instead of a map if we have no route data
+                    onClick = if (data.hasRouteData) { { onShowDiagram(DiagramType.HEART_RATE) } } else null
                 )
             }
 

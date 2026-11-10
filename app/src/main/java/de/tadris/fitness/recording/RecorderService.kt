@@ -18,8 +18,10 @@
  */
 package de.tadris.fitness.recording
 
+import android.Manifest
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
@@ -27,12 +29,13 @@ import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import de.tadris.fitness.BuildConfig
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.autostart.AutoStartComponent
 import de.tadris.fitness.recording.autostart.AutoStartStateEvent
 import de.tadris.fitness.recording.component.AnnouncementComponent
 import de.tadris.fitness.recording.component.AutoPauseComponent
+import de.tadris.fitness.recording.component.AutoStopBackgroundRecordingsComponent
 import de.tadris.fitness.recording.component.AutoStopComponent
 import de.tadris.fitness.recording.component.ExerciseRecognitionComponent
 import de.tadris.fitness.recording.component.GnssComponent
@@ -64,6 +67,7 @@ class RecorderService : Service() {
 
     companion object {
         const val EXTRA_WORKOUT_TYPE = "workoutType"
+        const val EXTRA_AUTO_STARTED = "autoStarted"
 
         const val TAG: String = "RecorderService"
 
@@ -73,6 +77,7 @@ class RecorderService : Service() {
     }
 
     private var wakeLock: WakeLock? = null
+    var autoStarted = false
 
     private val components = mutableListOf<RecorderServiceComponent>()
     private var notificationComponent: ServiceNotificationComponent? = null
@@ -145,15 +150,25 @@ class RecorderService : Service() {
             stateHolder.initFresh(this, workoutType)
         }
 
+        autoStarted = intent?.getBooleanExtra(EXTRA_AUTO_STARTED, false) ?: false
+
         acquireWakelock()
 
         startRelevantComponents()
         actions.register()
 
+        if (autoStarted) {
+            actions.start(StartReason.AUTO_START)
+        }
+
         initializeWatchdog()
         val notification = notificationComponent!!.getNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val serviceType = if (stateHolder.recordingType == RecordingType.GPS) {
+            val hasBackgroundLocation = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                    checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val useLocationFgsType = stateHolder.workoutType.hasCapability(WorkoutCapability.GPS) &&
+                    (!autoStarted || hasBackgroundLocation)
+            val serviceType = if (useLocationFgsType) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             } else {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
@@ -184,7 +199,7 @@ class RecorderService : Service() {
     }
 
     private fun startRelevantComponents() {
-        val type = stateHolder.recordingType
+        val workoutType = stateHolder.workoutType
 
         notificationComponent = ServiceNotificationComponent(this)
         startComponent(notificationComponent!!)
@@ -193,14 +208,18 @@ class RecorderService : Service() {
         startComponent(AutoStopComponent())
         startComponent(TemporaryAggregationComponent())
         startComponent(PebbleIntegrationComponent())
-        if (type == RecordingType.GPS) {
+        if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             startComponent(AutoStartComponent())
             startComponent(GpsComponent())
             startComponent(GpsSampleComponent())
             startComponent(GpsStateComponent())
             startComponent(PressureComponent())
             startComponent(GnssComponent())
-        } else {
+            if (autoStarted) {
+                startComponent(AutoStopBackgroundRecordingsComponent())
+            }
+        }
+        if (workoutType.hasCapability(WorkoutCapability.REPETITIONS)) {
             startComponent(ExerciseRecognitionComponent())
             startComponent(RepetitionSampleComponent())
         }

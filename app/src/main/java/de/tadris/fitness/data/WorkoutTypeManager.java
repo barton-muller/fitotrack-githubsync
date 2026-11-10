@@ -29,10 +29,12 @@ import java.util.List;
 import de.tadris.fitness.Instance;
 import de.tadris.fitness.R;
 import de.tadris.fitness.util.Icon;
+import de.tadris.fitness.data.WorkoutCapability;
 
 public class WorkoutTypeManager {
 
 
+    public static final String WORKOUT_TYPE_ID_AUTO = "auto";
     public static final String WORKOUT_TYPE_ID_OTHER = "other";
     public static final String WORKOUT_TYPE_ID_RUNNING = "running";
     public static final String WORKOUT_TYPE_ID_WALKING = "walking";
@@ -119,6 +121,10 @@ public class WorkoutTypeManager {
         return newTypes;
     }
 
+    private static final String CAP_GPS = WorkoutCapability.GPS.getId();
+    private static final String CAP_REPS = WorkoutCapability.REPETITIONS.getId();
+    private static final String CAP_GPS_REPS = CAP_GPS + "," + CAP_REPS;
+
     private void buildPresets(Context context) {
         if (!allWorkoutTypes.isEmpty()) return; // Don't build a second time
         allWorkoutTypes.addAll(Arrays.asList(new WorkoutType(WORKOUT_TYPE_ID_RUNNING,
@@ -126,89 +132,95 @@ public class WorkoutTypeManager {
                 5,
                 context.getResources().getColor(R.color.colorPrimaryRunning),
                 Icon.RUNNING.name,
-                -1, RecordingType.GPS.id),
+                -1, CAP_GPS_REPS, R.plurals.workoutStep),
                 new WorkoutType(WORKOUT_TYPE_ID_WALKING,
                         context.getString(R.string.workoutTypeWalking),
                         5,
                         context.getResources().getColor(R.color.colorPrimaryRunning),
                         Icon.WALKING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS_REPS, R.plurals.workoutStep),
                 new WorkoutType(WORKOUT_TYPE_ID_HIKING,
                         context.getString(R.string.workoutTypeHiking),
                         5,
                         context.getResources().getColor(R.color.colorPrimaryHiking),
                         Icon.HIKING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS_REPS, R.plurals.workoutStep),
                 new WorkoutType(WORKOUT_TYPE_ID_CYCLING,
                         context.getString(R.string.workoutTypeCycling),
                         10,
                         context.getResources().getColor(R.color.colorPrimaryBicycling),
                         Icon.CYCLING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS_REPS, R.plurals.workoutPedalStroke),
                 new WorkoutType(WORKOUT_TYPE_ID_INLINE_SKATING,
                         context.getString(R.string.workoutTypeInlineSkating),
                         7,
                         context.getResources().getColor(R.color.colorPrimarySkating),
                         Icon.INLINE_SKATING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS),
                 new WorkoutType(WORKOUT_TYPE_ID_SKATEBOARDING,
                         context.getString(R.string.workoutTypeSkateboarding),
                         7,
                         context.getResources().getColor(R.color.colorPrimarySkating),
                         Icon.SKATEBOARDING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS),
                 new WorkoutType(WORKOUT_TYPE_ID_ROWING,
                         context.getString(R.string.workoutTypeRowing),
                         7,
                         context.getResources().getColor(R.color.colorPrimaryWaterSports),
                         Icon.ROWING.name,
-                        -1, RecordingType.GPS.id),
+                        -1, CAP_GPS),
                 new WorkoutType(WORKOUT_TYPE_ID_SWIMMING,
                         context.getString(R.string.workoutTypeSwimming),
                         4,
                         context.getResources().getColor(R.color.colorPrimaryWaterSports),
                         Icon.POOL.name,
-                        8, RecordingType.GPS.id),
+                        8, CAP_GPS),
                 new WorkoutType(WORKOUT_TYPE_ID_OTHER,
                         context.getString(R.string.workoutTypeOther),
                         7,
                         context.getResources().getColor(R.color.colorPrimary),
                         Icon.OTHER.name,
-                        0, RecordingType.GPS.id),
+                        0, CAP_GPS_REPS, R.plurals.workoutRepetition),
+                new WorkoutType(WORKOUT_TYPE_ID_AUTO,
+                        context.getString(R.string.workoutTypeAuto),
+                        5,
+                        context.getResources().getColor(R.color.colorPrimary),
+                        Icon.OTHER.name,
+                        -1, CAP_GPS_REPS, R.plurals.workoutStep),
                 new WorkoutType(WORKOUT_TYPE_ID_TREADMILL,
                         context.getString(R.string.workoutTypeTreadmill),
                         5,
                         context.getResources().getColor(R.color.colorPrimaryRunning),
                         Icon.RUNNING.name,
-                        -1, RecordingType.INDOOR.id,
+                        -1, CAP_REPS,
                         R.plurals.workoutStep),
                 new WorkoutType(WORKOUT_TYPE_ID_ROPE_SKIPPING,
                         context.getString(R.string.workoutTypeRopeSkipping),
                         3,
                         context.getResources().getColor(R.color.colorPrimary),
                         Icon.ROPE_SKIPPING.name,
-                        11, RecordingType.INDOOR.id,
+                        11, CAP_REPS,
                         R.plurals.workoutJump),
                 new WorkoutType(WORKOUT_TYPE_ID_TRAMPOLINE_JUMPING,
                         context.getString(R.string.workoutTypeTrampolineJumping),
                         3,
                         context.getResources().getColor(R.color.colorPrimary),
                         Icon.TRAMPOLINE_JUMPING.name,
-                        4, RecordingType.INDOOR.id,
+                        4, CAP_REPS,
                         R.plurals.workoutJump),
                 new WorkoutType(WORKOUT_TYPE_ID_PUSH_UPS,
                         context.getString(R.string.workoutTypePushUps),
                         1,
                         context.getResources().getColor(R.color.colorPrimary),
                         Icon.PUSH_UPS.name,
-                        6, RecordingType.INDOOR.id,
+                        6, CAP_REPS,
                         R.plurals.workoutPushUp),
                 new WorkoutType(WORKOUT_TYPE_ID_PULL_UPS,
                         context.getString(R.string.workoutTypePullUps),
                         1,
                         context.getResources().getColor(R.color.colorPrimary),
                         Icon.PULL_UPS.name,
-                        6, RecordingType.INDOOR.id,
+                        6, CAP_REPS,
                         R.plurals.workoutPullUp)));
     }
 

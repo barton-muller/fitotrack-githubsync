@@ -21,19 +21,20 @@ package de.tadris.fitness.recording.announcement
 import android.content.Context
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
+import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.event.AggregatedRecordingValuesEvent
 import de.tadris.fitness.recording.information.CurrentSpeed
 import de.tadris.fitness.recording.information.InformationManager
 
 class InformationAnnouncements(
     private val context: Context,
-    private val recordingType: RecordingType,
+    private val workoutType: WorkoutType,
     private val TTSController: TTSController
 ) {
 
     private val info get() = AggregatedRecordingValuesEvent.getCurrent()
-    private val manager: InformationManager = InformationManager(recordingType, context)
+    private val manager: InformationManager = InformationManager(workoutType, context)
     private var lastSpokenUpdateTime = 0L
     private var lastSpokenUpdateDistance = 0
     private var lastSpokenSpeedWarningTime = 0L
@@ -68,7 +69,7 @@ class InformationAnnouncements(
         if (intervalTime != 0L && info.activeDuration - lastSpokenUpdateTime > intervalTime) {
             shouldSpeak = true
         }
-        if (recordingType == RecordingType.GPS) {
+        if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             if (intervalInMeters != 0 && info.distance - lastSpokenUpdateDistance > intervalInMeters) {
                 shouldSpeak = true
             }
@@ -81,7 +82,7 @@ class InformationAnnouncements(
     }
 
     private fun checkSpeed() {
-        if (recordingType == RecordingType.GPS) {
+        if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             if (speedWarningIntervalTime == 0L || info.activeDuration - lastSpokenSpeedWarningTime <= speedWarningIntervalTime) {
                 return
             }
@@ -104,7 +105,7 @@ class InformationAnnouncements(
     private fun speak() {
         speakAnnouncements(true)
         lastSpokenUpdateTime = info.activeDuration
-        if (recordingType == RecordingType.GPS) {
+        if (workoutType.hasCapability(WorkoutCapability.GPS)) {
             lastSpokenUpdateDistance = info.distance.toInt()
         }
     }

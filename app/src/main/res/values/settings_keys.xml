@@ -27,6 +27,12 @@
         <item>headphones</item>
     </string-array>
 
+    <string-array name="step_activity_threshold_values">
+        <item>low</item>
+        <item>medium</item>
+        <item>high</item>
+    </string-array>
+
     <string-array name="pref_map_layers_values">
         <item>osm.mapnik</item>
         <item>osm.humanitarian</item>

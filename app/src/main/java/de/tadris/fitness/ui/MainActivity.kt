@@ -19,6 +19,10 @@
 
 package de.tadris.fitness.ui
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.compose.setContent
@@ -31,13 +35,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
+import de.tadris.fitness.steps.StepTrackingService
 import de.tadris.fitness.ui.components.WorkoutTypePickerDialog
 import de.tadris.fitness.ui.map.MapManager
 import de.tadris.fitness.ui.navigation.AppNavigation
@@ -97,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         val navigateToRecord = remember<(WorkoutType, Boolean) -> Unit>(navController) {
             { workoutType, isLaunchAction ->
                 val route =
-                    if (RecordingType.findById(workoutType.recordingType) == RecordingType.GPS) {
+                    if (workoutType.hasCapability(WorkoutCapability.GPS)) {
                         Route.RecordGpsWorkout(workoutType.id, isLaunchAction)
                     } else {
                         Route.RecordIndoorWorkout(workoutType.id, isLaunchAction)
@@ -168,6 +174,21 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         OAuthAuthentication.resetCustomTabState(this)
+        restartStepTrackingIfNeeded()
+    }
+
+    private fun restartStepTrackingIfNeeded() {
+        val prefs = Instance.getInstance(this).userPreferences
+        if (!prefs.stepTrackingEnabled || StepTrackingService.isRunning.value) return
+        val hasPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) ==
+                PackageManager.PERMISSION_GRANTED
+        if (hasPermission) {
+            ContextCompat.startForegroundService(
+                this,
+                Intent(this, StepTrackingService::class.java)
+            )
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

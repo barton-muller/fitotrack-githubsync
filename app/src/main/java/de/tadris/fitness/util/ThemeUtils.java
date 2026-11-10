@@ -23,12 +23,21 @@ import android.content.Context;
 import android.util.TypedValue;
 
 import androidx.annotation.AttrRes;
+import androidx.core.content.ContextCompat;
 
 public class ThemeUtils {
 
     public static int resolveThemeColor(Context context, @AttrRes int attrRes) {
         final TypedValue value = new TypedValue();
         context.getTheme().resolveAttribute(attrRes, value, true);
+        if (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            return value.data;
+        }
+        // The attribute points to a color state list (e.g. textColorPrimary in MaterialComponents
+        // themes), in which case value.data is not a color. Use its default color instead.
+        if (value.resourceId != 0) {
+            return ContextCompat.getColor(context, value.resourceId);
+        }
         return value.data;
     }
 
