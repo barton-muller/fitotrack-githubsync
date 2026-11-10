@@ -218,5 +218,3 @@ private fun SignalStrengthIcon(device: ChooseBluetoothDeviceViewModel.BluetoothD
 
     Icon(painter = painterResource(drawable), tint = tint, contentDescription = description)
 }
-
-class BluetoothNotAvailableException : Exception()

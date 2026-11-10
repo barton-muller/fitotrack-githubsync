@@ -37,7 +37,6 @@ class BluetoothDevicePreferences(context: Context) {
         preferences.edit { putString(getDeviceNamePref(deviceType), lastUsedDevice.name)}
     }
 
-    @SuppressWarnings("MissingPermission")
     fun setLastUsedDevice(deviceType: String, address: String, name: String?) {
         setLastUsedDevice(deviceType, LastUsedDevice(address, name))
     }

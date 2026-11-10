@@ -168,10 +168,6 @@ class ChooseBluetoothDeviceViewModel(application: Application) : AndroidViewMode
         val scanRunning: Boolean,
         val scanError: BluetoothDeviceScanner.BluetoothError?)
 
-    fun interface BluetoothDeviceSelectListener {
-        fun onSelectBluetoothDevice(address: String, name: String?)
-    }
-
     companion object {
         private const val UI_UPDATE_TIME_MS = 5000L
         private const val STOP_GRACE_PERIOD_MS = 2000L

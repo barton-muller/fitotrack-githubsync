@@ -19,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 
@@ -120,10 +119,7 @@ class BluetoothDeviceScanner(context: Context, private val coroutineScope: Corou
         )
         updateMapJob = coroutineScope.launch {
             while (true) {
-                delay(BT_REFRESH_TIME_MS)
-                if (!isActive) {
-                    return@launch
-                }
+                delay(BT_REFRESH_TIME_MS) // throws CancellationException once the job is cancelled
                 updateDevicesPeriodic()
             }
         }
