@@ -679,7 +679,7 @@ public abstract class AppDatabase extends RoomDatabase {
                                 "capabilities TEXT NOT NULL)");
                         db.execSQL("INSERT INTO workout_type (id, title, min_distance, color, icon, met, capabilities) " +
                                 "SELECT id, title, min_distance, color, icon, met, " +
-                                "CASE WHEN type = 'indoor' THEN 'repetitions' ELSE 'gps' END " +
+                                "CASE WHEN type = 'indoor' THEN 'steps' ELSE 'gps' END " +
                                 "FROM workout_type_old");
                         db.execSQL("DROP TABLE workout_type_old");
                     }
