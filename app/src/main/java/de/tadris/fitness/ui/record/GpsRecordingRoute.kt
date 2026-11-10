@@ -281,7 +281,7 @@ fun GpsRecordingScreen(
                 gpsState = gpsState,
                 satelliteCount = satelliteCount,
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
+                    .align(Alignment.BottomCenter)
                     .padding(12.dp),
             )
             MapControlButtons(
