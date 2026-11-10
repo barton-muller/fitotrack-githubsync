@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.statistics.components
 
+import android.app.Activity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -98,7 +99,7 @@ fun CombinedChartComponent(
                     chart,
                     combinedData,
                     aggregationSpan,
-                    chart.context as FitoTrackActivity
+                    chart.context as Activity
                 )
             }
             chart.invalidate()

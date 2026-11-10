@@ -19,8 +19,10 @@
 
 package de.tadris.fitness.ui.statistics.fragments
 
+import android.app.Activity
 import android.content.Intent
 import android.view.MotionEvent
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -56,7 +58,7 @@ import de.tadris.fitness.ui.statistics.components.WorkoutTypeSelector
 @Composable
 fun StatsHistoryScreen() {
     val context = LocalContext.current
-    val activity = context as FitoTrackActivity
+    val activity = LocalActivity.current!!
     val statsProvider = remember { StatsProvider(context) }
     val preferences = remember { UserPreferences(context) }
 
@@ -261,7 +263,7 @@ private fun setupChartLongClick(chart: CombinedChart, onLongClick: () -> Unit) {
 }
 
 private fun navigateToDetail(
-    activity: FitoTrackActivity,
+    activity: Activity,
     property: WorkoutProperty,
     summed: Boolean,
     types: List<WorkoutType>,
