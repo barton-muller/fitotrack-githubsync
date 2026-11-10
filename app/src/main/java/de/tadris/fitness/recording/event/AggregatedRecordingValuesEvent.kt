@@ -42,6 +42,8 @@ data class AggregatedRecordingValuesEvent(
 
     companion object {
 
+        private const val MIN_TIME_ONLY_DURATION_MS = 10_000L
+
         val EMPTY = AggregatedRecordingValuesEvent(
             WorkoutType(),
             RecordingState.IDLE,
@@ -77,6 +79,8 @@ data class AggregatedRecordingValuesEvent(
             if (currentSpeed < 0.001) 0.0
             else (1 / currentSpeed) * 1000 / 60
 
-    val recordedSomething get() = sampleCount >= 2
+    val recordedSomething
+        get() = if (workoutType.isTimeOnly) activeDuration >= MIN_TIME_ONLY_DURATION_MS
+        else sampleCount >= 2
 
 }

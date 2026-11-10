@@ -40,7 +40,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import de.tadris.fitness.Instance
-import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.steps.StepTrackingService
@@ -48,6 +47,7 @@ import de.tadris.fitness.ui.components.WorkoutTypePickerDialog
 import de.tadris.fitness.ui.map.MapManager
 import de.tadris.fitness.ui.navigation.AppNavigation
 import de.tadris.fitness.ui.navigation.Route
+import de.tadris.fitness.ui.navigation.recordWorkoutRoute
 import de.tadris.fitness.ui.record.MapControllerHolder
 import de.tadris.fitness.ui.record.RecordingConstants
 import de.tadris.fitness.ui.theme.FitoTrackTheme
@@ -102,13 +102,7 @@ class MainActivity : AppCompatActivity() {
 
         val navigateToRecord = remember<(WorkoutType, Boolean) -> Unit>(navController) {
             { workoutType, isLaunchAction ->
-                val route =
-                    if (workoutType.hasCapability(WorkoutCapability.GPS)) {
-                        Route.RecordGpsWorkout(workoutType.id, isLaunchAction)
-                    } else {
-                        Route.RecordIndoorWorkout(workoutType.id, isLaunchAction)
-                    }
-                navController.navigate(route)
+                navController.navigate(recordWorkoutRoute(workoutType, isLaunchAction))
             }
         }
 

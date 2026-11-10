@@ -18,14 +18,17 @@
  */
 package de.tadris.fitness.ui.record
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
@@ -207,6 +210,12 @@ abstract class RecordingViewModel(application: Application) : AndroidViewModel(a
     }
 
     abstract fun hasServicePermission(): Boolean
+
+    protected fun hasActivityRecognitionPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                ContextCompat.checkSelfPermission(
+                    getApplication(), Manifest.permission.ACTIVITY_RECOGNITION
+                ) == PackageManager.PERMISSION_GRANTED
 
     // ---- Actions ----
 

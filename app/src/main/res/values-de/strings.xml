@@ -334,6 +334,7 @@
     <string name="editWorkoutType">Workout-Typ bearbeiten</string>
     <string name="workoutTypeEditIcon">Symbol</string>
     <string name="workoutCapabilityTitle">Aufzeichnung</string>
+    <string name="workoutCapabilityTimeOnly">Nur Zeit</string>
     <string name="workoutCapabilityGps">GPS-Aufzeichnung</string>
     <string name="workoutCapabilitySteps">Schritte zählen</string>
     <string name="workoutCapabilityJumps">Sprünge zählen</string>

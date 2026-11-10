@@ -117,6 +117,12 @@ public class WorkoutType implements Serializable {
         return WorkoutCapability.parseSet(capabilities).contains(capability);
     }
 
+    @Ignore
+    @JsonIgnore
+    public boolean isTimeOnly() {
+        return WorkoutCapability.parseSet(capabilities).isEmpty();
+    }
+
     /**
      * Returns the repetition counting capability (e.g. steps or jumps) of this type, or null if it doesn't count repetitions.
      */

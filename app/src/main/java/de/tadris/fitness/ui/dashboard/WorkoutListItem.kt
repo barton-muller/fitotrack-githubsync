@@ -76,6 +76,8 @@ internal fun WorkoutListItem(
         instance.distanceUnitUtils.getDistance(workout.distance.toInt())
     }
     val durationText = instance.distanceUnitUtils.getHourMinuteTime(workout.activeDuration)
+    // Time-only workouts have neither distance nor repetitions: show the duration as primary value
+    val showDurationOnly = workoutType.isTimeOnly && workout.distance == 0.0 && workout.repetitions == 0
 
     Card(
         modifier = Modifier
@@ -124,15 +126,17 @@ internal fun WorkoutListItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = distanceText,
+                        text = if (showDurationOnly) durationText else distanceText,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                     )
-                    Text(
-                        text = durationText,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (!showDurationOnly) {
+                        Text(
+                            text = durationText,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }

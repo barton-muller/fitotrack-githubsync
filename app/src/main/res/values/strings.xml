@@ -455,6 +455,7 @@
     <string name="deleteWorkoutTypeConfirmation">Do you really want to delete this workout type?</string>
     <string name="workoutTypeEditIcon">Icon</string>
     <string name="workoutCapabilityTitle">Tracking</string>
+    <string name="workoutCapabilityTimeOnly">Time only</string>
     <string name="workoutCapabilityGps">GPS tracking</string>
     <string name="workoutCapabilitySteps">Count steps</string>
     <string name="workoutCapabilityJumps">Count jumps</string>

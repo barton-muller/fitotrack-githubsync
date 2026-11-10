@@ -18,11 +18,7 @@
  */
 package de.tadris.fitness.ui.record
 
-import android.Manifest
 import android.app.Application
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.RecordingState
@@ -57,15 +53,7 @@ class IndoorRecordingViewModel(application: Application) : RecordingViewModel(ap
         }
     }
 
-    override fun hasServicePermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ActivityCompat.checkSelfPermission(
-                getApplication(), Manifest.permission.ACTIVITY_RECOGNITION
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
+    override fun hasServicePermission() = hasActivityRecognitionPermission()
 
     private fun loadExistingChartData() {
         viewModelScope.launch(Dispatchers.IO) {

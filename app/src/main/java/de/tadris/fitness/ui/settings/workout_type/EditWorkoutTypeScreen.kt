@@ -91,7 +91,8 @@ fun EditWorkoutTypeScreen(
     var met by remember { mutableStateOf("0") }
     var iconName by remember { mutableStateOf(WorkoutIcon.RUNNING.name) }
     var typeColor by remember { mutableStateOf(primaryColor) }
-    var capability by remember { mutableStateOf(WorkoutCapability.GPS) }
+    // null means "time only" (no capabilities)
+    var capability by remember { mutableStateOf<WorkoutCapability?>(WorkoutCapability.GPS) }
 
     var idError by remember { mutableStateOf<String?>(null) }
     var titleError by remember { mutableStateOf<String?>(null) }
@@ -116,10 +117,9 @@ fun EditWorkoutTypeScreen(
                     met = type.MET.toString()
                     iconName = type.icon
                     typeColor = Color(type.color)
-                    capability = if (type.hasCapability(WorkoutCapability.GPS)) {
-                        WorkoutCapability.GPS
-                    } else {
-                        type.repetitionCapability ?: WorkoutCapability.GPS
+                    capability = when {
+                        type.hasCapability(WorkoutCapability.GPS) -> WorkoutCapability.GPS
+                        else -> type.repetitionCapability
                     }
                 }
             }
@@ -173,7 +173,7 @@ fun EditWorkoutTypeScreen(
             typeColor.toArgb(),
             iconName,
             parsedMet,
-            WorkoutCapability.toStorageString(setOf(capability)),
+            WorkoutCapability.toStorageString(setOfNotNull(capability)),
         )
     }
 
@@ -320,9 +320,11 @@ fun EditWorkoutTypeScreen(
                 modifier = Modifier.padding(top = 8.dp),
             )
             Column(Modifier.selectableGroup()) {
-                WorkoutCapability.entries.forEach { option ->
+                (listOf(null) + WorkoutCapability.entries).forEach { option ->
                     ListItem(
-                        headlineContent = { Text(stringResource(option.titleRes)) },
+                        headlineContent = {
+                            Text(stringResource(option?.titleRes ?: R.string.workoutCapabilityTimeOnly))
+                        },
                         leadingContent = {
                             RadioButton(selected = capability == option, onClick = null)
                         },

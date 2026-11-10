@@ -37,6 +37,7 @@ import de.tadris.fitness.ui.ImportViewModel
 import de.tadris.fitness.ui.dashboard.DashboardScreen
 import de.tadris.fitness.ui.record.GpsRecordingRoute
 import de.tadris.fitness.ui.record.IndoorRecordingRoute
+import de.tadris.fitness.ui.record.TimeOnlyRecordingRoute
 import de.tadris.fitness.ui.settings.AboutScreen
 import de.tadris.fitness.ui.settings.BackupSettingsScreen
 import de.tadris.fitness.ui.settings.ConfigureExportTargetsScreen
@@ -132,6 +133,9 @@ sealed interface Route {
     data class RecordIndoorWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
 
     @Serializable
+    data class RecordTimeOnlyWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
+
+    @Serializable
     data object ActiveMinuteStats : Route
 
     @Serializable
@@ -139,6 +143,12 @@ sealed interface Route {
 
     @Serializable
     data object WorkoutStatistics : Route
+}
+
+fun recordWorkoutRoute(workoutType: WorkoutType, isLaunchAction: Boolean): Route = when {
+    workoutType.hasCapability(WorkoutCapability.GPS) -> Route.RecordGpsWorkout(workoutType.id, isLaunchAction)
+    workoutType.isTimeOnly -> Route.RecordTimeOnlyWorkout(workoutType.id, isLaunchAction)
+    else -> Route.RecordIndoorWorkout(workoutType.id, isLaunchAction)
 }
 
 @Composable
@@ -354,6 +364,16 @@ fun AppNavigation(
                 onNavigateToIntervalSets = { navController.navigate(Route.ManageIntervalSets) },
             )
         }
+        composable<Route.RecordTimeOnlyWorkout> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.RecordTimeOnlyWorkout>()
+            TimeOnlyRecordingRoute(
+                workoutTypeId = route.workoutTypeId,
+                isLaunchAction = route.isLaunchAction,
+                onFinish = { navController.popBackStack() },
+                onNavigateToSettings = { navController.navigate(Route.RecordingSettings) },
+                onNavigateToIntervalSets = { navController.navigate(Route.ManageIntervalSets) },
+            )
+        }
         composable<Route.ShowWorkout> { backStackEntry ->
             ShowWorkoutScreen(
                 id = backStackEntry.toRoute<Route.ShowWorkout>().id,
@@ -376,12 +396,7 @@ fun AppNavigation(
                 onResumeWorkout = { workout ->
                     Instance.getInstance(context).db.workoutDao().resumeWorkout(workout.id)
                     val workoutType = workout.getWorkoutType(context)
-                    val route = if (workoutType.hasCapability(WorkoutCapability.GPS)) {
-                        Route.RecordGpsWorkout(workoutType.id, false)
-                    } else {
-                        Route.RecordIndoorWorkout(workoutType.id, false)
-                    }
-                    navController.navigate(route)
+                    navController.navigate(recordWorkoutRoute(workoutType, false))
                 },
             )
         }

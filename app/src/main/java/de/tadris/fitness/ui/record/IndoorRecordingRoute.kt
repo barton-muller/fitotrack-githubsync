@@ -18,14 +18,7 @@
  */
 package de.tadris.fitness.ui.record
 
-import android.Manifest
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Intent
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,17 +26,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -67,7 +56,6 @@ import de.tadris.fitness.R
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.util.NotificationHelper
 import de.tadris.fitness.util.unit.UnitUtils
-import de.tadris.fitness.util.PermissionUtils
 
 @Composable
 fun IndoorRecordingRoute(
@@ -92,78 +80,9 @@ fun IndoorRecordingRoute(
     val showOnLockScreen = remember { Instance.getInstance(context).userPreferences.showOnLockScreen }
     RecordingWindowEffects(showOnLockScreen)
 
-    // Activity recognition permission (Android Q+)
-    val activityPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) vm.restartService()
-    }
+    ActivityRecognitionPermissionDialog(vm)
 
-    var showActivityConsentDialog by remember {
-        mutableStateOf(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !vm.hasServicePermission())
-    }
-    if (showActivityConsentDialog) {
-        AlertDialog(
-            onDismissRequest = { showActivityConsentDialog = false; vm.finish() },
-            title = { Text(stringResource(R.string.recordingPermissionNotGrantedTitle)) },
-            text = { Text(stringResource(R.string.recordingActivityPermissionMessage)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showActivityConsentDialog = false
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        activityPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-                    }
-                }) { Text(stringResource(R.string.actionGrant)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showActivityConsentDialog = false; vm.finish() }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
-    // Bluetooth permission + device chooser
-    val btPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> /* user can re-tap Bluetooth after granting */ }
-
-    val showChooseBluetoothDevice by vm.showChooseBluetoothDevice.collectAsState()
-    var bluetoothReady by remember { mutableStateOf(false) }
-    LaunchedEffect(showChooseBluetoothDevice) {
-        bluetoothReady = false
-        if (!showChooseBluetoothDevice) return@LaunchedEffect
-        if (!PermissionUtils.checkBluetoothScanPermissions(context)) {
-            btPermissionLauncher.launch(PermissionUtils.bluetoothScanPermissions)
-            vm.dismissChooseBluetoothDevice()
-            return@LaunchedEffect
-        }
-        val adapter = context.getSystemService(BluetoothManager::class.java)?.adapter
-        if (adapter == null || !adapter.isEnabled) {
-            (context as? Activity)?.startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-            vm.dismissChooseBluetoothDevice()
-            return@LaunchedEffect
-        }
-        bluetoothReady = true
-    }
-
-    if (showChooseBluetoothDevice && bluetoothReady) {
-        ChooseBluetoothDeviceDialog(
-            onSelect = { row -> vm.onBtDeviceSelected(row.address, row.name) },
-            onDismiss = { vm.dismissChooseBluetoothDevice() },
-        )
-    }
-
-    // Info slot selection dialog
-    val selectInfoSlot by vm.selectInfoDialogSlot.collectAsState()
-    LaunchedEffect(selectInfoSlot) {
-        val slot = selectInfoSlot ?: return@LaunchedEffect
-        val activity = context as? Activity ?: return@LaunchedEffect
-        SelectWorkoutInformationDialog(activity, workoutType, slot) { s, info ->
-            vm.onInfoSlotSelected(s, info)
-        }.show()
-        vm.dismissSelectInfoDialog()
-    }
+    RecordingSharedDialogs(vm, workoutType)
 
     IndoorRecordingScreen(
         vm = vm,
