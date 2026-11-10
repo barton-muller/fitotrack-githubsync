@@ -37,8 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.ui.statistics.fragments.StatsHistoryScreen
-import de.tadris.fitness.ui.statistics.fragments.StatsOverviewScreen
 import de.tadris.fitness.ui.steps.StepStatisticsAdapter
 import kotlinx.coroutines.launch
 

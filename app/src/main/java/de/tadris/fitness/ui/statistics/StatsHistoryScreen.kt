@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tadris.fitness.ui.statistics.fragments
+package de.tadris.fitness.ui.statistics
 
 import android.app.Activity
 import android.content.Context
@@ -55,9 +55,6 @@ import de.tadris.fitness.stats.aggregation.AggregationSpan
 import de.tadris.fitness.ui.charts.ChartStyles
 import de.tadris.fitness.ui.charts.DataSetStyles
 import de.tadris.fitness.ui.components.SectionHeader
-import de.tadris.fitness.ui.statistics.ChartSynchronizer
-import de.tadris.fitness.ui.statistics.DetailStatsActivity
-import de.tadris.fitness.ui.statistics.OnChartGestureMultiListener
 import de.tadris.fitness.ui.statistics.components.CombinedChartComponent
 import de.tadris.fitness.ui.statistics.components.WorkoutTypeSelector
 
