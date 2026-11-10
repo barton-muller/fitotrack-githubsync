@@ -22,7 +22,6 @@ package de.tadris.fitness.data.backup
 import android.content.Context
 import android.net.Uri
 import com.fasterxml.jackson.core.StreamReadFeature
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
@@ -210,7 +209,10 @@ class BackupReader(
 
     @Throws(IOException::class)
     private fun restoreSteps(zipStream: ZipInputStream) {
-        val samples = mapper.readValue(zipStream, object : TypeReference<List<StepSample>>() {})
+        val samples = mapper.readValue<List<StepSample>>(
+            zipStream,
+            mapper.typeFactory.constructCollectionType(List::class.java, StepSample::class.java)
+        )
         database.stepDao().insertStepSamples(samples)
     }
 

@@ -60,7 +60,7 @@ class BackupWriter(
         writeExtraData()
         listener.onStatusChanged(0, context.getString(R.string.workouts))
         writeWorkouts()
-        listener.onStatusChanged(0, context.getString(R.string.tabSteps))
+        listener.onStatusChanged(100, context.getString(R.string.tabSteps))
         writeSteps()
         listener.onStatusChanged(100, context.getString(R.string.finished))
         zipStream.close()

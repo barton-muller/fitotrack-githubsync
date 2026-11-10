@@ -138,6 +138,7 @@ fun BackupSettingsScreen(
                 }.read()
                 handler.post { progressActive = false }
             } catch (e: Exception) {
+                e.printStackTrace()
                 handler.post {
                     progressActive = false
                     errorMessage = e.message ?: context.getString(R.string.errorImportFailed)

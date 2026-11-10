@@ -52,3 +52,7 @@
 -dontwarn org.osgi.framework.BundleActivator
 -dontwarn org.osgi.framework.BundleContext
 -dontwarn org.osgi.framework.ServiceRegistration
+# R8 full mode strips the generic signature of anonymous TypeReference subclasses
+# (e.g. object : TypeReference<List<X>>() {}) unless TypeReference itself is kept
+-keep,allowobfuscation,allowshrinking class com.fasterxml.jackson.core.type.TypeReference
+-keep,allowobfuscation,allowshrinking class * extends com.fasterxml.jackson.core.type.TypeReference
