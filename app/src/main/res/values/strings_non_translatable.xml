@@ -25,6 +25,11 @@
         <item>@string/trackable_visibility</item>
         <item>@string/private_visibility</item>
     </string-array>
+    <string-array name="step_activity_threshold_entries">
+        <item>@string/stepActivityThresholdLow</item>
+        <item>@string/stepActivityThresholdMedium</item>
+        <item>@string/stepActivityThresholdHigh</item>
+    </string-array>
     <string-array name="pref_energy_units">
         <item>@string/kcal_unit</item>
         <item>@string/joule_unit</item>

@@ -34,6 +34,7 @@ import de.tadris.fitness.R;
 public class NotificationHelper {
 
     public static final String CHANNEL_WORKOUT = "workout";
+    public static final String CHANNEL_STEP_TRACKING = "step_tracking";
 
     public static void requestNotificationPermissionIfNecessary(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -45,6 +46,7 @@ public class NotificationHelper {
     public static void createChannels(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(context, CHANNEL_WORKOUT, R.string.trackingInfo, R.string.trackingInfoDescription, NotificationManager.IMPORTANCE_LOW);
+            createNotificationChannel(context, CHANNEL_STEP_TRACKING, R.string.stepTrackingChannelName, R.string.stepTrackingChannelDescription, NotificationManager.IMPORTANCE_LOW);
         }
     }
 

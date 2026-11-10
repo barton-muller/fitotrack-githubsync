@@ -23,8 +23,10 @@ import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewModelScope
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.recording.GpsState
 import de.tadris.fitness.recording.RecordingState

@@ -19,7 +19,7 @@
 
 package de.tadris.fitness.recording.component
 
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.preferences.UserPreferences
 import de.tadris.fitness.recording.GpsState
 import de.tadris.fitness.recording.RecorderService
@@ -63,7 +63,7 @@ class AutoPauseComponent : LastSampleTimeComponent() {
     }
 
     private fun autoPausePossible(): Boolean {
-        return (gpsState != GpsState.SIGNAL_LOST || service.stateHolder.recordingType == RecordingType.INDOOR) && autoPauseEnabled
+        return (gpsState != GpsState.SIGNAL_LOST || !service.stateHolder.workoutType.hasCapability(WorkoutCapability.GPS)) && autoPauseEnabled
     }
 
 }

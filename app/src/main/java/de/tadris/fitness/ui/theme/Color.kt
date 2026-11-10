@@ -2,7 +2,7 @@ package de.tadris.fitness.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val primaryLight = Color(0xFF88511D)
+val primaryLight = Color(0xFFFB8C00)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFFFDCC2)
 val onPrimaryContainerLight = Color(0xFF6B3A05)

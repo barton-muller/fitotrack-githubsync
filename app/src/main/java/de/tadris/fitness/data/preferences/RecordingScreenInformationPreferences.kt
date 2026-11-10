@@ -20,7 +20,7 @@
 package de.tadris.fitness.data.preferences
 
 import android.content.SharedPreferences
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 
 /**
  * Preferences within this class concern the Metrics (Information) shown on the Recording
@@ -31,8 +31,8 @@ class RecordingScreenInformationPreferences(private val prefs: SharedPreferences
     @Throws(UnknownModeException::class)
     fun getIdOfDisplayedInformation(mode: String, slot: Int) : String {
         val defaultValue = when(mode) {
-            RecordingType.INDOOR.id -> this.getDefaultIndoorActivityId(slot)
-            RecordingType.GPS.id -> this.getDefaultGpsActivityId(slot)
+            WorkoutCapability.PREFERENCE_MODE_NON_GPS -> this.getDefaultIndoorActivityId(slot)
+            WorkoutCapability.GPS.id -> this.getDefaultGpsActivityId(slot)
             else -> throw UnknownModeException()
         }
 

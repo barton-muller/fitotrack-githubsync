@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,7 +63,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.RecordingType
+import de.tadris.fitness.data.WorkoutCapability
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.util.Icon as WorkoutIcon
@@ -87,7 +88,8 @@ fun EditWorkoutTypeScreen(
     var met by remember { mutableStateOf("0") }
     var iconName by remember { mutableStateOf(WorkoutIcon.RUNNING.name) }
     var typeColor by remember { mutableStateOf(primaryColor) }
-    var recordingType by remember { mutableStateOf(RecordingType.GPS.id) }
+    var hasGps by remember { mutableStateOf(true) }
+    var hasRepetitions by remember { mutableStateOf(false) }
 
     var idError by remember { mutableStateOf<String?>(null) }
     var titleError by remember { mutableStateOf<String?>(null) }
@@ -112,7 +114,8 @@ fun EditWorkoutTypeScreen(
                     met = type.MET.toString()
                     iconName = type.icon
                     typeColor = Color(type.color)
-                    recordingType = type.recordingType
+                    hasGps = type.hasCapability(WorkoutCapability.GPS)
+                    hasRepetitions = type.hasCapability(WorkoutCapability.REPETITIONS)
                 }
             }
         } else {
@@ -158,6 +161,10 @@ fun EditWorkoutTypeScreen(
             metError = context.getString(R.string.errorEnterValidNumber)
             return null
         }
+        val caps = buildSet {
+            if (hasGps) add(WorkoutCapability.GPS)
+            if (hasRepetitions) add(WorkoutCapability.REPETITIONS)
+        }
         return WorkoutType(
             trimmedId,
             trimmedTitle,
@@ -165,7 +172,7 @@ fun EditWorkoutTypeScreen(
             typeColor.toArgb(),
             iconName,
             parsedMet,
-            recordingType,
+            WorkoutCapability.toStorageString(caps),
         )
     }
 
@@ -304,6 +311,20 @@ fun EditWorkoutTypeScreen(
                     )
                 },
                 modifier = Modifier.clickable { showIconPicker = true },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.workoutCapabilityGps)) },
+                trailingContent = {
+                    Checkbox(checked = hasGps, onCheckedChange = { hasGps = it })
+                },
+                modifier = Modifier.clickable { hasGps = !hasGps },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.workoutCapabilityRepetitions)) },
+                trailingContent = {
+                    Checkbox(checked = hasRepetitions, onCheckedChange = { hasRepetitions = it })
+                },
+                modifier = Modifier.clickable { hasRepetitions = !hasRepetitions },
             )
         }
     }

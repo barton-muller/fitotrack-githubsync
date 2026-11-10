@@ -25,6 +25,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import de.tadris.fitness.data.WorkoutCapability
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,7 +53,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
-import de.tadris.fitness.data.RecordingType
 import de.tadris.fitness.data.WorkoutTypeManager
 import de.tadris.fitness.recording.autostart.AutoStartMode
 import de.tadris.fitness.util.NotificationHelper
@@ -80,13 +80,52 @@ fun GpsRecordingRoute(
     val showOnLockScreen = remember { Instance.getInstance(context).userPreferences.showOnLockScreen }
     RecordingWindowEffects(showOnLockScreen)
 
+    val needsActivityRecognition = workoutType?.hasCapability(WorkoutCapability.REPETITIONS) == true &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    // Activity recognition permission (for step tracking on Android Q+)
+    val activityPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) vm.restartService()
+    }
+
+    fun hasActivityRecognitionPermission() = !needsActivityRecognition ||
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+
+    var showActivityConsent by remember { mutableStateOf(vm.hasServicePermission() && !hasActivityRecognitionPermission()) }
+    if (showActivityConsent) {
+        AlertDialog(
+            onDismissRequest = { showActivityConsent = false; vm.finish() },
+            title = { Text(stringResource(R.string.recordingPermissionNotGrantedTitle)) },
+            text = { Text(stringResource(R.string.recordingActivityPermissionMessage)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showActivityConsent = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        activityPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+                    }
+                }) { Text(stringResource(R.string.actionGrant)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showActivityConsent = false; vm.finish() }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     // Location permission
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (granted) vm.restartService()
+        if (granted && needsActivityRecognition) {
+            showActivityConsent = true
+        } else if (granted) {
+            vm.restartService()
+        }
     }
 
     var showLocationConsent by remember { mutableStateOf(!vm.hasServicePermission()) }
@@ -167,8 +206,7 @@ fun GpsRecordingRoute(
     LaunchedEffect(selectInfoSlot) {
         val slot = selectInfoSlot ?: return@LaunchedEffect
         val activity = context as? Activity ?: return@LaunchedEffect
-        val recordingType = RecordingType.findById(workoutType.recordingType)
-        SelectWorkoutInformationDialog(activity, recordingType, slot) { s, info ->
+        SelectWorkoutInformationDialog(activity, workoutType, slot) { s, info ->
             vm.onInfoSlotSelected(s, info)
         }.show()
         vm.dismissSelectInfoDialog()

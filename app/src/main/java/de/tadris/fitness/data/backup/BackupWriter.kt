@@ -39,10 +39,11 @@ class BackupWriter(
 ) {
 
     companion object {
-        internal const val VERSION = 4
+        internal const val VERSION = 5
         internal const val FILE_VERSION = "version.txt"
         internal const val FILE_DATA = "data.json"
         internal const val FILE_WORKOUT = "workout_%d.json"
+        internal const val FILE_STEPS = "steps_%d.json"
     }
 
     private val db = Instance.getInstance(context).db
@@ -59,6 +60,8 @@ class BackupWriter(
         writeExtraData()
         listener.onStatusChanged(0, context.getString(R.string.workouts))
         writeWorkouts()
+        listener.onStatusChanged(0, context.getString(R.string.tabSteps))
+        writeSteps()
         listener.onStatusChanged(100, context.getString(R.string.finished))
         zipStream.close()
         fileStream.close()
@@ -92,6 +95,15 @@ class BackupWriter(
             mapper.writeValue(zipStream, data)
             zipStream.closeEntry()
             listener.onStatusChanged(100 * index / workouts.size, context.getString(R.string.workouts))
+        }
+    }
+
+    private fun writeSteps() {
+        db.stepDao().getDistinctYears().forEach { year ->
+            val samples = db.stepDao().getStepsForYear(year)
+            zipStream.putNextEntry(ZipEntry(FILE_STEPS.format(year)))
+            mapper.writeValue(zipStream, samples)
+            zipStream.closeEntry()
         }
     }
 

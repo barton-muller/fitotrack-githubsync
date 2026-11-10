@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.statistics.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
@@ -35,13 +36,12 @@ import de.tadris.fitness.R;
 import de.tadris.fitness.stats.NoDataException;
 import de.tadris.fitness.stats.StatsDataTypes;
 import de.tadris.fitness.stats.StatsProvider;
-import de.tadris.fitness.ui.FitoTrackActivity;
 import de.tadris.fitness.ui.charts.ChartStyles;
 import de.tadris.fitness.ui.statistics.TimeSpanSelection;
 
 public class StatsOverviewFragment extends StatsFragment {
     StatsProvider statsProvider;
-    FitoTrackActivity activity;
+    Activity activity;
 
     TimeSpanSelection timeSpanSelection;
     HorizontalBarChart distanceChart;
@@ -56,7 +56,7 @@ public class StatsOverviewFragment extends StatsFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        activity = (FitoTrackActivity)getContext();
+        activity = (Activity) getContext();
         statsProvider = new StatsProvider(activity);
 
         timeSpanSelection = view.findViewById(R.id.time_span_selection);
@@ -99,7 +99,7 @@ public class StatsOverviewFragment extends StatsFragment {
             ChartStyles.horizontalBarChartIconLabel(distanceChart, distanceData, context);
             ChartStyles.setXAxisLabel(distanceChart, Instance.getInstance(getContext()).distanceUnitUtils.getDistanceUnitSystem().getLongDistanceUnit(), activity);
         } catch (NoDataException e) {
-            ChartStyles.barChartNoData(distanceChart, (FitoTrackActivity)getContext());
+            ChartStyles.barChartNoData(distanceChart, getContext());
         }
         distanceChart.invalidate();
 
@@ -108,7 +108,7 @@ public class StatsOverviewFragment extends StatsFragment {
             ChartStyles.horizontalBarChartIconLabel(durationChart, durationData, context);
             ChartStyles.setXAxisLabel(durationChart, getContext().getString(R.string.timeHourShort), activity);
         } catch (NoDataException e) {
-            ChartStyles.barChartNoData(durationChart, (FitoTrackActivity)getContext());
+            ChartStyles.barChartNoData(durationChart, getContext());
         }
         durationChart.invalidate();
 
@@ -116,7 +116,7 @@ public class StatsOverviewFragment extends StatsFragment {
             BarData numberOfActivitiesData = new BarData(statsProvider.numberOfActivities(span));
             ChartStyles.horizontalBarChartIconLabel(numberOfActivitiesChart,numberOfActivitiesData, context);
         } catch (NoDataException e) {
-            ChartStyles.barChartNoData(numberOfActivitiesChart, (FitoTrackActivity)getContext());
+            ChartStyles.barChartNoData(numberOfActivitiesChart, getContext());
         }
         numberOfActivitiesChart.invalidate();
     }

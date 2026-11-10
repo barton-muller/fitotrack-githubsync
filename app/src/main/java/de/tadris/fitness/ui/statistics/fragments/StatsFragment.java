@@ -19,6 +19,7 @@
 
 package de.tadris.fitness.ui.statistics.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -27,7 +28,7 @@ import androidx.fragment.app.Fragment;
 import de.tadris.fitness.ui.FitoTrackActivity;
 
 public abstract class StatsFragment extends Fragment {
-    protected FitoTrackActivity context;
+    protected Activity context;
 
     protected StatsFragment() {
     }
@@ -39,8 +40,8 @@ public abstract class StatsFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context ctx) {
         super.onAttach(ctx);
-        if (ctx instanceof FitoTrackActivity) {
-            context = (FitoTrackActivity) ctx;
+        if (ctx instanceof Activity) {
+            context = (Activity) ctx;
         }
     }
 
