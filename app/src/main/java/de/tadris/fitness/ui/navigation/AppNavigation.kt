@@ -160,7 +160,6 @@ fun AppNavigation(
     ) {
         composable<Route.Dashboard> {
             DashboardScreen(
-                workoutDao = Instance.getInstance(context).db.workoutDao(),
                 onWorkoutClick = { workout ->
                     navController.navigate(Route.ShowWorkout(workout.id))
                 },

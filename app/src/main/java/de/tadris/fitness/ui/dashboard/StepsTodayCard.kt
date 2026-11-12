@@ -60,7 +60,6 @@ internal fun StepsTodayCard(
     todayActiveMinutes: Int,
     todayDistanceMeters: Int,
     weeklyStepChart: BarChartData,
-    onDetails: () -> Unit,
     onGoalClick: () -> Unit = {},
     onActiveMinuteClick: () -> Unit = {},
 ) {

@@ -40,10 +40,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -55,15 +55,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.tadris.fitness.Instance
 import de.tadris.fitness.R
 import de.tadris.fitness.data.Workout
-import de.tadris.fitness.data.WorkoutDao
 import de.tadris.fitness.data.WorkoutType
 import de.tadris.fitness.ui.steps.StepGoalDialog
-import de.tadris.fitness.util.Icon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    workoutDao: WorkoutDao,
     onWorkoutClick: (Workout) -> Unit = {},
     onDeleteWorkout: (Workout) -> Unit = {},
     onRecord: () -> Unit = {},
@@ -190,7 +187,6 @@ fun DashboardScreen(
                         todayActiveMinutes = todayActiveMinutes,
                         todayDistanceMeters = todayDistanceMeters,
                         weeklyStepChart = weeklyStepChart,
-                        onDetails = onStepDetails,
                         onGoalClick = { showGoalDialog = true },
                         onActiveMinuteClick = onActiveMinuteStats,
                     )
