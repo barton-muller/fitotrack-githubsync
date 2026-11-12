@@ -94,7 +94,8 @@ fun StatisticsScreen(onBack: () -> Unit) {
             }
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                userScrollEnabled = false
             ) { page ->
                 when (pages.getOrNull(page)) {
                     StatisticsPage.STEPS -> de.tadris.fitness.ui.statistics2.StatisticsScreen(
