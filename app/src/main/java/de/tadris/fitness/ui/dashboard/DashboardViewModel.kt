@@ -68,6 +68,9 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
             BarChartData(emptyList(), emptyList())
         )
 
+    val workouts: StateFlow<List<Workout>> = workoutDao.getWorkoutsFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val weeklyWorkouts: StateFlow<List<Workout>> = workoutDao.getWorkoutsFlow()
         .map { workouts ->
             val rangeStart = todayMidnight() - 6 * DAY_MS

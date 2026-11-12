@@ -109,10 +109,10 @@ fun DashboardScreen(
         (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
             .getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
     }
-    val workouts by workoutDao.getWorkoutsFlow().collectAsState(initial = emptyList())
+    val vm: DashboardViewModel = viewModel()
+    val workouts by vm.workouts.collectAsStateWithLifecycle()
     val lastWorkoutType = remember(workouts) { workouts.firstOrNull()?.getWorkoutType(context) }
 
-    val vm: DashboardViewModel = viewModel()
     val todaySteps by vm.todaySteps.collectAsStateWithLifecycle()
     val stepGoal by vm.stepGoal.collectAsStateWithLifecycle()
     val todayActiveMinutes by vm.todayActiveMinutes.collectAsStateWithLifecycle()
