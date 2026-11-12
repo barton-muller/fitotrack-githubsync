@@ -27,6 +27,11 @@ import android.provider.Settings
 import de.tadris.fitness.data.WorkoutCapability
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -43,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import de.tadris.fitness.ui.record.NavigationModeHandler.NavigationMode
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -232,6 +238,26 @@ fun GpsRecordingScreen(
                 controller = mapController,
                 modifier = Modifier.fillMaxSize(),
             )
+
+            // Map cover
+            AnimatedVisibility(
+                visible = currentPosition == null && routePositions.isEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    awaitPointerEvent().changes.forEach { it.consume() }
+                                }
+                            }
+                        }
+                )
+            }
         },
         mapOverlays = {
             GpsInfoPill(
