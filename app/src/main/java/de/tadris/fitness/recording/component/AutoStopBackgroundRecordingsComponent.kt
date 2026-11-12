@@ -46,6 +46,7 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
 
     private var autoPauseEnabled = false
     private var signalLostSince = 0L
+    private var stopTriggered = false
 
     override fun register(service: RecorderService) {
         super.register(service)
@@ -62,6 +63,7 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
     }
 
     override fun checkSlow() {
+        if (stopTriggered) return
         val state = service.stateHolder.state
         val data = AggregatedRecordingValuesEvent.getCurrent()
         val now = System.currentTimeMillis()
@@ -89,16 +91,18 @@ class AutoStopBackgroundRecordingsComponent : LastSampleTimeComponent() {
             if (timeSinceLastSample > NO_SAMPLE_TIMEOUT_MS) {
                 log(TAG, "Stopping: no sample for ${timeSinceLastSample}ms and auto pause is off")
                 triggerStop()
+                return
             }
         }
 
-        if(data.sampleCount < MIN_SAMPLES_TO_KEEP && data.totalDuration > INITIAL_ACTIVITY_TIMEOUT_MS){
+        if (data.sampleCount < MIN_SAMPLES_TO_KEEP && data.totalDuration > INITIAL_ACTIVITY_TIMEOUT_MS){
             log(TAG, "Stopping: not enough activity after starting the workout for ${INITIAL_ACTIVITY_TIMEOUT_MS}ms")
             triggerStop()
         }
     }
 
     private fun triggerStop() {
+        stopTriggered = true
         val workoutId = service.stateHolder.workoutId
         val sampleCount = Instance.getInstance(service).db.workoutDao()
             .getAllSamplesOfWorkout(workoutId).size
