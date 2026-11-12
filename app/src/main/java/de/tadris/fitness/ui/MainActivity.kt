@@ -49,7 +49,6 @@ import de.tadris.fitness.ui.components.WorkoutTypePickerDialog
 import de.tadris.fitness.ui.map.MapManager
 import de.tadris.fitness.ui.navigation.AppNavigation
 import de.tadris.fitness.ui.navigation.Route
-import de.tadris.fitness.ui.navigation.recordWorkoutRoute
 import de.tadris.fitness.ui.record.MapControllerHolder
 import de.tadris.fitness.ui.record.RecordingConstants
 import de.tadris.fitness.ui.theme.FitoTrackTheme
@@ -104,16 +103,14 @@ class MainActivity : AppCompatActivity() {
 
         val navigateToRecord = remember<(WorkoutType, Boolean) -> Unit>(navController) {
             { workoutType, isLaunchAction ->
-                navController.navigate(recordWorkoutRoute(workoutType, isLaunchAction))
+                navController.navigate(Route.Recording(workoutType.id, isLaunchAction))
             }
         }
 
         // Handle running workout detected at startup (e.g. app killed while recording)
-        val runningWorkout = state.runningWorkout
-        if (runningWorkout != null) {
+        if (state.runningWorkout != null) {
             LaunchedEffect(Unit) {
-                val workoutType = runningWorkout.getWorkoutType(this@MainActivity)
-                navigateToRecord(workoutType, false)
+                navController.navigate(Route.Recording())
             }
         }
 
@@ -122,12 +119,9 @@ class MainActivity : AppCompatActivity() {
                 val action = intent.action
                 val workoutTypeId = intent.getStringExtra(RecordingConstants.WORKOUT_TYPE_EXTRA)
                 if (action == RecordingConstants.RESUME_ACTION) {
-                    val isRecordRoute = navController.currentBackStackEntry?.destination?.let {
-                        it.hasRoute<Route.RecordGpsWorkout>() ||
-                                it.hasRoute<Route.RecordTimeOnlyWorkout>() ||
-                                it.hasRoute<Route.RecordIndoorWorkout>()
-                    } == true
-                    if (!isRecordRoute) navController.navigate(Route.Recording)
+                    if (navController.currentBackStackEntry?.destination?.hasRoute<Route.Recording>() != true) {
+                        navController.navigate(Route.Recording())
+                    }
                 } else if (action == RecordingConstants.LAUNCH_ACTION && workoutTypeId != null) {
                     val workoutType = WorkoutTypeManager.getInstance()
                         .getWorkoutTypeById(this@MainActivity, workoutTypeId)
