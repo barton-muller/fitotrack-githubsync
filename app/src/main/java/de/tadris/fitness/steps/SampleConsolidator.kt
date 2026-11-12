@@ -55,8 +55,9 @@ class SampleConsolidator(
         pendingSteps = 0
         pendingActiveMinutes = 0
         lastPersistTime = System.currentTimeMillis()
-        onPendingStepsChanged(0)
+        // Report the persisted steps first, so the pending reset doesn't briefly report a lower total.
         onPersistReady(windowStart, steps, activeMinutes)
+        onPendingStepsChanged(0)
     }
 
     private fun currentWindowStart(): Long {
