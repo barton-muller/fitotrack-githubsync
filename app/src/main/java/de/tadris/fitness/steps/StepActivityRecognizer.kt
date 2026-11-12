@@ -56,6 +56,7 @@ class StepActivityRecognizer(
     }
 
     private var consecutiveActiveMinutes = 0
+    private var lastAutoStartTime = 0L
 
     private val threshold: StepActivityThreshold
         get() = StepActivityThreshold.fromPreferenceValue(
@@ -91,6 +92,10 @@ class StepActivityRecognizer(
             "Starting automatic workout (threshold=$threshold, consecutiveActiveMinutes=$consecutiveActiveMinutes)"
         )
         startRecording()
+        // Require a fresh streak of active minutes and remember the attempt, so a recording that gets
+        // auto-stopped and discarded (which leaves no workout in the DB) isn't restarted right away.
+        consecutiveActiveMinutes = 0
+        lastAutoStartTime = System.currentTimeMillis()
     }
 
     private fun isRecordingRunning(): Boolean {
@@ -100,6 +105,7 @@ class StepActivityRecognizer(
     }
 
     private fun isCooldownElapsed(): Boolean {
+        if (System.currentTimeMillis() - lastAutoStartTime < COOLDOWN_AFTER_STOP_MS) return false
         val lastEnd = workoutDao.getLastWorkout()?.end ?: return true
         if (lastEnd == -1L) return false // a workout is currently running according to DB
         return System.currentTimeMillis() - lastEnd > COOLDOWN_AFTER_STOP_MS
