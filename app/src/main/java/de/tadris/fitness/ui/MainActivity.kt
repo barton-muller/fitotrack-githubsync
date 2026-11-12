@@ -30,6 +30,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.rememberNavController
 import de.tadris.fitness.Instance
 import de.tadris.fitness.data.WorkoutType
@@ -115,31 +117,50 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Handle intents from notification tap or shortcuts
-        // Only on fresh launch — intent persists across config changes (e.g. rotation)
+        val handleIntent = remember<(Intent) -> Unit>(navController) {
+            { intent ->
+                val action = intent.action
+                val workoutTypeId = intent.getStringExtra(RecordingConstants.WORKOUT_TYPE_EXTRA)
+                if (action == RecordingConstants.RESUME_ACTION) {
+                    val isRecordRoute = navController.currentBackStackEntry?.destination?.let {
+                        it.hasRoute<Route.RecordGpsWorkout>() ||
+                                it.hasRoute<Route.RecordTimeOnlyWorkout>() ||
+                                it.hasRoute<Route.RecordIndoorWorkout>()
+                    } == true
+                    if (!isRecordRoute) navController.navigate(Route.Recording)
+                } else if (action == RecordingConstants.LAUNCH_ACTION && workoutTypeId != null) {
+                    val workoutType = WorkoutTypeManager.getInstance()
+                        .getWorkoutTypeById(this@MainActivity, workoutTypeId)
+                    navigateToRecord(workoutType, true)
+                }
+
+                when (intent.getStringExtra(EXTRA_ROUTE)) {
+                    ROUTE_SETTINGS -> navController.navigate(Route.Settings)
+                    ROUTE_RECORDING_SETTINGS -> {
+                        navController.navigate(Route.Settings)
+                        navController.navigate(Route.RecordingSettings)
+                    }
+
+                    ROUTE_MANAGE_INTERVAL_SETS -> {
+                        navController.navigate(Route.Settings)
+                        navController.navigate(Route.RecordingSettings)
+                        navController.navigate(Route.ManageIntervalSets)
+                    }
+                }
+            }
+        }
+
+        // Handle intents from notification tap or shortcuts on fresh launch
+        // (intent persists across config changes, e.g. rotation)
         LaunchedEffect(Unit) {
-            if (!isNewLaunch) return@LaunchedEffect
-            val action = intent.action
-            val workoutTypeId = intent.getStringExtra(RecordingConstants.WORKOUT_TYPE_EXTRA)
-            if ((action == RecordingConstants.LAUNCH_ACTION || action == RecordingConstants.RESUME_ACTION) && workoutTypeId != null) {
-                val workoutType = WorkoutTypeManager.getInstance()
-                    .getWorkoutTypeById(this@MainActivity, workoutTypeId)
-                navigateToRecord(workoutType, action == RecordingConstants.LAUNCH_ACTION)
-            }
+            if (isNewLaunch) handleIntent(intent)
+        }
 
-            when (intent.getStringExtra(EXTRA_ROUTE)) {
-                ROUTE_SETTINGS -> navController.navigate(Route.Settings)
-                ROUTE_RECORDING_SETTINGS -> {
-                    navController.navigate(Route.Settings)
-                    navController.navigate(Route.RecordingSettings)
-                }
-
-                ROUTE_MANAGE_INTERVAL_SETS -> {
-                    navController.navigate(Route.Settings)
-                    navController.navigate(Route.RecordingSettings)
-                    navController.navigate(Route.ManageIntervalSets)
-                }
-            }
+        // Handle intents delivered to an already running activity (singleTop)
+        DisposableEffect(handleIntent) {
+            val listener = androidx.core.util.Consumer<Intent> { handleIntent(it) }
+            addOnNewIntentListener(listener)
+            onDispose { removeOnNewIntentListener(listener) }
         }
 
         AppNavigation(

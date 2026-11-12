@@ -22,6 +22,9 @@ package de.tadris.fitness.ui.navigation
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -125,6 +128,12 @@ sealed interface Route {
     /** typeId == "" means create new workout type */
     @Serializable
     data class EditWorkoutType(val typeId: String = "") : Route
+
+    /**
+     * Auto redirects to correct recording screen when called
+     */
+    @Serializable
+    data object Recording : Route
 
     @Serializable
     data class RecordGpsWorkout(val workoutTypeId: String, val isLaunchAction: Boolean) : Route
@@ -343,6 +352,21 @@ fun AppNavigation(
                 typeId = backStackEntry.toRoute<Route.EditWorkoutType>().typeId,
                 onBack = { navController.popBackStack() },
             )
+        }
+        composable<Route.Recording> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                val workout = withContext(Dispatchers.IO) {
+                    Instance.getInstance(context).db.workoutDao().findRunningWorkout()
+                }
+                if (workout != null) {
+                    navController.navigate(recordWorkoutRoute(workout.getWorkoutType(context), false)) {
+                        popUpTo<Route.Recording> { inclusive = true }
+                    }
+                } else {
+                    navController.popBackStack()
+                }
+            }
         }
         composable<Route.RecordGpsWorkout> { backStackEntry ->
             val route = backStackEntry.toRoute<Route.RecordGpsWorkout>()
