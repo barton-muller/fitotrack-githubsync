@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -104,7 +105,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                 }
                 code = c
                 copy(context, c.userCode)
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(c.verificationUri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                openUrl(context, c.verificationUri)
                 val token = sync.auth.awaitToken(c) { pollStatus = it }
                 val name = withContext(Dispatchers.IO) { runCatching { GitHubApi(token).login() }.getOrNull() }
                 sync.auth.save(token, name)
@@ -152,7 +153,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                     choose(m)
                 } else {
                     message = context.getString(R.string.githubSyncInstallNew, m.full)
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GitHubConfig.INSTALL_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    openUrl(context, GitHubConfig.INSTALL_URL)
                 }
             } catch (e: Exception) {
                 fail(e)
@@ -268,7 +269,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                             title = stringResource(R.string.githubSyncAddRepos),
                             supporting = stringResource(R.string.githubSyncAddReposSummary),
                             onClick = {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GitHubConfig.INSTALL_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                openUrl(context, GitHubConfig.INSTALL_URL)
                             },
                         )
                     }
@@ -315,6 +316,15 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Opens the page in an in-app Custom Tab, or the default browser when none is available. */
+private fun openUrl(context: Context, url: String) {
+    try {
+        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(url))
+    } catch (e: Exception) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }
 
