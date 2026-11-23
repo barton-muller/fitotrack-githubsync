@@ -61,6 +61,17 @@ class GitHubApi(private val token: String) {
         return out
     }
 
+    /** Text of a file, or null when it does not exist. */
+    fun readText(repo: String, branch: String, path: String): String? {
+        val r = call("GET", "/repos/$repo/contents/${encPath(path)}?ref=${enc(branch)}", accept = "application/vnd.github.raw+json")
+        if (r.code == 404) return null
+        return check(r).text
+    }
+
+    fun deleteFile(repo: String, branch: String, path: String, sha: String, message: String) {
+        check(call("DELETE", "/repos/$repo/contents/${encPath(path)}", JSONObject().put("message", message).put("sha", sha).put("branch", branch)))
+    }
+
     fun readBlob(repo: String, sha: String): ByteArray =
         check(call("GET", "/repos/$repo/git/blobs/$sha", accept = "application/vnd.github.raw+json")).body
 

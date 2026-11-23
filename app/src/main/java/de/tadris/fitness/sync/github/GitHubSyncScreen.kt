@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.size
@@ -41,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -48,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import de.tadris.fitness.R
 import de.tadris.fitness.ui.settings.ClickableSettingsItem
 import de.tadris.fitness.ui.settings.SettingsCategory
+import de.tadris.fitness.ui.settings.SwitchSettingsItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -69,6 +72,9 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var diagnostics by remember { mutableStateOf("") }
     var pollStatus by remember { mutableStateOf("") }
+    var loadingRepos by remember { mutableStateOf(false) }
+    var deleteFromRepo by remember { mutableStateOf(sync.deleteFromRepo) }
+    var syncSettings by remember { mutableStateOf(sync.syncSettings) }
     var message by remember { mutableStateOf(sync.lastSyncMessage ?: "") }
 
     fun fail(e: Throwable) {
@@ -82,6 +88,8 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
     fun loadRepos() {
         scope.launch {
             busy = true
+            loadingRepos = true
+            repos = null
             try {
                 repos = withContext(Dispatchers.IO) { sync.api().repos() }
                 if (repos.isNullOrEmpty()) message = context.getString(R.string.githubSyncNoRepos)
@@ -89,6 +97,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                 fail(e)
             } finally {
                 busy = false
+                loadingRepos = false
             }
         }
     }
@@ -171,8 +180,8 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
             busy = true
             message = context.getString(R.string.githubSyncRunning)
             try {
-                val r = withContext(Dispatchers.IO) { sync.pull() }
-                message = context.getString(R.string.githubSyncDone, r.imported, r.uploaded, r.failed) + (r.firstError?.let { "\n$it" } ?: "")
+                val r = withContext(Dispatchers.IO) { sync.sync() }
+                message = context.getString(R.string.githubSyncDone, r.imported, r.uploaded, r.deleted, r.failed, r.settings) + (r.firstError?.let { "\n$it" } ?: "")
                 sync.lastSyncMessage = message
             } catch (e: Exception) {
                 fail(e)
@@ -248,6 +257,22 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                         )
                     }
                     item {
+                        SwitchSettingsItem(
+                            title = stringResource(R.string.githubSyncSettingsTitle),
+                            supporting = stringResource(R.string.githubSyncSettingsSummary),
+                            checked = syncSettings,
+                            onCheckedChange = { syncSettings = it; sync.syncSettings = it },
+                        )
+                    }
+                    item {
+                        SwitchSettingsItem(
+                            title = stringResource(R.string.githubSyncDeleteTitle),
+                            supporting = stringResource(R.string.githubSyncDeleteSummary),
+                            checked = deleteFromRepo,
+                            onCheckedChange = { deleteFromRepo = it; sync.deleteFromRepo = it },
+                        )
+                    }
+                    item {
                         ClickableSettingsItem(
                             title = stringResource(R.string.githubSyncNow),
                             supporting = stringResource(R.string.githubSyncNowSummary),
@@ -256,6 +281,15 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                         )
                     }
                 } else {
+                    if (loadingRepos) {
+                        item {
+                            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                                Spacer(Modifier.width(16.dp))
+                                Text(stringResource(R.string.githubSyncLoadingRepos))
+                            }
+                        }
+                    }
                     items(repos.orEmpty()) { r ->
                         ClickableSettingsItem(title = r.full, onClick = { choose(r) })
                     }

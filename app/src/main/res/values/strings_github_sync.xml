@@ -24,7 +24,12 @@
     <string name="githubSyncCreating">Creating a private repo…</string>
     <string name="githubSyncInstallNew">Created %1$s. Give the app access to it on GitHub, then come back and refresh.</string>
     <string name="githubSyncRunning">Syncing…</string>
-    <string name="githubSyncDone">Imported %1$d workouts, uploaded %2$d, %3$d failed.</string>
+    <string name="githubSyncDone">Imported %1$d, uploaded %2$d, removed %3$d from the repo, %4$d failed. Settings: %5$s.</string>
     <string name="githubSyncTestConnection">Test connection</string>
     <string name="githubSyncTestConnectionSummary">Check DNS and web access from this app</string>
+    <string name="githubSyncLoadingRepos">Loading repos…</string>
+    <string name="githubSyncSettingsTitle">Sync settings and measurements</string>
+    <string name="githubSyncSettingsSummary">Weight, step length and app preferences are kept in fitness/settings.json. A change made here wins.</string>
+    <string name="githubSyncDeleteTitle">Delete from repo too</string>
+    <string name="githubSyncDeleteSummary">When you delete a workout here, Sync now removes its GPX from the repo. Git history keeps it.</string>
 </resources>
