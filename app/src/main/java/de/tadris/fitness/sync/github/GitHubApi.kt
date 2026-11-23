@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2026 barton-muller
+ *
+ * This file is part of FitoTrack
+ *
+ * FitoTrack is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     FitoTrack is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.tadris.fitness.sync.github
 
 import android.util.Base64
@@ -27,14 +46,19 @@ class GitHubApi(private val token: String) {
     /** Repos the GitHub App is installed on and the person can reach. */
     fun repos(): List<RepoChoice> {
         val out = mutableListOf<RepoChoice>()
-        val installs = JSONObject(check(call("GET", "/user/installations?per_page=100")).text).getJSONArray("installations")
+        val installs = JSONObject(check(call("GET", "/user/installations?per_page=$PAGE_SIZE")).text).getJSONArray("installations")
         for (i in 0 until installs.length()) {
             val id = installs.getJSONObject(i).getLong("id")
-            val repos = JSONObject(check(call("GET", "/user/installations/$id/repositories?per_page=100")).text).getJSONArray("repositories")
-            for (k in 0 until repos.length()) {
-                val r = repos.getJSONObject(k)
-                out += RepoChoice(r.getString("full_name"), r.getString("default_branch"))
-            }
+            var page = 1
+            do {
+                val repos = JSONObject(check(call("GET", "/user/installations/$id/repositories?per_page=$PAGE_SIZE&page=$page")).text)
+                    .getJSONArray("repositories")
+                for (k in 0 until repos.length()) {
+                    val r = repos.getJSONObject(k)
+                    out += RepoChoice(r.getString("full_name"), r.getString("default_branch"))
+                }
+                page++
+            } while (repos.length() == PAGE_SIZE)
         }
         return out
     }
@@ -85,6 +109,10 @@ class GitHubApi(private val token: String) {
             .put("branch", branch)
         if (sha != null) body.put("sha", sha)
         check(call("PUT", "/repos/$repo/contents/${encPath(path)}", body))
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 100
     }
 
     private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")

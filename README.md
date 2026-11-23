@@ -1,3 +1,20 @@
+> ## This fork: GitHub sync
+>
+> An unofficial fork of [FitoTrack](https://codeberg.org/jannis/FitoTrack) that adds **sync through your own GitHub repo**:
+>
+> - **Sign in with GitHub** (Settings, Backup, GitHub sync) and choose a repo, or let the app create a private one.
+> - **Workouts** are stored as one GPX file each in the folder `fitness/`. New workouts are uploaded after recording, workouts found in the repo are imported, and a workout you delete here can be removed from the repo too.
+> - **Personal measurements and settings** (weight, step length, app preferences) are kept in `fitness/settings.json`.
+> - Your data stays in a repo you own. There is no server of mine in between and nothing is shared with anyone else.
+>
+> The idea comes from [pages-storage](https://github.com/barton-muller/pages-storage): remote storage for apps without a backend, where each person signs in with a GitHub App and the app reads and writes files in a repo that person owns. pages-storage does that for web pages. This fork applies the same model natively on Android. It does not use pages-storage's code, and it signs in with GitHub's device flow, so it needs no relay.
+>
+> Everything else is FitoTrack as it is upstream. The fork is rebased onto upstream every day, and an APK is built on each change: see **Releases**. How it works, how to set up your own GitHub App and the limits are in [GITHUB_SYNC.md](GITHUB_SYNC.md). The code is in `app/src/main/java/de/tadris/fitness/sync/github/`.
+>
+> Not affiliated with the FitoTrack project. Report problems with the sync here, not upstream.
+
+---
+
 # FitoTrack
 
 FitoTrack is a mobile app for logging and viewing your workouts. Whether you're running, cycling or hiking, FitoTrack will show you the most important information, with detailed charts and statistics. It is open-source and completely ad-free.
