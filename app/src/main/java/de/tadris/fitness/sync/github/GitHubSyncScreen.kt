@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -290,15 +291,21 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
             }
             if (diagnostics.isNotEmpty()) {
                 item {
-                    Text(
-                        diagnostics,
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                        modifier = Modifier.padding(16.dp),
-                    )
+                    SelectionContainer {
+                        Text(
+                            diagnostics,
+                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
                 }
             }
             if (message.isNotEmpty()) {
-                item { Text(message, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(16.dp)) }
+                item {
+                    SelectionContainer {
+                        Text(message, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(16.dp))
+                    }
+                }
             }
         }
     }

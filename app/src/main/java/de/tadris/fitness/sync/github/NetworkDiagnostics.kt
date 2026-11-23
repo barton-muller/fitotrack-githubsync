@@ -46,7 +46,7 @@ object NetworkDiagnostics {
                 "FAILED (${e.javaClass.simpleName})"
             }
             val http = try {
-                "HTTP ${GitHubHttp.request("GET", "https://$h/").code}"
+                "HTTP ${GitHubHttp.request("GET", "https://$h/", accept = "*/*").code}"
             } catch (e: Exception) {
                 "FAILED (${e.javaClass.simpleName}: ${e.message?.take(60)})"
             }
