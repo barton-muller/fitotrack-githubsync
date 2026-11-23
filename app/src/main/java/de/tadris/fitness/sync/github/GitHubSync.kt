@@ -4,11 +4,12 @@ import android.content.Context
 import de.tadris.fitness.Instance
 import de.tadris.fitness.data.ExportTargetConfiguration
 import de.tadris.fitness.data.autoexport.source.ExportSource
+import de.tadris.fitness.data.autoexport.source.WorkoutGpxExportSource
 import de.tadris.fitness.util.export.ImportWorkoutSaver
 import de.tadris.fitness.util.export.gpx.GpxImporter
 import org.json.JSONObject
 
-class PullResult(val imported: Int, val skipped: Int, val failed: Int)
+class PullResult(val imported: Int, val uploaded: Int, val failed: Int)
 
 /** Which repo is used, and the GPX files already handled. Plain preferences: nothing secret in here. */
 class GitHubSync(context: Context) {
@@ -50,7 +51,7 @@ class GitHubSync(context: Context) {
             it.type = GitHubConfig.TARGET_TYPE
             it.data = JSONObject().put("repo", choice.full).put("branch", choice.branch).toString()
         })
-        prefs.edit().remove("handled").apply()
+        prefs.edit().remove("handled").remove("starts").apply()
     }
 
     fun signOut() {
@@ -59,10 +60,41 @@ class GitHubSync(context: Context) {
             .filter { it.type == GitHubConfig.TARGET_TYPE }
             .forEach { dao.delete(it) }
         auth.signOut()
-        prefs.edit().remove("repo").remove("handled").apply()
+        prefs.edit().remove("repo").remove("handled").remove("starts").apply()
     }
 
-    fun recordUploaded(path: String, sha: String?) = markHandled(path)
+    private fun starts(): MutableSet<String> = prefs.getStringSet("starts", emptySet())!!.toMutableSet()
+
+    private fun markStart(start: Long) {
+        prefs.edit().putStringSet("starts", starts().apply { add(start.toString()) }).apply()
+    }
+
+    /** Writes one exported GPX into the repo and remembers it, so it is neither uploaded twice nor re-imported. */
+    fun upload(repo: String, branch: String, file: ExportSource.ExportedFile) {
+        val name = file.file.name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+        val path = "${GitHubConfig.FOLDER}/$name"
+        api().putFile(repo, branch, path, file.file.readBytes(), "Add $name")
+        markHandled(path)
+        file.meta["FitoTrack-Timestamp"]?.toLongOrNull()?.let { markStart(it) }
+    }
+
+    /** Uploads local workouts that are not in the repo yet. Returns (uploaded, failed). */
+    private fun push(): Pair<Int, Int> {
+        val r = repo ?: return 0 to 0
+        val known = starts()
+        var uploaded = 0
+        var failed = 0
+        for (w in Instance.getInstance(context).db.workoutDao().getWorkouts()) {
+            if (w.start.toString() in known || w.end <= w.start) continue
+            try {
+                upload(r, branch, WorkoutGpxExportSource(w.id).provideFile(context))
+                uploaded++
+            } catch (e: Exception) {
+                failed++
+            }
+        }
+        return uploaded to failed
+    }
 
     /** Imports GPX files from the repo that are not on this device yet. */
     fun pull(): PullResult {
@@ -79,15 +111,18 @@ class GitHubSync(context: Context) {
             try {
                 val bytes = api.readBlob(r, f.sha)
                 for (data in importer.readWorkouts(bytes.inputStream()).workouts) {
-                    if (dao.getWorkoutByStart(data.workout.start) != null) continue
-                    ImportWorkoutSaver(context, data).save()
-                    imported++
+                    if (dao.getWorkoutByStart(data.workout.start) == null) {
+                        ImportWorkoutSaver(context, data).save()
+                        imported++
+                    }
+                    markStart(data.workout.start)
                 }
                 markHandled(f.path)
             } catch (e: Exception) {
                 failed++
             }
         }
-        return PullResult(imported, skipped, failed)
+        val (uploaded, pushFailed) = push()
+        return PullResult(imported, uploaded, failed + pushFailed)
     }
 }

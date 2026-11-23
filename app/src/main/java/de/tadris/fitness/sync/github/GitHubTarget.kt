@@ -20,11 +20,7 @@ class GitHubTarget(private val repo: String, private val branch: String) : Expor
         get() = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     override fun exportFile(context: Context, file: ExportSource.ExportedFile) {
-        val sync = GitHubSync(context)
-        val name = file.file.name.replace(Regex("[^A-Za-z0-9._-]"), "_")
-        val path = "${GitHubConfig.FOLDER}/$name"
-        sync.api().putFile(repo, branch, path, file.file.readBytes(), "Add $name")
-        sync.recordUploaded(path, null)
+        GitHubSync(context).upload(repo, branch, file)
     }
 
     companion object {

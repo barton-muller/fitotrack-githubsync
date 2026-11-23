@@ -14,7 +14,7 @@
     <string name="githubSyncRepo">Repository</string>
     <string name="githubSyncChangeRepo">Tap to choose another repo</string>
     <string name="githubSyncNow">Sync now</string>
-    <string name="githubSyncNowSummary">Import workouts from the repo that are not on this device yet</string>
+    <string name="githubSyncNowSummary">Import workouts from the repo and upload the ones that are only on this device</string>
     <string name="githubSyncNewRepo">New private repo</string>
     <string name="githubSyncNewRepoSummary">Create a private repo for your workouts</string>
     <string name="githubSyncAddRepos">Choose repos on GitHub</string>
@@ -24,7 +24,7 @@
     <string name="githubSyncCreating">Creating a private repo…</string>
     <string name="githubSyncInstallNew">Created %1$s. Give the app access to it on GitHub, then come back and refresh.</string>
     <string name="githubSyncRunning">Syncing…</string>
-    <string name="githubSyncDone">Imported %1$d workouts, %2$d failed.</string>
+    <string name="githubSyncDone">Imported %1$d workouts, uploaded %2$d, %3$d failed.</string>
     <string name="githubSyncTestConnection">Test connection</string>
     <string name="githubSyncTestConnectionSummary">Check DNS and web access from this app</string>
 </resources>

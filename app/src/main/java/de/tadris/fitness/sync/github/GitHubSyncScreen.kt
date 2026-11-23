@@ -1,8 +1,10 @@
 package de.tadris.fitness.sync.github
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
@@ -109,6 +111,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                 val token = sync.auth.awaitToken(c) { pollStatus = it }
                 val name = withContext(Dispatchers.IO) { runCatching { GitHubApi(token).login() }.getOrNull() }
                 sync.auth.save(token, name)
+                bringAppToFront(context)
                 login = name
                 signedIn = true
                 message = ""
@@ -169,7 +172,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
             message = context.getString(R.string.githubSyncRunning)
             try {
                 val r = withContext(Dispatchers.IO) { sync.pull() }
-                message = context.getString(R.string.githubSyncDone, r.imported, r.failed)
+                message = context.getString(R.string.githubSyncDone, r.imported, r.uploaded, r.failed)
                 sync.lastSyncMessage = message
             } catch (e: Exception) {
                 fail(e)
@@ -316,6 +319,16 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Closes the Custom Tab on top of the app by re-launching the app's own activity over it. Best effort. */
+private fun bringAppToFront(context: Context) {
+    var c: Context? = context
+    while (c is ContextWrapper && c !is Activity) c = c.baseContext
+    val activity = c as? Activity ?: return
+    runCatching {
+        activity.startActivity(Intent(activity, activity.javaClass).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
     }
 }
 
