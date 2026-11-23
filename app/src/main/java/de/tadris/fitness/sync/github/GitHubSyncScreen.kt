@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +63,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
     var code by remember { mutableStateOf<DeviceCode?>(null) }
     var signInJob by remember { mutableStateOf<Job?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var diagnostics by remember { mutableStateOf("") }
     var message by remember { mutableStateOf(sync.lastSyncMessage ?: "") }
 
     fun fail(e: Throwable) {
@@ -269,6 +271,30 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                             onClick = { loadRepos() },
                         )
                     }
+                }
+            }
+            item {
+                ClickableSettingsItem(
+                    title = stringResource(R.string.githubSyncTestConnection),
+                    supporting = stringResource(R.string.githubSyncTestConnectionSummary),
+                    enabled = !busy,
+                    onClick = {
+                        scope.launch {
+                            busy = true
+                            diagnostics = context.getString(R.string.githubSyncRunning)
+                            diagnostics = withContext(Dispatchers.IO) { NetworkDiagnostics.run(context) }
+                            busy = false
+                        }
+                    },
+                )
+            }
+            if (diagnostics.isNotEmpty()) {
+                item {
+                    Text(
+                        diagnostics,
+                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                        modifier = Modifier.padding(16.dp),
+                    )
                 }
             }
             if (message.isNotEmpty()) {

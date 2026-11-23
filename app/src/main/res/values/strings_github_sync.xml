@@ -25,4 +25,6 @@
     <string name="githubSyncInstallNew">Created %1$s. Give the app access to it on GitHub, then come back and refresh.</string>
     <string name="githubSyncRunning">Syncing…</string>
     <string name="githubSyncDone">Imported %1$d workouts, %2$d failed.</string>
+    <string name="githubSyncTestConnection">Test connection</string>
+    <string name="githubSyncTestConnectionSummary">Check DNS and web access from this app</string>
 </resources>
