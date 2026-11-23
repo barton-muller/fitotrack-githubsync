@@ -4,7 +4,9 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.IOException
 import java.security.KeyStore
@@ -61,12 +63,14 @@ class GitHubAuth(context: Context) {
         val deadline = System.currentTimeMillis() + code.expiresInSeconds * 1000L
         while (System.currentTimeMillis() < deadline) {
             delay(interval * 1000L)
-            val r = GitHubHttp.request(
-                "POST", "https://github.com/login/oauth/access_token",
-                body = ("client_id=${GitHubConfig.CLIENT_ID}&device_code=${code.deviceCode}" +
-                        "&grant_type=urn:ietf:params:oauth:grant-type:device_code").toByteArray(),
-                contentType = "application/x-www-form-urlencoded", accept = "application/json",
-            )
+            val r = withContext(Dispatchers.IO) {
+                GitHubHttp.request(
+                    "POST", "https://github.com/login/oauth/access_token",
+                    body = ("client_id=${GitHubConfig.CLIENT_ID}&device_code=${code.deviceCode}" +
+                            "&grant_type=urn:ietf:params:oauth:grant-type:device_code").toByteArray(),
+                    contentType = "application/x-www-form-urlencoded", accept = "application/json",
+                )
+            }
             val j = JSONObject(r.text)
             when (val err = j.optString("error")) {
                 "" -> return j.getString("access_token")

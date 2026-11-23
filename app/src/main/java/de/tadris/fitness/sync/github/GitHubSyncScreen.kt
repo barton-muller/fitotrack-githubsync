@@ -11,7 +11,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -180,7 +188,15 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         val c = code
                         if (c == null) {
-                            Button(onClick = { signIn() }) { Text(stringResource(R.string.githubSyncSignIn)) }
+                            Button(
+                                onClick = { signIn() },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF24292F), contentColor = Color.White),
+                            ) {
+                                Icon(painterResource(R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(10.dp))
+                                Text(stringResource(R.string.githubSyncSignIn), fontWeight = FontWeight.SemiBold)
+                            }
                         } else {
                             Text(stringResource(R.string.githubSyncEnterCode), style = MaterialTheme.typography.bodyMedium)
                             Text(c.userCode, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(vertical = 8.dp))
