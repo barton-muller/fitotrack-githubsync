@@ -9,7 +9,7 @@ import de.tadris.fitness.util.export.ImportWorkoutSaver
 import de.tadris.fitness.util.export.gpx.GpxImporter
 import org.json.JSONObject
 
-class PullResult(val imported: Int, val uploaded: Int, val failed: Int)
+class PullResult(val imported: Int, val uploaded: Int, val failed: Int, val firstError: String?)
 
 /** Which repo is used, and the GPX files already handled. Plain preferences: nothing secret in here. */
 class GitHubSync(context: Context) {
@@ -79,11 +79,12 @@ class GitHubSync(context: Context) {
     }
 
     /** Uploads local workouts that are not in the repo yet. Returns (uploaded, failed). */
-    private fun push(): Pair<Int, Int> {
-        val r = repo ?: return 0 to 0
+    private fun push(): Triple<Int, Int, String?> {
+        val r = repo ?: return Triple(0, 0, null)
         val known = starts()
         var uploaded = 0
         var failed = 0
+        var firstError: String? = null
         for (w in Instance.getInstance(context).db.workoutDao().getWorkouts()) {
             if (w.start.toString() in known || w.end <= w.start) continue
             try {
@@ -91,9 +92,10 @@ class GitHubSync(context: Context) {
                 uploaded++
             } catch (e: Exception) {
                 failed++
+                if (firstError == null) firstError = "upload: ${e.javaClass.simpleName}: ${e.message}"
             }
         }
-        return uploaded to failed
+        return Triple(uploaded, failed, firstError)
     }
 
     /** Imports GPX files from the repo that are not on this device yet. */
@@ -106,6 +108,7 @@ class GitHubSync(context: Context) {
         var imported = 0
         var skipped = 0
         var failed = 0
+        var firstError: String? = null
         for (f in api.listFiles(r, branch, GitHubConfig.FOLDER, ".gpx")) {
             if (f.path in done) { skipped++; continue }
             try {
@@ -120,9 +123,10 @@ class GitHubSync(context: Context) {
                 markHandled(f.path)
             } catch (e: Exception) {
                 failed++
+                if (firstError == null) firstError = "import ${f.path}: ${e.javaClass.simpleName}: ${e.message}"
             }
         }
-        val (uploaded, pushFailed) = push()
-        return PullResult(imported, uploaded, failed + pushFailed)
+        val (uploaded, pushFailed, pushError) = push()
+        return PullResult(imported, uploaded, failed + pushFailed, firstError ?: pushError)
     }
 }

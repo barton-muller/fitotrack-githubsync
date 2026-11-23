@@ -172,7 +172,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
             message = context.getString(R.string.githubSyncRunning)
             try {
                 val r = withContext(Dispatchers.IO) { sync.pull() }
-                message = context.getString(R.string.githubSyncDone, r.imported, r.uploaded, r.failed)
+                message = context.getString(R.string.githubSyncDone, r.imported, r.uploaded, r.failed) + (r.firstError?.let { "\n$it" } ?: "")
                 sync.lastSyncMessage = message
             } catch (e: Exception) {
                 fail(e)
