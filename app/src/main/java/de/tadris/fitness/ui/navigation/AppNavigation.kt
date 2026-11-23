@@ -102,6 +102,9 @@ sealed interface Route {
     data object BackupSettings : Route
 
     @Serializable
+    data object GitHubSync : Route
+
+    @Serializable
     data class ConfigureExportTargets(val sourceId: String) : Route
 
     @Serializable
@@ -276,7 +279,11 @@ fun AppNavigation(
                 onNavigateToConfigureExportTargets = { sourceId ->
                     navController.navigate(Route.ConfigureExportTargets(sourceId))
                 },
+                onNavigateToGitHubSync = { navController.navigate(Route.GitHubSync) },
             )
+        }
+        composable<Route.GitHubSync> {
+            de.tadris.fitness.sync.github.GitHubSyncScreen(onBack = { navController.popBackStack() })
         }
         composable<Route.ConfigureExportTargets> { backStackEntry ->
             ConfigureExportTargetsScreen(

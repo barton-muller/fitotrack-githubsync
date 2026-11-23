@@ -43,6 +43,7 @@ interface ExportTarget {
         fun getExportTargetImplementation(type: String, data: String) = when (type) {
             TARGET_TYPE_DIRECTORY -> DirectoryTarget(data)
             TARGET_TYPE_HTTP_POST -> HTTPPostTarget.fromData(data)
+            de.tadris.fitness.sync.github.GitHubConfig.TARGET_TYPE -> de.tadris.fitness.sync.github.GitHubTarget.fromData(data)
             else -> null
         }
 

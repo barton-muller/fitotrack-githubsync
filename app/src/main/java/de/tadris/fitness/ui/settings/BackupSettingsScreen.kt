@@ -73,6 +73,7 @@ import java.io.File
 fun BackupSettingsScreen(
     onBack: () -> Unit,
     onNavigateToConfigureExportTargets: (String) -> Unit = {},
+    onNavigateToGitHubSync: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val handler = remember { Handler(Looper.getMainLooper()) }
@@ -215,6 +216,13 @@ fun BackupSettingsScreen(
                             file
                         }
                     },
+                )
+            }
+            item {
+                ClickableSettingsItem(
+                    title = stringResource(R.string.githubSyncTitle),
+                    supporting = stringResource(R.string.githubSyncSummary),
+                    onClick = onNavigateToGitHubSync,
                 )
             }
             item { SettingsCategory(stringResource(R.string.autoBackupTitle)) }

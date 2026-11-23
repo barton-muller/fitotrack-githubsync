@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exportTargetGitHub">GitHub</string>
+    <string name="githubSyncTitle">GitHub sync</string>
+    <string name="githubSyncSummary">Keep workouts as GPX files in a GitHub repo</string>
+    <string name="githubSyncExplanation">New workouts are saved as GPX files in the folder %1$s of a repo you choose, and workouts found there are imported on this device.</string>
+    <string name="githubSyncSignIn">Sign in with GitHub</string>
+    <string name="githubSyncEnterCode">Enter this code on GitHub (copied to the clipboard):</string>
+    <string name="githubSyncCancel">Cancel</string>
+    <string name="githubSyncAccount">Account</string>
+    <string name="githubSyncSignedIn">Signed in</string>
+    <string name="githubSyncSignedInAs">Signed in as %1$s</string>
+    <string name="githubSyncSignOut">Tap to sign out</string>
+    <string name="githubSyncRepo">Repository</string>
+    <string name="githubSyncChangeRepo">Tap to choose another repo</string>
+    <string name="githubSyncNow">Sync now</string>
+    <string name="githubSyncNowSummary">Import workouts from the repo that are not on this device yet</string>
+    <string name="githubSyncNewRepo">New private repo</string>
+    <string name="githubSyncNewRepoSummary">Create a private repo for your workouts</string>
+    <string name="githubSyncAddRepos">Choose repos on GitHub</string>
+    <string name="githubSyncAddReposSummary">Give the app access to an existing repo, then come back and refresh</string>
+    <string name="githubSyncRefresh">Refresh list</string>
+    <string name="githubSyncNoRepos">The app has no repo yet. Create a new one, or choose repos on GitHub.</string>
+    <string name="githubSyncCreating">Creating a private repo…</string>
+    <string name="githubSyncInstallNew">Created %1$s. Give the app access to it on GitHub, then come back and refresh.</string>
+    <string name="githubSyncRunning">Syncing…</string>
+    <string name="githubSyncDone">Imported %1$d workouts, %2$d failed.</string>
+</resources>
