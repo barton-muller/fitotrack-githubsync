@@ -213,8 +213,10 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                         title = login?.let { stringResource(R.string.githubSyncSignedInAs, it) } ?: stringResource(R.string.githubSyncSignedIn),
                         supporting = stringResource(R.string.githubSyncSignOut),
                         onClick = {
-                            sync.signOut()
-                            signedIn = false; login = null; repo = null; repos = null; message = ""
+                            scope.launch {
+                                withContext(Dispatchers.IO) { sync.signOut() }
+                                signedIn = false; login = null; repo = null; repos = null; message = ""
+                            }
                         },
                     )
                 }
