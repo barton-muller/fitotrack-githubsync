@@ -57,23 +57,29 @@ class GitHubAuth(context: Context) {
     }
 
     /** Polls until the person approves in the browser. Throws on denial or expiry. Cancel through the coroutine. */
-    suspend fun awaitToken(code: DeviceCode): String {
+    suspend fun awaitToken(code: DeviceCode, onStatus: (String) -> Unit = {}): String {
         var interval = code.intervalSeconds
         val deadline = System.currentTimeMillis() + code.expiresInSeconds * 1000L
         while (System.currentTimeMillis() < deadline) {
             delay(interval * 1000L)
-            val r = withContext(Dispatchers.IO) {
-                GitHubHttp.request(
-                    "POST", "https://github.com/login/oauth/access_token",
-                    body = ("client_id=${GitHubConfig.CLIENT_ID}&device_code=${code.deviceCode}" +
-                            "&grant_type=urn:ietf:params:oauth:grant-type:device_code").toByteArray(),
-                    contentType = "application/x-www-form-urlencoded", accept = "application/json",
-                )
+            val r = try {
+                withContext(Dispatchers.IO) {
+                    GitHubHttp.request(
+                        "POST", "https://github.com/login/oauth/access_token",
+                        body = ("client_id=${GitHubConfig.CLIENT_ID}&device_code=${code.deviceCode}" +
+                                "&grant_type=urn:ietf:params:oauth:grant-type:device_code").toByteArray(),
+                        contentType = "application/x-www-form-urlencoded", accept = "application/json",
+                    )
+                }
+            } catch (e: IOException) {
+                // Android can cut a backgrounded app off the network while the browser is in front. Keep trying.
+                onStatus("Waiting, network error: ${e.javaClass.simpleName}")
+                continue
             }
             val j = JSONObject(r.text)
             when (val err = j.optString("error")) {
                 "" -> return j.getString("access_token")
-                "authorization_pending" -> Unit
+                "authorization_pending" -> onStatus("")
                 "slow_down" -> interval = j.optInt("interval", interval + 5)
                 "access_denied" -> throw IOException("Sign-in was denied")
                 "expired_token" -> throw IOException("The code expired, try again")

@@ -65,12 +65,13 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
     var signInJob by remember { mutableStateOf<Job?>(null) }
     var busy by remember { mutableStateOf(false) }
     var diagnostics by remember { mutableStateOf("") }
+    var pollStatus by remember { mutableStateOf("") }
     var message by remember { mutableStateOf(sync.lastSyncMessage ?: "") }
 
     fun fail(e: Throwable) {
         message = when (e) {
             is java.net.UnknownHostException, is java.net.SocketTimeoutException, is java.net.ConnectException ->
-                "Cannot reach GitHub. Check the internet connection and that this app is allowed to use the network."
+                "Cannot reach GitHub (${e.javaClass.simpleName}: ${e.message}). Check the internet connection and that this app is allowed to use the network."
             else -> e.message ?: e.toString()
         }
     }
@@ -95,11 +96,16 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
         signInJob?.cancel()
         signInJob = scope.launch {
             try {
-                val c = withContext(Dispatchers.IO) { sync.auth.startDeviceFlow() }
+                pollStatus = ""
+                val c = try {
+                    withContext(Dispatchers.IO) { sync.auth.startDeviceFlow() }
+                } catch (e: java.io.IOException) {
+                    throw java.io.IOException("Could not start sign-in (${e.javaClass.simpleName}: ${e.message})", e)
+                }
                 code = c
                 copy(context, c.userCode)
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(c.verificationUri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                val token = sync.auth.awaitToken(c)
+                val token = sync.auth.awaitToken(c) { pollStatus = it }
                 val name = withContext(Dispatchers.IO) { runCatching { GitHubApi(token).login() }.getOrNull() }
                 sync.auth.save(token, name)
                 login = name
@@ -208,6 +214,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                             Text(stringResource(R.string.githubSyncEnterCode), style = MaterialTheme.typography.bodyMedium)
                             Text(c.userCode, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(vertical = 8.dp))
                             Text(c.verificationUri, style = MaterialTheme.typography.bodySmall)
+                            if (pollStatus.isNotEmpty()) Text(pollStatus, style = MaterialTheme.typography.bodySmall)
                             CircularProgressIndicator(Modifier.padding(top = 12.dp))
                             TextButton(onClick = { signInJob?.cancel(); code = null }) { Text(stringResource(R.string.githubSyncCancel)) }
                         }
