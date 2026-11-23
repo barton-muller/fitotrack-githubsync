@@ -1,0 +1,23 @@
+name: Rebase onto upstream
+on:
+  schedule: [{ cron: '17 5 * * *' }]
+  workflow_dispatch:
+permissions: { contents: write, issues: write }
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 0 }
+      - name: Rebase
+        id: rebase
+        run: |
+          git config user.name github-actions; git config user.email actions@github.com
+          git fetch https://codeberg.org/jannis/FitoTrack.git master:upstream-master
+          if git merge-base --is-ancestor upstream-master HEAD; then echo "uptodate=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if git rebase upstream-master; then git push --force-with-lease origin main
+          else git rebase --abort; echo "conflict=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Report conflict
+        if: steps.rebase.outputs.conflict == '1'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: gh issue create --title "Upstream rebase conflict" --body "Rebasing onto jannis/FitoTrack master failed. Rebase manually."
