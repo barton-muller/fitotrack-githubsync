@@ -65,7 +65,11 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
     var message by remember { mutableStateOf(sync.lastSyncMessage ?: "") }
 
     fun fail(e: Throwable) {
-        message = e.message ?: e.toString()
+        message = when (e) {
+            is java.net.UnknownHostException, is java.net.SocketTimeoutException, is java.net.ConnectException ->
+                "Cannot reach GitHub. Check the internet connection and that this app is allowed to use the network."
+            else -> e.message ?: e.toString()
+        }
     }
 
     fun loadRepos() {

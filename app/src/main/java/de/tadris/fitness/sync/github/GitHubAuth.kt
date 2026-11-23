@@ -48,8 +48,7 @@ class GitHubAuth(context: Context) {
             body = "client_id=${GitHubConfig.CLIENT_ID}".toByteArray(),
             contentType = "application/x-www-form-urlencoded", accept = "application/json",
         )
-        if (!r.ok) throw IOException("GitHub ${r.code}")
-        val j = JSONObject(r.text)
+        val j = runCatching { JSONObject(r.text) }.getOrNull() ?: throw IOException("GitHub ${r.code}")
         if (j.has("error")) throw IOException(j.optString("error_description", j.getString("error")))
         return DeviceCode(
             j.getString("device_code"), j.getString("user_code"), j.getString("verification_uri"),
