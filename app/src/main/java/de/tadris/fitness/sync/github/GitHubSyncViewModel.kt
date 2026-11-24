@@ -44,7 +44,10 @@ import java.net.UnknownHostException
 data class GitHubSyncUiState(
     val signedIn: Boolean = false,
     val login: String? = null,
+    /** The repo or git address that is synced with, null while none is chosen. */
     val repo: String? = null,
+    /** True when [repo] is the address of a repo on another git host. */
+    val isGit: Boolean = false,
     /** Repos the GitHub App can reach; null until they have been loaded. */
     val repos: List<RepoChoice>? = null,
     val loadingRepos: Boolean = false,
@@ -67,7 +70,8 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
         GitHubSyncUiState(
             signedIn = sync.auth.signedIn(),
             login = sync.auth.login(),
-            repo = sync.repo,
+            repo = sync.target,
+            isGit = sync.gitUrl != null,
             message = sync.lastSyncMessage.orEmpty(),
             deleteFromRepo = sync.deleteFromRepo,
             deleteHere = sync.deleteHere,
@@ -123,7 +127,12 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
     fun signOut() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) { sync.signOut() }
-            _uiState.update { GitHubSyncUiState(deleteFromRepo = it.deleteFromRepo, deleteHere = it.deleteHere, syncSettings = it.syncSettings) }
+            _uiState.update {
+                GitHubSyncUiState(
+                    repo = sync.target, isGit = sync.gitUrl != null,
+                    deleteFromRepo = it.deleteFromRepo, deleteHere = it.deleteHere, syncSettings = it.syncSettings,
+                )
+            }
         }
     }
 
@@ -146,14 +155,45 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
     fun chooseRepo(choice: RepoChoice) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) { sync.chooseRepo(choice) }
-            _uiState.update { it.copy(repo = choice.full, message = "") }
+            _uiState.update { it.copy(repo = choice.full, isGit = false, message = "") }
         }
     }
 
     /** Lets the person pick another repo. */
     fun changeRepo() {
-        _uiState.update { it.copy(repo = null) }
-        loadRepos()
+        if (_uiState.value.isGit) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) { sync.disconnectGit() }
+                _uiState.update { it.copy(repo = null, isGit = false, message = "") }
+                if (_uiState.value.signedIn) loadRepos()
+            }
+        } else {
+            _uiState.update { it.copy(repo = null) }
+            loadRepos()
+        }
+    }
+
+    /** Uses a repo on any git host, reached with an access token. Checks that it can be reached first. */
+    fun connectGit(url: String, branch: String, token: String) {
+        val address = url.trim()
+        if (!address.startsWith("https://")) {
+            _uiState.update { it.copy(message = getString(R.string.githubSyncGitNeedsHttps)) }
+            return
+        }
+        val name = branch.trim().ifEmpty { "main" }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true, message = getString(R.string.githubSyncGitChecking)) }
+            try {
+                val files = withContext(Dispatchers.IO) {
+                    sync.checkGit(address, name, token.trim()).also { sync.useGit(address, name, token.trim()) }
+                }
+                _uiState.update { it.copy(repo = address, isGit = true, message = getString(R.string.githubSyncGitConnected, files)) }
+            } catch (e: Exception) {
+                fail(e)
+            } finally {
+                _uiState.update { it.copy(busy = false) }
+            }
+        }
     }
 
     /**

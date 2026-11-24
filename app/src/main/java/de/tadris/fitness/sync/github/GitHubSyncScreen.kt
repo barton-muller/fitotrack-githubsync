@@ -26,6 +26,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,12 +47,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +64,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -96,9 +104,7 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                     modifier = Modifier.padding(16.dp),
                 )
             }
-            if (!state.signedIn) {
-                item { SignIn(state, vm, context) }
-            } else {
+            if (state.signedIn) {
                 item { SettingsCategory(stringResource(R.string.githubSyncAccount)) }
                 item {
                     ClickableSettingsItem(
@@ -108,13 +114,19 @@ fun GitHubSyncScreen(onBack: () -> Unit) {
                         onClick = vm::signOut,
                     )
                 }
-                item { SettingsCategory(stringResource(R.string.githubSyncRepo)) }
-                if (state.repo != null) {
+            }
+            when {
+                state.repo != null -> {
+                    item { SettingsCategory(stringResource(R.string.githubSyncRepo)) }
                     repoSettings(state, vm)
-                } else {
+                }
+                state.signedIn -> {
+                    item { SettingsCategory(stringResource(R.string.githubSyncRepo)) }
                     repoChooser(state, vm, context)
                 }
+                else -> item { SignIn(state, vm, context) }
             }
+            if (!state.isGit) item { AdvancedGit(state, vm) }
             item {
                 ClickableSettingsItem(
                     title = stringResource(R.string.githubSyncTestConnection),
@@ -170,11 +182,54 @@ private fun SignIn(state: GitHubSyncUiState, vm: GitHubSyncViewModel, context: C
     }
 }
 
+/** Another git host with an access token. Collapsed until it is opened. */
+@Composable
+private fun AdvancedGit(state: GitHubSyncUiState, vm: GitHubSyncViewModel) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    var url by rememberSaveable { mutableStateOf("") }
+    var branch by rememberSaveable { mutableStateOf("main") }
+    var token by rememberSaveable { mutableStateOf("") }
+    Column {
+        ClickableSettingsItem(
+            title = stringResource(R.string.githubSyncGitAdvanced),
+            supporting = stringResource(R.string.githubSyncGitAdvancedSummary),
+            onClick = { open = !open },
+        )
+        if (open) {
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                OutlinedTextField(
+                    value = url, onValueChange = { url = it }, singleLine = true,
+                    label = { Text(stringResource(R.string.githubSyncGitUrl)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = branch, onValueChange = { branch = it }, singleLine = true,
+                    label = { Text(stringResource(R.string.githubSyncGitBranch)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = token, onValueChange = { token = it }, singleLine = true,
+                    label = { Text(stringResource(R.string.githubSyncGitToken)) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Button(
+                    onClick = { vm.connectGit(url, branch, token) },
+                    enabled = !state.busy && url.isNotBlank() && token.isNotBlank(),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                ) { Text(stringResource(R.string.githubSyncGitConnect)) }
+            }
+        }
+    }
+}
+
 private fun LazyListScope.repoSettings(state: GitHubSyncUiState, vm: GitHubSyncViewModel) {
     item {
         ClickableSettingsItem(
             title = state.repo.orEmpty(),
-            supporting = stringResource(R.string.githubSyncChangeRepo),
+            supporting = stringResource(if (state.isGit) R.string.githubSyncGitSummary else R.string.githubSyncChangeRepo),
             onClick = vm::changeRepo,
         )
     }

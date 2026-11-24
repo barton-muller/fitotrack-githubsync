@@ -27,6 +27,12 @@ Settings, Backup, **GitHub sync**.
 2. **Choose a repo.** The list shows the repos the GitHub App is installed on. **New private repo** creates `fitotrack-data`. **Choose repos on GitHub** opens the install page to add more, then **Refresh list**.
 3. **Sync now.** Merges the workouts and settings of the device with the repo, as described below.
 
+### Another git host
+
+**Advanced: another git host** on the same screen is collapsed until you open it. Enter the address of a repo (`https://…`), the branch and an access token, and tap **Connect**. This works with Codeberg, a self-hosted Forgejo or Gitea, GitLab, GitHub itself with a personal access token, or any server that speaks git over HTTPS. The app checks that it can reach the repo first. The token is stored encrypted with the Keystore key, and the files are kept in a local bare repo, so only what changed is transferred.
+
+Give the token only what it needs: write access to that one repo. On GitHub a fine-grained token with Contents read and write on one repo is enough. The branch is created when the repo is empty.
+
 After you record a workout, a sync runs on its own. It needs a network connection and is retried later when offline. Otherwise sync runs when you press **Sync now**.
 
 ## What is stored

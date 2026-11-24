@@ -18,7 +18,7 @@
   ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="exportTargetGitHub">GitHub</string>
+    <string name="exportTargetGitHub">GitHub or git sync</string>
     <string name="githubSyncTitle">GitHub sync</string>
     <string name="githubSyncSummary">Keep workouts as GPX files in a GitHub repo</string>
     <string name="githubSyncExplanation">New workouts are saved as GPX files in the folder %1$s of a repo you choose, and workouts found there are imported on this device.</string>
@@ -61,4 +61,15 @@
     <string name="githubSyncSettingsSaved">saved to the repo</string>
     <string name="githubSyncSettingsApplied">applied from the repo, restart the app to see all changes</string>
     <string name="githubSyncSettingsMerged">merged, restart the app to see all changes</string>
+    <string name="githubSyncGitAdvanced">Advanced: another git host</string>
+    <string name="githubSyncGitAdvancedSummary">Use a repo on Codeberg, a self-hosted Forgejo, Gitea or GitLab, or any git server, with an access token instead of GitHub</string>
+    <string name="githubSyncGitUrl">Repo address (https://…)</string>
+    <string name="githubSyncGitBranch">Branch</string>
+    <string name="githubSyncGitToken">Access token</string>
+    <string name="githubSyncGitConnect">Connect</string>
+    <string name="githubSyncGitChecking">Checking the repo…</string>
+    <string name="githubSyncGitConnected">Connected. The branch has %1$d files.</string>
+    <string name="githubSyncGitNeedsHttps">The address must start with https://</string>
+    <string name="githubSyncGitSummary">Git repo. Tap to disconnect and choose another.</string>
+
 </resources>

@@ -28,7 +28,10 @@ import de.tadris.fitness.sync.SyncBase
 import de.tadris.fitness.sync.SyncEngine
 import de.tadris.fitness.sync.SyncOptions
 import de.tadris.fitness.sync.SyncReport
+import de.tadris.fitness.sync.git.GitRemote
 import org.json.JSONObject
+import java.io.File
+import java.security.MessageDigest
 
 /** The repo chosen on GitHub, the options, and the sync of this device with it. */
 class GitHubSync(context: Context) {
@@ -64,26 +67,66 @@ class GitHubSync(context: Context) {
         get() = prefs.getBoolean(KEY_SYNC_SETTINGS, true)
         set(value) = prefs.edit().putBoolean(KEY_SYNC_SETTINGS, value).apply()
 
+    /** Address of a repo on another git host, set when that is used instead of a GitHub repo. */
+    var gitUrl: String?
+        get() = prefs.getString(KEY_GIT_URL, null)
+        private set(value) = prefs.edit().putString(KEY_GIT_URL, value).apply()
+
+    private val gitBranch: String get() = prefs.getString(KEY_GIT_BRANCH, "main") ?: "main"
+
+    /** What the sync works with: the git address if there is one, otherwise the chosen GitHub repo. */
+    val target: String? get() = gitUrl ?: repo
+
     fun api() = GitHubApi(auth.token() ?: throw IllegalStateException("Not signed in"))
 
     /** Uses [choice] for syncing and makes sure that new workouts are synced after they are recorded. */
     fun chooseRepo(choice: RepoChoice) {
+        gitUrl = null
         repo = choice.full
         branch = choice.branch
+        installExportTarget(JSONObject().put("repo", choice.full).put("branch", choice.branch))
+        baseStore.clear()
+    }
+
+    /** Checks that the repo at [url] can be reached with [token]. Returns how many files the branch has. */
+    fun checkGit(url: String, branch: String, token: String): Int = gitRemote(url, branch, token).fetch().files.size
+
+    /** Syncs with the git repo at [url] instead of a GitHub repo. The token is kept encrypted. */
+    fun useGit(url: String, branch: String, token: String) {
+        prefs.edit().putString(KEY_GIT_TOKEN, TokenVault.encrypt(token)).putString(KEY_GIT_BRANCH, branch).apply()
+        gitUrl = url
+        installExportTarget(JSONObject().put("repo", url).put("branch", branch))
+        baseStore.clear()
+    }
+
+    fun disconnectGit() {
+        removeExportTargets()
+        prefs.edit().remove(KEY_GIT_URL).remove(KEY_GIT_TOKEN).apply()
+        baseStore.clear()
+    }
+
+    private fun gitRemote(url: String, branch: String, token: String?) =
+        GitRemote(url, branch, token, File(context.filesDir, "git-sync/${sha256(url + "\n" + branch)}"))
+
+    private fun sha256(text: String) =
+        MessageDigest.getInstance("SHA-256").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }.take(16)
+
+    private fun installExportTarget(data: JSONObject) {
         removeExportTargets()
         Instance.getInstance(context).db.exportTargetDao().insert(ExportTargetConfiguration().also {
             it.source = ExportSource.EXPORT_SOURCE_WORKOUT_GPX
             it.type = GitHubConfig.TARGET_TYPE
-            it.data = JSONObject().put("repo", choice.full).put("branch", choice.branch).toString()
+            it.data = data.toString()
         })
-        baseStore.clear()
     }
 
     fun signOut() {
-        removeExportTargets()
         auth.signOut()
+        if (gitUrl == null) {
+            removeExportTargets()
+            baseStore.clear()
+        }
         prefs.edit().remove(KEY_REPO).apply()
-        baseStore.clear()
     }
 
     /** Earlier builds remembered which file held which workout; that is what the engine keeps as its base now. */
@@ -99,10 +142,16 @@ class GitHubSync(context: Context) {
 
     /** Brings the workouts and settings of this device and the repo to the same state. */
     fun sync(): SyncReport = synchronized(LOCK) {
-        val repo = repo ?: throw IllegalStateException("No repo chosen")
+        val git = gitUrl
+        val repo = repo
+        if (git == null && repo == null) throw IllegalStateException("No repo chosen")
         migrateLegacyState()
         SyncEngine(
-            remote = GitHubRemote(api(), repo, branch),
+            remote = if (git != null) {
+                gitRemote(git, gitBranch, prefs.getString(KEY_GIT_TOKEN, null)?.let { TokenVault.decrypt(it) })
+            } else {
+                GitHubRemote(api(), repo!!, branch)
+            },
             device = AndroidDeviceSide(context),
             baseStore = baseStore,
             options = SyncOptions(deleteFromRepo, deleteHere, syncSettings),
@@ -122,6 +171,9 @@ class GitHubSync(context: Context) {
         const val KEY_REPO = "repo"
         const val KEY_BRANCH = "branch"
         const val KEY_BASE = "base"
+        const val KEY_GIT_URL = "gitUrl"
+        const val KEY_GIT_BRANCH = "gitBranch"
+        const val KEY_GIT_TOKEN = "gitToken"
         const val LEGACY_FILES = "files"
         const val KEY_LAST_MESSAGE = "lastMessage"
         const val KEY_DELETE_FROM_REPO = "deleteRemote"

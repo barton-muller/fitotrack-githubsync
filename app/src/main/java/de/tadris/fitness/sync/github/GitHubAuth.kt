@@ -20,19 +20,11 @@
 package de.tadris.fitness.sync.github
 
 import android.content.Context
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
-import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.IOException
-import java.security.KeyStore
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.spec.GCMParameterSpec
 
 class DeviceCode(
     val deviceCode: String,
@@ -47,7 +39,7 @@ class GitHubAuth(context: Context) {
 
     private val prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    fun token(): String? = prefs.getString(KEY_TOKEN, null)?.let { runCatching { decrypt(it) }.getOrNull() }
+    fun token(): String? = prefs.getString(KEY_TOKEN, null)?.let { TokenVault.decrypt(it) }
 
     fun login(): String? = prefs.getString(KEY_LOGIN, null)
 
@@ -58,7 +50,7 @@ class GitHubAuth(context: Context) {
     }
 
     fun save(token: String, login: String?) {
-        prefs.edit().putString(KEY_TOKEN, encrypt(token)).putString(KEY_LOGIN, login).apply()
+        prefs.edit().putString(KEY_TOKEN, TokenVault.encrypt(token)).putString(KEY_LOGIN, login).apply()
     }
 
     fun startDeviceFlow(): DeviceCode {
@@ -108,36 +100,9 @@ class GitHubAuth(context: Context) {
         throw IOException("The code expired, try again")
     }
 
-    private fun key(): SecretKey {
-        val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        (ks.getKey(ALIAS, null) as? SecretKey)?.let { return it }
-        val gen = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-        gen.init(
-            KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .build()
-        )
-        return gen.generateKey()
-    }
-
-    private fun encrypt(plain: String): String {
-        val c = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, key()) }
-        val out = c.iv + c.doFinal(plain.toByteArray())
-        return Base64.encodeToString(out, Base64.NO_WRAP)
-    }
-
-    private fun decrypt(stored: String): String {
-        val raw = Base64.decode(stored, Base64.NO_WRAP)
-        val c = Cipher.getInstance("AES/GCM/NoPadding")
-            .apply { init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, raw, 0, 12)) }
-        return String(c.doFinal(raw, 12, raw.size - 12))
-    }
-
     private companion object {
         const val PREFS = "github_sync_auth"
         const val KEY_TOKEN = "token"
         const val KEY_LOGIN = "login"
-        const val ALIAS = "github_sync_token"
     }
 }
