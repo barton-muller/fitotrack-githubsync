@@ -157,6 +157,9 @@ dependencies {
     // New Splash screen API
     implementation 'androidx.core:core-splashscreen:1.2.0'
 
+    // git over HTTPS for the sync with any git host (last release line that targets Android's Java level)
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.3.202401111512-r'
+
     // support for the new language APIs
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 

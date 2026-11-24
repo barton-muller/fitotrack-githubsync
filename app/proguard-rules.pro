@@ -56,3 +56,7 @@
 # (e.g. object : TypeReference<List<X>>() {}) unless TypeReference itself is kept
 -keep,allowobfuscation,allowshrinking class com.fasterxml.jackson.core.type.TypeReference
 -keep,allowobfuscation,allowshrinking class * extends com.fasterxml.jackson.core.type.TypeReference
+
+# JGit (git sync) reads its messages and some classes by reflection
+-keep class org.eclipse.jgit.** { *; }
+-dontwarn org.eclipse.jgit.**
