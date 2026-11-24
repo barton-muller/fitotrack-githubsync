@@ -26,6 +26,7 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.tadris.fitness.R
+import de.tadris.fitness.sync.SettingsOutcome
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +55,7 @@ data class GitHubSyncUiState(
     val message: String = "",
     val diagnostics: String = "",
     val deleteFromRepo: Boolean = true,
+    val deleteHere: Boolean = false,
     val syncSettings: Boolean = true,
 )
 
@@ -68,6 +70,7 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
             repo = sync.repo,
             message = sync.lastSyncMessage.orEmpty(),
             deleteFromRepo = sync.deleteFromRepo,
+            deleteHere = sync.deleteHere,
             syncSettings = sync.syncSettings,
         )
     )
@@ -120,7 +123,7 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
     fun signOut() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) { sync.signOut() }
-            _uiState.update { GitHubSyncUiState(deleteFromRepo = it.deleteFromRepo, syncSettings = it.syncSettings) }
+            _uiState.update { GitHubSyncUiState(deleteFromRepo = it.deleteFromRepo, deleteHere = it.deleteHere, syncSettings = it.syncSettings) }
         }
     }
 
@@ -195,8 +198,10 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.update { it.copy(busy = true, message = getString(R.string.githubSyncRunning)) }
             try {
                 val r = withContext(Dispatchers.IO) { sync.sync() }
-                val message = getString(R.string.githubSyncDone, r.imported, r.uploaded, r.deleted, r.failed, r.settings) +
-                        (r.firstError?.let { "\n$it" } ?: "")
+                val message = getString(
+                    R.string.githubSyncDone, r.imported, r.uploaded, r.removedFromRemote, r.removedHere, r.failed,
+                    getString(settingsText(r.settings)),
+                ) + (r.firstError?.let { "\n$it" } ?: "")
                 sync.lastSyncMessage = message
                 _uiState.update { it.copy(message = message) }
             } catch (e: Exception) {
@@ -220,9 +225,22 @@ class GitHubSyncViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update { it.copy(deleteFromRepo = value) }
     }
 
+    fun setDeleteHere(value: Boolean) {
+        sync.deleteHere = value
+        _uiState.update { it.copy(deleteHere = value) }
+    }
+
     fun setSyncSettings(value: Boolean) {
         sync.syncSettings = value
         _uiState.update { it.copy(syncSettings = value) }
+    }
+
+    private fun settingsText(outcome: SettingsOutcome) = when (outcome) {
+        SettingsOutcome.OFF -> R.string.githubSyncSettingsOff
+        SettingsOutcome.UNCHANGED -> R.string.githubSyncSettingsUnchanged
+        SettingsOutcome.SAVED -> R.string.githubSyncSettingsSaved
+        SettingsOutcome.APPLIED -> R.string.githubSyncSettingsApplied
+        SettingsOutcome.MERGED -> R.string.githubSyncSettingsMerged
     }
 
     private fun fail(e: Throwable) {

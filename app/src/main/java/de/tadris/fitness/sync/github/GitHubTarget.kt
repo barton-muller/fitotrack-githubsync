@@ -39,7 +39,8 @@ class GitHubTarget(private val repo: String, private val branch: String) : Expor
         get() = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     override fun exportFile(context: Context, file: ExportSource.ExportedFile) {
-        GitHubSync(context).upload(repo, branch, file)
+        // The sync merges with the repo and uploads what is new, which includes the workout that was just recorded
+        GitHubSync(context).sync()
     }
 
     companion object {

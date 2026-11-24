@@ -195,6 +195,14 @@ private fun LazyListScope.repoSettings(state: GitHubSyncUiState, vm: GitHubSyncV
         )
     }
     item {
+        SwitchSettingsItem(
+            title = stringResource(R.string.githubSyncDeleteHereTitle),
+            supporting = stringResource(R.string.githubSyncDeleteHereSummary),
+            checked = state.deleteHere,
+            onCheckedChange = vm::setDeleteHere,
+        )
+    }
+    item {
         ClickableSettingsItem(
             title = stringResource(R.string.githubSyncNow),
             supporting = stringResource(R.string.githubSyncNowSummary),

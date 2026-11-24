@@ -25,9 +25,9 @@ Settings, Backup, **GitHub sync**.
 
 1. **Sign in with GitHub.** A code is copied and GitHub opens in an in-app tab. Paste the code and approve. Close the tab to come back.
 2. **Choose a repo.** The list shows the repos the GitHub App is installed on. **New private repo** creates `fitotrack-data`. **Choose repos on GitHub** opens the install page to add more, then **Refresh list**.
-3. **Sync now.** Imports workouts from the repo, uploads local workouts, removes repo files of workouts you deleted, and syncs the settings.
+3. **Sync now.** Merges the workouts and settings of the device with the repo, as described below.
 
-New workouts you record are uploaded on their own after the workout ends. They need a network connection and are retried later when offline. Everything else happens when you press **Sync now**.
+After you record a workout, a sync runs on its own. It needs a network connection and is retried later when offline. Otherwise sync runs when you press **Sync now**.
 
 ## What is stored
 
@@ -40,12 +40,25 @@ Device-specific and secret preferences are not synced: tokens, content URIs, dir
 
 Other apps can share the repo. Each app keeps its files in its own folder, and this one only touches `fitness/`.
 
-## Rules
+## How sync works
 
-- **Workouts** are matched by start time. A workout is never imported twice and never uploaded twice. A workout you deleted on this device is not downloaded again.
-- **Deleting** a workout here removes its GPX from the repo on the next Sync now. Switch: *Delete from repo too*. The git history keeps the file. Deleting in the repo does not delete the workout on devices that already have it.
-- **Settings.** The first sync on a device applies what the repo has, so a new device picks up your settings. After that a change made on this device wins and is pushed, and otherwise a change in the repo is applied. Restart the app to see all of it. Switch: *Sync settings and measurements*.
-- **Test connection** on the sync screen checks DNS and HTTPS from the app's point of view, which helps when a VPN, private DNS or a firewall app gets in the way.
+Sync is a three-way merge. The device remembers what the last sync left behind (the base) and compares it with the workouts on the device and the files in the repo:
+
+| In the base | On the device | In the repo | Meaning | Result |
+|---|---|---|---|---|
+| no | yes | no | new here | uploaded |
+| no | no | yes | new in the repo | imported |
+| yes | no | yes | deleted here | removed from the repo (switch *Delete from repo too*), otherwise left alone |
+| yes | yes | no | deleted in the repo | deleted here (switch *Delete here too*), otherwise it stays here and is not uploaded again |
+| yes | no | no | gone on both sides | forgotten |
+
+Workouts are matched by start time, so a workout is never imported or uploaded twice. Everything that changed goes to the repo in one commit. When someone else committed in the meantime, the commit is refused and the merge runs again on the new state. Merging twice gives the same result, so a repeat is safe.
+
+**Settings** are merged per key against the settings of the last sync. A key changed on one side wins over a key that did not change on the other. A key changed on both sides takes the value of the device that syncs last, except on the first sync of a device, where the repo wins, so a new device picks up your settings. A key only one side has is kept. Restart the app to see all of it. Switch: *Sync settings and measurements*.
+
+**Test connection** on the sync screen checks DNS and HTTPS from the app's point of view, which helps when a VPN, private DNS or a firewall app gets in the way.
+
+The merge does not depend on how the files travel. `RemoteStore` has three calls (fetch a snapshot, read a file, commit conditionally on a revision), and the engine only uses those. `GitHubRemote` implements them with GitHub's API, `GitRemote` with git over HTTPS through JGit, so any git host can be added.
 
 ## Privacy and security
 

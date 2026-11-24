@@ -20,6 +20,7 @@
 package de.tadris.fitness.sync.github
 
 import android.util.Base64
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URLEncoder
@@ -109,6 +110,60 @@ class GitHubApi(private val token: String) {
             .put("branch", branch)
         if (sha != null) body.put("sha", sha)
         check(call("PUT", "/repos/$repo/contents/${encPath(path)}", body))
+    }
+
+    /** The commit a branch points to, or null when the branch does not exist (an empty repo has none). */
+    fun branchHead(repo: String, branch: String): String? {
+        val r = call("GET", "/repos/$repo/git/ref/heads/${encPath(branch)}")
+        if (r.code == 404 || r.code == 409) return null
+        return JSONObject(check(r).text).getJSONObject("object").getString("sha")
+    }
+
+    fun commitTree(repo: String, commit: String): String =
+        JSONObject(check(call("GET", "/repos/$repo/git/commits/$commit")).text).getJSONObject("tree").getString("sha")
+
+    /** Every file of a tree: path -> blob id. */
+    fun treeFiles(repo: String, tree: String): Map<String, String> {
+        val j = JSONObject(check(call("GET", "/repos/$repo/git/trees/$tree?recursive=1")).text)
+        if (j.optBoolean("truncated")) throw GitHubHttpException(0, "The repo has too many files to list")
+        val out = linkedMapOf<String, String>()
+        val entries = j.getJSONArray("tree")
+        for (i in 0 until entries.length()) {
+            val e = entries.getJSONObject(i)
+            if (e.getString("type") == "blob") out[e.getString("path")] = e.getString("sha")
+        }
+        return out
+    }
+
+    fun createBlob(repo: String, bytes: ByteArray): String {
+        val body = JSONObject().put("content", Base64.encodeToString(bytes, Base64.NO_WRAP)).put("encoding", "base64")
+        return JSONObject(check(call("POST", "/repos/$repo/git/blobs", body)).text).getString("sha")
+    }
+
+    /** A tree that is [baseTree] with the given changes: path -> blob id, null deletes the path. */
+    fun createTree(repo: String, baseTree: String, changes: Map<String, String?>): String {
+        val entries = JSONArray()
+        for ((path, blob) in changes) {
+            entries.put(
+                JSONObject().put("path", path).put("mode", "100644").put("type", "blob")
+                    .put("sha", blob ?: JSONObject.NULL)
+            )
+        }
+        val body = JSONObject().put("base_tree", baseTree).put("tree", entries)
+        return JSONObject(check(call("POST", "/repos/$repo/git/trees", body)).text).getString("sha")
+    }
+
+    fun createCommit(repo: String, message: String, tree: String, parent: String): String {
+        val body = JSONObject().put("message", message).put("tree", tree).put("parents", JSONArray().put(parent))
+        return JSONObject(check(call("POST", "/repos/$repo/git/commits", body)).text).getString("sha")
+    }
+
+    /** Moves the branch to [commit] if that is a fast-forward. Returns false when the branch moved on. */
+    fun fastForward(repo: String, branch: String, commit: String): Boolean {
+        val r = call("PATCH", "/repos/$repo/git/refs/heads/${encPath(branch)}", JSONObject().put("sha", commit).put("force", false))
+        if (r.code == 422 || r.code == 409) return false
+        check(r)
+        return true
     }
 
     private companion object {
